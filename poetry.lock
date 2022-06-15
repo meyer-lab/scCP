@@ -137,6 +137,7 @@ scipy = "*"
 [package.source]
 type = "url"
 url = "https://storage.googleapis.com/jax-releases/cuda11/jaxlib-0.3.10+cuda11.cudnn82-cp310-none-manylinux2014_x86_64.whl"
+
 [[package]]
 name = "joblib"
 version = "1.1.0"
@@ -260,14 +261,6 @@ pytz = ">=2020.1"
 
 [package.extras]
 test = ["hypothesis (>=5.5.3)", "pytest (>=6.0)", "pytest-xdist (>=1.31)"]
-
-[[package]]
-name = "pep8"
-version = "1.7.1"
-description = "Python style guide checker"
-category = "main"
-optional = false
-python-versions = "*"
 
 [[package]]
 name = "pillow"
@@ -525,7 +518,7 @@ viz = ["matplotlib", "seaborn", "nc-time-axis"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.11"
-content-hash = "ff9b5c7c1fd15bb942cfe81fcb388d373d71686f71c2996b776f2a9790c2d401"
+content-hash = "25759bde224cad29323494f8c0a479cc5c89d765a7191476fc724e757a61cce7"
 
 [metadata.files]
 absl-py = [
@@ -781,10 +774,6 @@ pandas = [
     {file = "pandas-1.4.2-cp39-cp39-win32.whl", hash = "sha256:d0d4f13e4be7ce89d7057a786023c461dd9370040bdb5efa0a7fe76b556867a0"},
     {file = "pandas-1.4.2-cp39-cp39-win_amd64.whl", hash = "sha256:09d8be7dd9e1c4c98224c4dfe8abd60d145d934e9fc1f5f411266308ae683e6a"},
     {file = "pandas-1.4.2.tar.gz", hash = "sha256:92bc1fc585f1463ca827b45535957815b7deb218c549b7c18402c322c7549a12"},
-]
-pep8 = [
-    {file = "pep8-1.7.1-py2.py3-none-any.whl", hash = "sha256:b22cfae5db09833bb9bd7c8463b53e1a9c9b39f12e304a8d0bba729c501827ee"},
-    {file = "pep8-1.7.1.tar.gz", hash = "sha256:fe249b52e20498e59e0b5c5256aa52ee99fc295b26ec9eaa85776ffdb9fe6374"},
 ]
 pillow = [
     {file = "Pillow-9.1.1-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:42dfefbef90eb67c10c45a73a9bc1599d4dac920f7dfcbf4ec6b80cb620757fe"},
