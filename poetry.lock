@@ -98,7 +98,7 @@ python-versions = "*"
 
 [[package]]
 name = "jax"
-version = "0.3.10"
+version = "0.3.13"
 description = "Differentiate, compile, and transform Numpy code."
 category = "main"
 optional = false
@@ -112,7 +112,7 @@ scipy = ">=1.2.1"
 typing_extensions = "*"
 
 [package.extras]
-ci = ["jaxlib (==0.3.7)"]
+ci = ["jaxlib (==0.3.10)"]
 cpu = ["jaxlib (==0.3.10)"]
 cuda = ["jaxlib (==0.3.10+cuda11.cudnn82)"]
 cuda11_cudnn805 = ["jaxlib (==0.3.10+cuda11.cudnn805)"]
@@ -518,7 +518,7 @@ viz = ["matplotlib", "seaborn", "nc-time-axis"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.11"
-content-hash = "25759bde224cad29323494f8c0a479cc5c89d765a7191476fc724e757a61cce7"
+content-hash = "f29b8af4b1fc4c28abd0708dd4d731bfcd05bf5283e0f7f30965cc41b94cce70"
 
 [metadata.files]
 absl-py = [
@@ -597,7 +597,7 @@ iniconfig = [
     {file = "iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
 ]
 jax = [
-    {file = "jax-0.3.10.tar.gz", hash = "sha256:87aaa7a9708ee12ad3efb0b0feaa8873ed209750b256cc9b9a8fa1e3c1ede69c"},
+    {file = "jax-0.3.13.tar.gz", hash = "sha256:4ab4865b7007a36e2894a4aff8baf3ffeb6e51e435403c59ba9bc3f741ca3504"},
 ]
 jaxlib = []
 joblib = [
