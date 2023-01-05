@@ -121,35 +121,34 @@ python-versions = "*"
 
 [[package]]
 name = "jax"
-version = "0.3.24"
+version = "0.4.1"
 description = "Differentiate, compile, and transform Numpy code."
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 
 [package.dependencies]
 numpy = ">=1.20"
 opt_einsum = "*"
 scipy = ">=1.5"
-typing_extensions = "*"
 
 [package.extras]
 australis = ["protobuf (>=3.13,<4)"]
-ci = ["jaxlib (==0.3.22)"]
-cpu = ["jaxlib (==0.3.24)"]
-cuda = ["jaxlib (==0.3.24+cuda11.cudnn82)"]
-cuda11-cudnn805 = ["jaxlib (==0.3.24+cuda11.cudnn805)"]
-cuda11-cudnn82 = ["jaxlib (==0.3.24+cuda11.cudnn82)"]
+ci = ["jaxlib (==0.4.0)"]
+cpu = ["jaxlib (==0.4.1)"]
+cuda = ["jaxlib (==0.4.1+cuda11.cudnn86)"]
+cuda11-cudnn82 = ["jaxlib (==0.4.1+cuda11.cudnn82)"]
+cuda11-cudnn86 = ["jaxlib (==0.4.1+cuda11.cudnn86)"]
 minimum-jaxlib = ["jaxlib (==0.3.22)"]
-tpu = ["jaxlib (==0.3.24)", "libtpu-nightly (==0.1.dev20221103)", "requests"]
+tpu = ["jaxlib (==0.4.1)", "libtpu-nightly (==0.1.dev20221212)", "requests"]
 
 [[package]]
 name = "jaxlib"
-version = "0.3.24+cuda11.cudnn82"
+version = "0.4.1+cuda11.cudnn82"
 description = "XLA library for JAX"
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 
 [package.dependencies]
 numpy = ">=1.20"
@@ -157,7 +156,7 @@ scipy = ">=1.5"
 
 [package.source]
 type = "url"
-url = "https://storage.googleapis.com/jax-releases/cuda11/jaxlib-0.3.24+cuda11.cudnn82-cp310-cp310-manylinux2014_x86_64.whl"
+url = "https://storage.googleapis.com/jax-releases/cuda11/jaxlib-0.4.1+cuda11.cudnn82-cp310-cp310-manylinux2014_x86_64.whl"
 [[package]]
 name = "joblib"
 version = "1.2.0"
@@ -572,7 +571,7 @@ viz = ["matplotlib", "nc-time-axis", "seaborn"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<3.11"
-content-hash = "fae8467d8e0bc3d572e8c6d02dfac96e788d22cb3db3cedf88e09becbbae7920"
+content-hash = "0c11a8efe8db28c5753e1f38b2a8b6b0b380d984440239df11cfa3a49d72f126"
 
 [metadata.files]
 attrs = [
@@ -801,7 +800,7 @@ iniconfig = [
     {file = "iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
 ]
 jax = [
-    {file = "jax-0.3.24.tar.gz", hash = "sha256:54c0002926a1898e7c7afdc2a14fbdcac04188bcaa359bc3389a30ea464a513a"},
+    {file = "jax-0.4.1.tar.gz", hash = "sha256:b795a75ca2eabb5d20b83f1aa1e1038dafeca89ee74c9ac6e2b919215cadf427"},
 ]
 jaxlib = []
 joblib = [
