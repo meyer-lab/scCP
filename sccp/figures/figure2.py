@@ -13,7 +13,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    # Import of single cells: [Gene, Cell, Drug]
+    # Import of single cells: [Ligand, Dose, Time, Cell, Marker]
     flowXA, _ = IL2_flowXA()
 
     # Performing parafac2 on single-cell Xarray
