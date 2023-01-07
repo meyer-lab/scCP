@@ -17,15 +17,14 @@ def makeFigure():
     flowXA, _ = IL2_flowXA()
 
     # Performing parafac2 on single-cell Xarray
-    rank = 5
-    weights, factors, _ = parafac2(
-        FlowXA.to_numpy(),
-        rank=rank,
-        tol=1e-8,
+    _, factors, _ = parafac2(
+        flowXA.to_numpy(),
+        rank=5,
+        n_iter_max=10,
         nn_modes=(0, 1, 2),
         verbose=True
     )
 
-    plotSCCP_factors(rank, factors, FlowXA, ax)
+    plotSCCP_factors(factors, flowXA, ax)
 
     return f
