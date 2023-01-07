@@ -14,8 +14,7 @@ def makeFigure():
     subplotLabel(ax)
 
     # Import of single cells: [Gene, Cell, Drug]
-    FlowXA, _ = IL2_flowXA(numCells=500)
-    FlowXA = FlowXA.T
+    flowXA, _ = IL2_flowXA()
 
     # Performing parafac2 on single-cell Xarray
     rank = 5

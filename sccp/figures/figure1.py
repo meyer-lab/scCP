@@ -13,7 +13,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    # Import of single cells: [Gene, Cell, Drug]
+    # Import of single cells: [Drug, Cell, Gene]
     drugXA = ThompsonXA_SCGenes()
 
     # Performing parafac2 on single-cell Xarray
@@ -30,5 +30,3 @@ def makeFigure():
     plotSCCP_factors(rank, factors, drugXA, ax)
     
     return f
-
-# git commit -a -m "Creating functions to plot and implementing Parafac2 for IL2 dataset"
