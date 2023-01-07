@@ -7,10 +7,10 @@ from tensorly.decomposition._cp import initialize_cp
 from tensorly.parafac2_tensor import parafac2_to_slice, _validate_parafac2_tensor
 from tensorly.cp_tensor import cp_normalize
 from tensorly.decomposition import non_negative_parafac_hals
-from tensorly.decomposition._parafac2 import (
-    _compute_projections as tl_proj,
-    _project_tensor_slices,
-)
+
+
+def _project_tensor_slices_fused(tensor_slices, projections):
+    return np.einsum("ijk,ijl->ilk", tensor_slices, projections)
 
 
 def to_three_mode(X, factors):
@@ -20,10 +20,22 @@ def to_three_mode(X, factors):
     return X_r, new_factors
 
 
+def _compute_projections_fused(X, factors):
+    svd_i = np.einsum("ij,lj,kj,iak->ila", *factors, X)
+
+    n_eigenvecs = factors[0].shape[1]
+    min_dim = min(svd_i.shape[1], svd_i.shape[2])
+    U, _, Vh = np.linalg.svd(svd_i, full_matrices=n_eigenvecs > min_dim)
+    U = U[:, :, :n_eigenvecs]
+    Vh = Vh[:, :n_eigenvecs, :]
+
+    return np.einsum("ijk,ikl->ilj", U, Vh)
+
+
 def _compute_projections(X, factors):
     X_r, new_factors = to_three_mode(X, factors)
-    projections = tl_proj(X_r, new_factors, tl.partial_svd)
-    p_t = _project_tensor_slices(X_r, projections)
+    projections = _compute_projections_fused(X_r, new_factors)
+    p_t = _project_tensor_slices_fused(X_r, projections)
 
     proj_tensor_reshape = np.reshape(p_t, (*X.shape[:-2], p_t.shape[-2], p_t.shape[-1]))
     return projections, proj_tensor_reshape
