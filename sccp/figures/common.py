@@ -78,7 +78,7 @@ def plotSCCP_factors(rank, factors, data_xarray, ax):
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
 
-    for i in range(0, 3):
+    for i in range(0, 5):
         sns.heatmap(
             data=factors[i],
             xticklabels=xticks,
