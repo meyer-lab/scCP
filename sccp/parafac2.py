@@ -41,7 +41,7 @@ def _compute_projections(X, factors):
     return projections, proj_tensor_reshape
 
 
-def _parafac2_rec_error(X, decomposition, rearrangeProjs = False):
+def _parafac2_rec_error(X, decomposition, rearrangeProjs=False):
     X_r, new_factors = to_three_mode(X, decomposition[1])
     if rearrangeProjs == True:
         decomposition[2] = _compute_projections_fused(X_r, new_factors)
@@ -59,7 +59,7 @@ def parafac2(
     X_slices,
     rank,
     n_iter_max=150,
-    tol=1e-8,
+    tol=1e-6,
     nn_modes=None,
     verbose=False,
 ):
@@ -77,7 +77,7 @@ def parafac2(
         _, factors = non_negative_parafac_hals(
             projected_tensor,
             rank,
-            n_iter_max=50,
+            n_iter_max=10,
             init=(None, factors),
             nn_modes=nn_modes,
             verbose=False,
