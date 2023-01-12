@@ -6,6 +6,7 @@ from .common import subplotLabel, getSetup, plotSCCP_factors
 from ..synthetic import synthXA, plot_synth_pic
 from tensorly.decomposition import parafac2
 
+
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
@@ -13,9 +14,9 @@ def makeFigure():
 
     # Add subplot labels
     subplotLabel(ax)
-    
+
     blobXA, blobDF = synthXA(magnitude=100, type="beach")
-    
+
     weights, factors, projs = parafac2(
         blobXA.to_numpy(),
         rank=3,
@@ -23,11 +24,11 @@ def makeFigure():
         normalize_factors=True,
         verbose=True,
     )
-    
+
     plotSCCP_factors(factors, blobXA, projs[0], ax)
-     
+
     for i in np.arange(0, 3):
-        plot_synth_pic(blobDF, t=i * 3, palette=palette, ax=ax[i+12])
+        plot_synth_pic(blobDF, t=i * 3, palette=palette, ax=ax[i + 12])
 
     return f
 
