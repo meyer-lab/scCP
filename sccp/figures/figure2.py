@@ -22,8 +22,7 @@ def makeFigure():
 
     # Performing parafac2 on single-cell Xarray
     _, factors, projs = parafac2(
-        flowXA.to_numpy(), rank=3, nn_modes=(0, 1, 2),
-        verbose=True
+        flowXA.to_numpy(), rank=3, nn_modes=(0, 1, 2), verbose=True
     )
 
     plotSCCP_factors(factors, flowXA, projs[0, 0, :, :, :], ax)

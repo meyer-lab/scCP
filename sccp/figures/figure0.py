@@ -22,7 +22,7 @@ def makeFigure():
         rank=3,
         verbose=True,
     )
-    
+
     plotSCCP_factors(factors, blobXA, projs[0:2], ax)
 
     for i in np.arange(0, 3):
