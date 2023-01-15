@@ -1,7 +1,6 @@
 """
 Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs
 """
-import numpy as np
 from .common import subplotLabel, getSetup, plotSCCP_factors
 from ..imports.scRNA import ThompsonXA_SCGenes
 from ..parafac2 import parafac2_nd
