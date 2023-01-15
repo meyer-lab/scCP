@@ -4,7 +4,7 @@ Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs
 import numpy as np
 from .common import subplotLabel, getSetup, plotSCCP_factors
 from ..imports.scRNA import ThompsonXA_SCGenes
-from tensorly.decomposition import parafac2
+from ..parafac2 import parafac2_nd
 
 
 def makeFigure():
@@ -19,12 +19,9 @@ def makeFigure():
     drugXA = ThompsonXA_SCGenes()
 
     # Performing parafac2 on single-cell Xarray
-    _, factors, projs = parafac2(
+    _, factors, projs = parafac2_nd(
         drugXA.to_numpy(),
         rank=5,
-        n_iter_max=100,
-        normalize_factors=True,
-        verbose=True,
     )
 
     plotSCCP_factors(factors, drugXA, np.stack(projs[:3]), ax, reorder=(0, 2))

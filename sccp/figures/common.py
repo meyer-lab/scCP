@@ -122,7 +122,7 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, reorder=tuple()):
         sns.heatmap(
             data=reordered_projs,
             xticklabels=xticks,
-            yticklabels=ind,  
+            yticklabels=ind,
             ax=ax[i + len(factors)],
             cmap=cmap,
         )
