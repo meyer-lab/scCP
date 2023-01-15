@@ -19,8 +19,7 @@ def makeFigure():
 
     _, factors, projs = parafac2_nd(
         blobXA.to_numpy(),
-        rank=3,
-        init="random",
+        rank=2,
     )
 
     plotSCCP_factors(factors, blobXA, projs[0:2], ax)

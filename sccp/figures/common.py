@@ -106,8 +106,6 @@ def plotSCCP_factors(factors, data_xarray, projs, ax):
             yticklabels=yt,
             ax=ax[i],
             cmap=cmap,
-            vmax=1,
-            vmin=-1,
         )
 
         ax[i].set_title("Mean Factors")

@@ -6,14 +6,14 @@ from tensorly.decomposition._parafac2 import (
     _project_tensor_slices,
     _compute_projections,
     _parafac2_reconstruction_error,
-    parafac2,
+    initialize_decomposition,
 )
 
 
 def parafac2_nd(
     X_nd,
     rank,
-    n_iter_max=2000,
+    n_iter_max=1000,
     init="svd",
     svd="truncated_svd",
     tol=1e-8,
@@ -25,24 +25,9 @@ def parafac2_nd(
     r"""The same interface as regular PARAFAC2."""
     # *** THIS IMPLEMENTATION REQUIRES A SINGLE ZERO-PADDED TENSOR. ***
     # Unless otherwise labelled, variables are structured as 3D.
-    if verbose:
-        print("We are going to start by just running 3D PARAFAC2 for 1 iteration.")
-
     X = np.reshape(X_nd, (-1, X_nd.shape[-2], X_nd.shape[-1]))
-
-    weights, factors, projections = parafac2(
-        X,
-        rank,
-        n_iter_max=1,
-        init=init,
-        svd=svd,
-        normalize_factors=True,
-        tol=tol,
-        absolute_tol=1e-13,
-        nn_modes=nn_modes,
-        random_state=random_state,
-        verbose=False,
-        n_iter_parafac=n_iter_parafac,
+    weights, factors, projections = initialize_decomposition(
+        X, rank, init=init, svd=svd, random_state=random_state
     )
 
     errs = []
@@ -65,7 +50,7 @@ def parafac2_nd(
             projected_tensor_nD,
             rank,
             n_iter_max=n_iter_parafac,
-            init="svd" if iter == 0 else (weights, factors_nD),
+            init=init if iter == 0 else (weights, factors_nD),
             svd=svd,
             nn_modes=nn_modes,
             verbose=False,
@@ -84,11 +69,13 @@ def parafac2_nd(
 
         if iter >= 1:
             if verbose:
-                print(f"iteration {iter}: error={errs[-1]}, Δ={errs[-2] - errs[-1]}.")
+                print(
+                    f"iteration {iter + 1}: error={errs[-1]}, Δ={errs[-2] - errs[-1]}."
+                )
 
             if (errs[-2] - errs[-1]) < (tol * errs[-2]) or errs[-1] < 1e-12:
                 if verbose:
-                    print(f"converged in {iter} iterations.")
+                    print(f"converged in {iter + 1} iterations.")
                 break
         else:
             if verbose:

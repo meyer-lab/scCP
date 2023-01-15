@@ -24,4 +24,9 @@ def test_n_way():
     np.testing.assert_allclose(facStack[0], np.full((3, 3), 1.0 / np.sqrt(3.0)))
 
     # Compare projection matrices, too
-    assert correlation_index(list(projections), list(projStack[0, :, :, :]), method="min_score") < 0.1
+    assert (
+        correlation_index(
+            list(projections), list(projStack[0, :, :, :]), method="min_score"
+        )
+        < 0.1
+    )
