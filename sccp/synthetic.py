@@ -1,11 +1,9 @@
 """
-Common functions to plot and create synethetic data for ULTRA
+Common functions to plot and create synethetic data for Parafac2
 """
 import numpy as np
 import pandas as pd
 import seaborn as sns
-
-DimCol = [f"Dimension{i}" for i in np.arange(1, 6)]
 
 
 def synthXA(magnitude, type):

@@ -129,17 +129,17 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA=None, color_pal
 
         if plot_celltype == True:
             true_celltypes = celltypeXA[i, ind].to_dataframe().reset_index().set_index("Cell Type")
-            true_celltypes = true_celltypes.drop(columns=true_celltypes.columns)
-            true_celltypes["Type"] = 0
+            celltypesDF = true_celltypes.drop(columns=true_celltypes.columns)
+            allcelltypes = celltypesDF.copy()
+            celltypesDF["Cell Type"] = 0
             label_colorbar = []
-            colorbar_numbers = np.arange(0, len(np.unique(celltypeXA)))
-            for j, label in enumerate(np.unique(celltypeXA)):
-                true_celltypes[true_celltypes.index == label] = j
+            colorbar_numbers = np.arange(0, len(np.unique(allcelltypes.index)))
+            for j, label in enumerate(np.unique(allcelltypes.index)):
+                celltypesDF[celltypesDF.index == label] = j
                 label_colorbar = np.append(label_colorbar, label)   
-    
-            print(true_celltypes.to_numpy())
+
             sns.heatmap(
-                data=true_celltypes.to_numpy(),
+                data=celltypesDF.to_numpy(),
                 xticklabels=False,
                 yticklabels=False,
                 ax=ax[2*i + len(factors) + 1],
@@ -148,7 +148,7 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA=None, color_pal
         
             cbar = ax[2*i + len(factors) + 1].collections[0].colorbar
             cbar.set_ticks(colorbar_numbers)
-            cbar.set_ticklabels(label_colorbar)
+            cbar.set_ticklabels(np.unique(allcelltypes.index))
 
 def reorder_table(projs):
     """Reorder a table's rows using heirarchical clustering"""
