@@ -133,17 +133,19 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA=None, color_pal
             allcelltypes = celltypesDF.copy()
             celltypesDF["Cell Type"] = 0
             label_colorbar = []
+            choose_color_palette = []
             colorbar_numbers = np.arange(0, len(np.unique(allcelltypes.index)))
             for j, label in enumerate(np.unique(allcelltypes.index)):
                 celltypesDF[celltypesDF.index == label] = j
-                label_colorbar = np.append(label_colorbar, label)   
+                choose_color_palette = np.append(choose_color_palette, color_palette[j])
+                label_colorbar = np.append(label_colorbar, label) 
 
             sns.heatmap(
                 data=celltypesDF.to_numpy(),
                 xticklabels=False,
                 yticklabels=False,
                 ax=ax[2*i + len(factors) + 1],
-                cmap=color_palette,
+                cmap=list(choose_color_palette),
                 )
         
             cbar = ax[2*i + len(factors) + 1].collections[0].colorbar

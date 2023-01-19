@@ -24,10 +24,9 @@ def makeFigure():
     # Shrink dataset
     flowXA = flowXA.loc[:, :, :, :50, :]
     celltypeXA = celltypeXA.loc[:, :, :, :50]
-    
 
     # Performing parafac2 on single-cell Xarray
-    _, factors, projs = parafac2_nd(flowXA.to_numpy(), rank=3, verbose=True, n_iter_max=1)
+    _, factors, projs = parafac2_nd(flowXA.to_numpy(), rank=3, verbose=True) 
 
     plotSCCP_factors(factors, flowXA, projs[0, 0, :, :, :], ax, celltypeXA[0, 0, :, :], color_palette, plot_celltype=True)
     
