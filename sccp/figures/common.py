@@ -119,7 +119,6 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA=None, color_pal
 
     for i, ps in enumerate(projs):
         reordered_projs, ind = reorder_table(ps)
-        
         sns.heatmap(
             data=reordered_projs,
             xticklabels=xticks,
@@ -129,7 +128,8 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA=None, color_pal
         )
 
         if plot_celltype == True:
-            true_celltypes = celltypeXA[i, ind].to_dataframe().reset_index().drop(columns=["Cell","Time"]).set_index("Label")
+            true_celltypes = celltypeXA[i, ind].to_dataframe().reset_index().set_index("Cell Type")
+            true_celltypes = true_celltypes.drop(columns=true_celltypes.columns)
             true_celltypes["Type"] = 0
             label_colorbar = []
             colorbar_numbers = np.arange(0, len(np.unique(celltypeXA)))
@@ -137,6 +137,7 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA=None, color_pal
                 true_celltypes[true_celltypes.index == label] = j
                 label_colorbar = np.append(label_colorbar, label)   
     
+            print(true_celltypes.to_numpy())
             sns.heatmap(
                 data=true_celltypes.to_numpy(),
                 xticklabels=False,
@@ -149,12 +150,10 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA=None, color_pal
             cbar.set_ticks(colorbar_numbers)
             cbar.set_ticklabels(label_colorbar)
 
-
 def reorder_table(projs):
     """Reorder a table's rows using heirarchical clustering"""
     assert projs.ndim == 2
     Z = sch.linkage(projs, method="centroid", optimal_ordering=True)
     index = sch.leaves_list(Z)
     return projs[index, :], index
-
 
