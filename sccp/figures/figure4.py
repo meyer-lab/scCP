@@ -6,7 +6,6 @@ from ..imports.scRNA import ThompsonXA_SCGenes
 from ..parafac2 import parafac2_nd
 from ..decomposition import plotR2X
 
-
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
@@ -17,9 +16,10 @@ def makeFigure():
 
     # Import of single cells: [Drug, Cell, Gene]
     drugXA, celltypeXA = ThompsonXA_SCGenes(saveXA=False, offset=1.0)
+    # drugXA = drugXA[:,:,:12]
 
     # Performing parafac2 on single-cell Xarray
-    rank = 5
+    rank = 2
     _, factors, projs = parafac2_nd(
         drugXA.to_numpy(),
         rank=rank
@@ -28,19 +28,18 @@ def makeFigure():
     plotSCCP_factors(
         factors,
         drugXA,
-        projs[:3, :, :],
+        projs[:2, :, :],
         ax,
-        celltypeXA[:3, :],
+        celltypeXA[:2, :],
         color_palette,
         plot_celltype=True,
         reorder=(0, 2),
     )
-    
-    # plotR2X(drugXA.to_numpy(), rank, "scRNA", ax[5], run_decomp=True)
+
+    plotR2X(drugXA.to_numpy(), rank, "scRNA", ax[8], run_decomp=False)
     renamePlotscRNA(ax)
-
+    
     return f
-
 
 color_palette = [
     "black",
@@ -58,3 +57,10 @@ color_palette = [
     "gold",
     "grey",
 ]
+
+
+
+
+
+
+
