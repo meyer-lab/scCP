@@ -17,7 +17,6 @@ def makeFigure():
 
     # Import of single cells: [Drug, Cell, Gene]
     drugXA, celltypeXA = ThompsonXA_SCGenes(saveXA=False, offset=1.0)
-    print(drugXA)
 
     # Performing parafac2 on single-cell Xarray
     rank = 5

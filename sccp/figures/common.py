@@ -120,7 +120,8 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA=None, color_pal
 
 
     for i, ps in enumerate(projs):
-        reordered_projs, ind = reorder_table(ps)
+        pps = ps[~np.all(ps == 0, axis=1)]
+        reordered_projs, ind = reorder_table(pps)
         abs_value = np.max(np.abs([np.max(reordered_projs), np.min(reordered_projs)]))
         sns.heatmap(
             data=reordered_projs,

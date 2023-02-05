@@ -38,4 +38,4 @@ def makeFigure():
 
     return f
 
-color_palette = ["red", "blue", "green"]
+color_palette = ["turquoise", "blueviolet", "green"]
