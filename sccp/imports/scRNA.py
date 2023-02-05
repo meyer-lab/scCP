@@ -10,7 +10,6 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn import preprocessing
-# import scanpy as sc
 
 
 path_here = os.path.dirname(os.path.dirname(__file__))
@@ -201,8 +200,7 @@ def assign_celltype(df):
     adata.obs = adata.obs.replace(clust_names)
     adata.obs.columns = ["Cell Type"]
     adata = drug_SVM(adata, genes_list)
-    adata.rename_categories('leiden', clust_list)
-
+    
     df["Cell Type"] = adata.obs.values  
      
     return df.reset_index(drop=True)
@@ -265,20 +263,20 @@ clust_names = {
 
 clust_list = [
     "NK",
-    "Monocytes1",
-    "Monocytes2",
-    "Monocytes3",
+    "Monocytes ",
+    "Monocytes  ",
+    "Monocytes   ",
     "None",
-    "TCells1",
-    "CD8TCells",
-    "NK2",
-    "TCells2",
-    "THelpers1",
-    "DendriticCells",
-    "BCells",
-    "Monocytes4",
-    "Monocytes5",
-    "Monocytes6",
+    "T Cells",
+    "CD8 T Cells",
+    "NK ",
+    "T Cells ",
+    "T helpers",
+    "Dendritic Cells",
+    "B Cells",
+    " Monocytes",
+    "  Monocytes",
+    "   Monocytes",
 ]
 
 
