@@ -110,8 +110,10 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA=None, color_pal
             min_idx = np.argsort(reordered_projs, axis=0)
             max_idx = np.argsort(reordered_projs, axis=0)
             for j in range(rank):
-                print("Bottom 10 Genes Cmp." + str(j+1) + ":", yt[min_idx[:, j]])
-                print("Top 10 Genes Cmp." + str(j+1) + ":", np.flip(yt[max_idx[:, j]]))   
+                min = yt[min_idx[:, j]]
+                max = yt[max_idx[:, j]]
+                print("Bottom 10 Genes Cmp." + str(j+1) + ":", min[:10])
+                print("Top 10 Genes Cmp." + str(j+1) + ":", np.flip(max[-10:]))   
 
         abs_value = np.max(np.abs([np.max(reordered_projs), np.min(reordered_projs)]))
         sns.heatmap(
