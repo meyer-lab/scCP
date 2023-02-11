@@ -21,6 +21,8 @@ def makeFigure():
     _, factors, projs = parafac2_nd(
         drugXA.to_numpy(),
         rank=6,
+        n_iter_max=20,
+        tol=1e-7,
         verbose=True
     )
 
@@ -33,6 +35,7 @@ def makeFigure():
         color_palette,
         plot_celltype=True,
         reorder=(0, 2),
+        trim=(2, ),
     )
     
     renamePlotscRNA(ax)
