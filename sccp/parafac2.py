@@ -61,7 +61,7 @@ def parafac2_nd(
             init=init if iter == 0 else (weights, factors_nD),
             svd=svd,
             nn_modes=nn_modes,
-            normalize_factors=True,
+            normalize_factors=iter > 0,
             tol=False,
         )
         weights, factors_nD = cp_flip_sign((weights, factors_nD), mode=1)

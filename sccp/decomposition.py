@@ -1,4 +1,3 @@
-import os
 import numpy as np
 import numpy as np
 from .parafac2 import parafac2_nd
@@ -6,7 +5,6 @@ from tensorly.decomposition._parafac2 import _parafac2_reconstruction_error
 from tensorly.tenalg import khatri_rao
 from sklearn.decomposition import PCA
 
-path_here = os.path.dirname(os.path.dirname(__file__))
 
 def plotR2X(tensor, rank, ax):
     """Creates R2X plot for parafac2 tensor decomposition"""
