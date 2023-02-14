@@ -18,12 +18,9 @@ def makeFigure():
 
     # Import of single cells: [Patient, Treatment, Cell, Marker]
     cohXA, celltypeXA = CoH_xarray(saveXA=False)
-    
-    print(cohXA)
-    print(celltypeXA)
 
     # Normalize here
-    cohXA.values /= np.nanmean(cohXA.values, axis=0)
+    cohXA.values /= np.nanmean(cohXA.values, axis=(1, 2), keepdims=True)
 
     # Then finish off missing values with zero
     cohXA.values = np.nan_to_num(cohXA.values)
