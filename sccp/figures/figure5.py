@@ -29,8 +29,8 @@ def makeFigure():
     cohXA.values = np.nan_to_num(cohXA.values)
     
     # Shrink dataset
-    cohXA = cohXA.loc[:, :, :5, :]
-    celltypeXA = celltypeXA.loc[:, :, :5]
+    cohXA = cohXA.loc[:, :, ::2000, :]
+    celltypeXA = celltypeXA.loc[:, :, ::2000]
 
     # Performing parafac2 on single-cell Xarray
     rank = 3
