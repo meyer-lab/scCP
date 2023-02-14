@@ -17,11 +17,17 @@ def makeFigure():
     subplotLabel(ax)
 
     # Import of single cells: [Patient, Treatment, Cell, Marker]
-    cohXA, celltypeXA = CoH_xarray(allmarkers=True, saveXA=False)
+    cohXA, celltypeXA = CoH_xarray(saveXA=False)
 
     # Shrink dataset
     cohXA = cohXA.loc[:, :, :500, :]
     celltypeXA = celltypeXA.loc[:, :, :500]
+
+    # Normalize here
+    cohXA.values /= np.nanmean(cohXA.values, axis=0)
+
+    # Then finish off missing values with zero
+    cohXA.values = np.nan_to_num(cohXA.values)
 
     # Performing parafac2 on single-cell Xarray
     rank = 3
