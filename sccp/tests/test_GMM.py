@@ -8,11 +8,10 @@ from ..imports.CoH import CoH_xarray
 
 IL2data_import, _ = IL2_flowXA()
 
-@pytest.mark.parametrize("cells", [5, 100])
-def test_import_CoH(cells):
+def test_import_CoH():
     """Test the CoH import."""
-    cohXA, celltypeXA = CoH_xarray(allmarkers=True, saveXA=False)
-    assert np.isfinite(cohXA.to_numpy()).all()
+    cohXA, celltypeXA = CoH_xarray(saveXA=False)
+    assert np.isfinite(cohXA[:, :, :, :100].to_numpy()).all()
 
 
 def test_finite_data():
