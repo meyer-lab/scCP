@@ -20,8 +20,8 @@ def makeFigure():
     cohXA, celltypeXA = CoH_xarray(allmarkers=True, saveXA=False)
 
     # Shrink dataset
-    cohXA = cohXA.loc[:, :, :500, :]
-    celltypeXA = celltypeXA.loc[:, :, :500]
+    cohXA = cohXA.loc[:, :, -200:, :]
+    celltypeXA = celltypeXA.loc[:, :, -200:]
 
     # Performing parafac2 on single-cell Xarray
     rank = 3
