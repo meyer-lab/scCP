@@ -50,7 +50,7 @@ def CoH_xarray(allmarkers=True, saveXA=False):
             scDF = scDF[scDF[mark] < scDF[mark].quantile(0.995)]
 
         # Normalization of markers
-        scDF[justmark] = scDF.groupby(by=["Patient"])[justmark].transform(
+        scDF[marker_dict_surface] = scDF.groupby(by=["Patient"])[marker_dict_surface ].transform(
             lambda x: x / np.mean(x, axis=0)
         )
         scDF[marker_dict_stat] /= np.mean(scDF[marker_dict_stat], axis=0)
@@ -158,23 +158,24 @@ marker_dict_all = [
 ]
 
 marker_dict_surface = [
+    "SSC-H",
+    "SSC-A",
+    "FSC-H",
+    "FSC-A",
+    "SSC-B-H",
+    "SSC-B-A",
     "CD45RA",
+    "Live/Dead",
     "CD4",
     "CD16",
     "CD8",
-    "pSTAT6",
     "PD-L1",
     "CD3",
     "PD-1",
     "CD14",
     "CD33",
     "CD27",
-    "pSTAT3",
-    "pSTAT1",
-    "pSmad1-2",
     "FoxP3",
-    "pSTAT5",
-    "pSTAT4",
     "CD20",
 ]
 

@@ -8,7 +8,6 @@ from ..imports.CoH import CoH_xarray
 
 IL2data_import, _ = IL2_flowXA()
 
-
 @pytest.mark.parametrize("cells", [5, 100])
 def test_import_CoH(cells):
     """Test the CoH import."""
