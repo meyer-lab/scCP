@@ -21,7 +21,7 @@ def plotR2X_CC(tensor, rank, ax1, ax2):
 
     # Collect Pf2 results
     for i in range(len(rank_vec)):
-        weights, factors, projs = parafac2_nd(
+        weights, factors, projs, pf2Error = parafac2_nd(
                 tensor,
                 rank=i+1,
                 verbose=True
@@ -36,14 +36,8 @@ def plotR2X_CC(tensor, rank, ax1, ax2):
         )
         
         core_consist[i] = tlviz.model_evaluation.core_consistency((weights, factors), projected_tensor_nD, normalised=True)
-        
-        if len(tensor) > 3:
-            
-            factors = [khatri_rao(factors[:-2]), factors[-2], factors[-1]]
-
         # R2X Pf2
-        pf2_error[i] = 1 - np.square(_parafac2_reconstruction_error(
-            tensor, (weights, factors, projs))) / np.square(np.linalg.norm(tensor))
+        pf2_error[i] = pf2Error
 
 
     # Collect the PCA results
