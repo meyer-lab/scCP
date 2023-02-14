@@ -17,35 +17,49 @@ def makeFigure():
     subplotLabel(ax)
 
     # Import of single cells: [Patient, Treatment, Cell, Marker]
-    cohXA, celltypeXA = CoH_xarray(allmarkers=True, saveXA=False)
+    cohXA, celltypeXA = CoH_xarray(saveXA=False)
+    
+    print(cohXA)
+    print(celltypeXA)
 
+    # Normalize here
+    cohXA.values /= np.nanmean(cohXA.values, axis=0)
+
+    # Then finish off missing values with zero
+    cohXA.values = np.nan_to_num(cohXA.values)
+    
     # Shrink dataset
-    cohXA = cohXA.loc[:, :, -200:, :]
-    celltypeXA = celltypeXA.loc[:, :, -200:]
+    cohXA = cohXA.loc[:, :, :10, :]
+    celltypeXA = celltypeXA.loc[:, :, :10]
 
     # Performing parafac2 on single-cell Xarray
     rank = 3
-    _, factors, projs = parafac2_nd(cohXA.to_numpy(), rank=rank, verbose=True) 
+    _, factors, projs = parafac2_nd(cohXA.to_numpy(), rank=rank, verbose=True)
 
-    plotSCCP_factors(factors, cohXA, projs[0, :3, :, :], ax, celltypeXA[0, :3, :], color_palette, plot_celltype=True)
+    plotSCCP_factors(
+        factors,
+        cohXA,
+        projs[0, :3, :, :],
+        ax,
+        celltypeXA[0, :3, :],
+        color_palette,
+        plot_celltype=True,
+    )
     renamePlotsCoH(ax)
-    
+
     plotR2X_CC(cohXA.to_numpy(), rank, ax[10], ax[11])
 
-
     return f
+
 
 color_palette = [
     "black",
     "lightcoral",
     "red",
-    "darksalmon"
-    "darkorange",
+    "darksalmon" "darkorange",
     "peru",
-    "tan"
-    "yellow",
-    "darkgoldenrod"
-    "green",
+    "tan" "yellow",
+    "darkgoldenrod" "green",
     "turquoise",
     "blue",
     "blueviolet",
@@ -57,6 +71,5 @@ color_palette = [
     "olive",
     "darkseagreen",
     "aqua",
-    "fuchsia"
-    "deeppink"
+    "fuchsia" "deeppink",
 ]
