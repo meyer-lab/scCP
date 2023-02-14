@@ -126,7 +126,8 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA=None, color_pal
 
 
     for i, ps in enumerate(projs):
-        reordered_projs, ind = reorder_table(ps)
+        pps = ps[~np.all(ps == 0, axis=1)]
+        reordered_projs, ind = reorder_table(pps)
         sns.heatmap(
             data=ps[ind],
             xticklabels=xticks,
