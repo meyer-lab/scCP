@@ -39,7 +39,7 @@ def CoH_xarray(allmarkers=True, saveXA=False):
                 scDF = scDF.replace(stat, "BC-" + str(bc))
 
         if allmarkers == True:
-            marker_dict = marker_dict_surface
+            marker_dict = marker_dict_all
         else:
             marker_dict = marker_dict_stat
 
@@ -59,9 +59,11 @@ def CoH_xarray(allmarkers=True, saveXA=False):
         scDF["Cell"] = np.concatenate([np.arange(int(cnt)) for cnt in experimentcells])
 
         # Changing to Xarray
+        scDF.rename(columns={"CellType": "Cell Type"},inplace=True)
         CoHxa = scDF.set_index(["Cell", "Treatment", "Patient"]).to_xarray()
-        celltypeXA = CoHxa["CellType"]
-        CoHxa = CoHxa.drop_vars(["CellType"])
+        
+        celltypeXA = CoHxa["Cell Type"]
+        CoHxa = CoHxa.drop_vars(["Cell Type"])
         CoHxa = CoHxa[marker_dict].to_array(dim="Marker")
         CoHxa.values = np.nan_to_num(CoHxa.values)
             
