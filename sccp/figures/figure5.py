@@ -18,11 +18,10 @@ def makeFigure():
 
     # Import of single cells: [Patient, Treatment, Cell, Marker]
     cohXA, celltypeXA = CoH_xarray(allmarkers=True, saveXA=False)
-    print(np.unique(celltypeXA))
 
     # Shrink dataset
-    cohXA = cohXA.loc[:, :, :50, :]
-    celltypeXA = celltypeXA.loc[:, :, :50]
+    cohXA = cohXA.loc[:, :, :500, :]
+    celltypeXA = celltypeXA.loc[:, :, :500]
 
     # Performing parafac2 on single-cell Xarray
     rank = 3
