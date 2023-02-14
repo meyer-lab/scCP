@@ -19,7 +19,7 @@ def makeFigure():
     blobXA, blobDF, celltypeXA = synthXA(magnitude=200, type="movingcovariance")
 
     rank = 2
-    _, factors, projs, _  = parafac2_nd(
+    _, factors, projs, _, _  = parafac2_nd(
         blobXA.to_numpy(),
         rank=rank, verbose=True
     )
