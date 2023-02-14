@@ -11,7 +11,7 @@ IL2data_import, _ = IL2_flowXA()
 def test_import_CoH():
     """Test the CoH import."""
     cohXA, celltypeXA = CoH_xarray(saveXA=False)
-    assert np.isfinite(cohXA[:, :, :, :100].to_numpy()).all()
+    assert np.isfinite(cohXA.loc[:, :, :, :10].to_numpy()).all()
 
 
 def test_finite_data():
