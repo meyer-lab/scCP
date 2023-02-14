@@ -8,121 +8,83 @@ from os.path import join
 path_here = os.path.dirname(os.path.dirname(__file__))
 
 
-def CoH_df(numCells: int = 100, markers=None):
-    """ "Reducing CoH dataframe with experiments consistent across patients into XA"""
-    scCoH_DF = (
-        pd.read_csv("/opt/andrew/CoH_Flow_SC_NoMissingnessV1.csv")
-        .reset_index(drop=True)
-        .drop("Unnamed: 0", axis=1)
-    )
-    status_DF = (
-        pd.read_csv("sccp/data/CoH_Patient_Status.csv")
-        .reset_index(drop=True)
-        .drop("Unnamed: 0", axis=1)
-    )
+def CoH_xarray(allmarkers=True, saveXA=False):
+    """Reducing CoH dataframe with experiments consistent across patients into XA"""
+    
+    if saveXA == True:
+        scDF = (
+            pd.read_csv("/opt/andrew/CoH_Flow_SC_NoMissingnessV1.csv")
+            .reset_index(drop=True)
+            .drop("Unnamed: 0", axis=1)
+            )
+        
+        scDF.drop(columns=["Cell", "Time"], axis=1, inplace=True)
+        
+        status_DF = (
+            pd.read_csv("sccp/data/CoH_Patient_Status.csv")
+            .reset_index(drop=True)
+            .drop("Unnamed: 0", axis=1)
+        )
 
-    # Renaming patients
-    healthy = 0
-    bc = 0
-    for i, stat in enumerate(status_DF["Patient"].values):
-        statDF = status_DF.loc[status_DF["Patient"] == stat]
-        if statDF["Status"].values == "Healthy":
-            healthy += 1
-            scCoH_DF = scCoH_DF.replace(stat, "Healthy-" + str(healthy))
+        # Renaming patients
+        healthy = 0
+        bc = 0
+        for i, stat in enumerate(status_DF["Patient"].values):
+            statDF = status_DF.loc[status_DF["Patient"] == stat]
+            if statDF["Status"].values == "Healthy":
+                healthy += 1
+                scDF = scDF.replace(stat, "Healthy-" + str(healthy))
+            else:
+                bc += 1
+                scDF = scDF.replace(stat, "BC-" + str(bc))
+
+        if allmarkers == True:
+            marker_dict = marker_dict_surface
         else:
-            bc += 1
-            scCoH_DF = scCoH_DF.replace(stat, "BC-" + str(bc))
+            marker_dict = marker_dict_stat
 
-    if markers == "All":
-        marker_dict = marker_dict_all
-    elif markers == "Markers":
-        marker_dict = marker_dict_surface
+        scDF.sort_values(by=["Treatment","Patient"], inplace=True)
+        assert np.all(np.isfinite(scDF[marker_dict].to_numpy()))
+
+        for mark in marker_dict:
+            scDF = scDF[scDF[mark] < scDF[mark].quantile(0.995)]
+
+        # Normalization of markers
+        scDF[justmark] = scDF.groupby(by=["Patient"])[justmark].transform(
+            lambda x: x / np.mean(x, axis=0)
+        )
+        scDF[marker_dict_stat] /= np.mean(scDF[marker_dict_stat], axis=0)
+
+        experimentcells = scDF.groupby(by=["Treatment", "Patient"]).size().values
+        scDF["Cell"] = np.concatenate([np.arange(int(cnt)) for cnt in experimentcells])
+
+        # Changing to Xarray
+        CoHxa = scDF.set_index(["Cell", "Treatment", "Patient"]).to_xarray()
+        celltypeXA = CoHxa["CellType"]
+        CoHxa = CoHxa.drop_vars(["CellType"])
+        CoHxa = CoHxa[marker_dict].to_array(dim="Marker")
+        CoHxa.values = np.nan_to_num(CoHxa.values)
+            
+        CoH_XA = CoHxa.sel(Patient=patients).transpose()
+        celltypeXA = celltypeXA.sel(Patient=patients).transpose()
+        # Final Xarray has dimensions [Patient, Treatment, Cell, Marker]
+            
+        if allmarkers == True:
+            CoH_XA.to_netcdf(join(path_here, "data/CoH_flowXA_AllMarkers.nc"))
+            celltypeXA.to_netcdf(join(path_here, "data/CoH_celltypeXA_AllMarkers.nc"))
+        else:
+            CoH_XA.to_netcdf(join(path_here, "data/CoH_flowXA_OnlySTAT.nc"))
+            celltypeXA.to_netcdf(join(path_here, "data/CoH_celltypeXA_OnlySTAT.nc"))
+            
     else:
-        marker_dict = marker_dict_stat
+        if allmarkers == True:
+            CoH_XA = xa.open_dataarray(join(path_here, "/opt/andrew/CoH_flowXA_AllMarkers.nc"))
+            celltypeXA = xa.open_dataarray(join(path_here, "/opt/andrew/CoH_celltypeXA_AllMarkers.nc"))
+        else:    
+            CoH_XA = xa.open_dataarray(join(path_here, "/opt/andrew/CoH_flowXA_OnlySTAT.nc"))
+            celltypeXA = xa.open_dataarray(join(path_here, "/opt/andrew/CoH_celltypeXA_OnlySTAT.nc"))
 
-    scDF = scCoH_DF.sort_values(by="Patient")
-    assert np.all(np.isfinite(scDF[marker_dict].to_numpy()))
-
-    for mark in marker_dict:
-        scDF = scDF[scDF[mark] < scDF[mark].quantile(0.995)]
-
-    scDF.drop(columns=["Cell", "Time"], axis=1, inplace=True)
-
-    # Normalization of markers
-    scDF[justmark] = scDF.groupby(by=["Patient"])[justmark].transform(
-        lambda x: x / np.mean(x, axis=0)
-    )
-    scDF[marker_dict_stat] /= np.mean(scDF[marker_dict_stat], axis=0)
-
-    experimentcells = scDF.groupby(by=["Treatment", "Patient"]).size()
-
-    # Choosing select number of cells
-    scDF = (
-        scDF.groupby(by=["Treatment", "Patient"])
-        .sample(n=numCells, random_state=1)
-        .reset_index(drop=True)
-    )
-    scDF["Cell"] = np.tile(np.arange(1, numCells + 1), int(scDF.shape[0] / numCells))
-
-    scDF.to_csv(join(path_here, "sccp/data/CoH_SC_DF_V2.csv"))
-
-    return scDF
-
-
-def CoH_xarray(numCells, cond, allmarkers):
-    """Converting single cell CoH DF into  Xarray with defined markers and treatments"""
-    if allmarkers == True:
-        marker_dict = mark_var
-        singleDF = (
-            pd.read_csv("/opt/andrew/CoH_SC_DF_V1.csv")
-            .reset_index(drop=True)
-            .drop(["Cell", "Unnamed: 0"], axis=1)
-        )
-    elif allmarkers == False:
-        marker_dict = marker_dict_stat
-        singleDF = (
-            pd.read_csv("/opt/andrew/CoH_SC_DF_V2.csv")
-            .reset_index(drop=True)
-            .drop(["Cell", "Unnamed: 0"], axis=1)
-        )
-
-    scDF = pd.DataFrame([])
-    for con in cond:
-        scDF = pd.concat([scDF, singleDF.loc[singleDF["Treatment"] == con]])
-
-    scDF = scDF[np.append(marker_dict, ["CellType", "Treatment", "Patient"])]
-    scDF = (
-        scDF.groupby(by=["Treatment", "Patient"])
-        .sample(n=numCells, random_state=1)
-        .reset_index(drop=True)
-    )
-    scDF["Cell"] = np.tile(np.arange(1, numCells + 1), int(scDF.shape[0] / numCells))
-    scDF["CellType"] = scDF["CellType"].replace(cell_types_rename)
-
-    # Changing to Xarray
-    CoHxa = scDF.set_index(["Cell", "Treatment", "Patient"]).to_xarray()
-    celltypeXA = CoHxa["CellType"]
-    CoHxa = CoHxa.drop_vars(["CellType"])
-    CoHxa = CoHxa[marker_dict].to_array(dim="Marker")
-    npCoH = np.reshape(
-        CoHxa.to_numpy(), (CoHxa.shape[0], CoHxa.shape[1], CoHxa.shape[2], -1, 1)
-    ).astype("float64")
-    finalCoH = xa.DataArray(
-        npCoH,
-        dims=("Marker", "Cell", "Treatment", "Patient", "Throwaway 1"),
-        coords={
-            "Marker": marker_dict,
-            "Cell": np.arange(1, numCells + 1),
-            "Treatment": cond,
-            "Patient": scDF["Patient"].unique(),
-            "Throwaway 1": ["Throwaway"],
-        },
-    )
-
-    # Final Xarray has dimensions [Marker, Cell Number, Treatment, Patient, 1]
-    assert np.all(np.isfinite(finalCoH.to_numpy()))
-
-    return finalCoH.sel(Patient=patients), scDF, celltypeXA
+    return CoH_XA, celltypeXA
 
 
 patients = [
@@ -164,57 +126,6 @@ patients = [
     "BC-14",
 ]
 
-cell_types = [
-    "T",
-    "CD16 NK",
-    "CD8+",
-    "CD4+",
-    "CD4-/CD8-",
-    "Treg",
-    "Treg 1",
-    "Treg 2",
-    "Treg 3",
-    "CD8 TEM",
-    "CD8 TCM",
-    "CD8 Naive",
-    "CD8 TEMRA",
-    "CD4 TEM",
-    "CD4 TCM",
-    "CD4 Naive",
-    "CD4 TEMRA",
-    "CD20 B",
-    "CD20 B Naive",
-    "CD20 B Memory",
-    "CD33 Myeloid",
-    "Classical Monocyte",
-    "NC Monocyte",
-]
-
-cell_types_rename = {
-    "T": 0,
-    "CD16 NK": 1,
-    "CD8+": 2,
-    "CD4+": 3,
-    "CD4-/CD8-": 4,
-    "Treg": 5,
-    "Treg 1": 6,
-    "Treg 2": 7,
-    "Treg 3": 8,
-    "CD8 TEM": 9,
-    "CD8 TCM": 10,
-    "CD8 Naive": 11,
-    "CD8 TEMRA": 12,
-    "CD4 TEM": 13,
-    "CD4 TCM": 14,
-    "CD4 Naive": 15,
-    "CD4 TEMRA": 16,
-    "CD20 B": 17,
-    "CD20 B Naive": 18,
-    "CD20 B Memory": 19,
-    "CD33 Myeloid": 20,
-    "Classical Monocyte": 21,
-    "NC Monocyte": 22,
-}
 
 marker_dict_all = [
     "SSC-H",
@@ -266,21 +177,5 @@ marker_dict_surface = [
 ]
 
 marker_dict_stat = ["pSTAT6", "pSTAT3", "pSTAT1", "pSmad1-2", "pSTAT5", "pSTAT4"]
-mark_var = [
-    "pSTAT6",
-    "pSTAT3",
-    "pSTAT1",
-    "pSmad1-2",
-    "pSTAT5",
-    "pSTAT4",
-    "CD16",
-    "CD33",
-    "PD-L1",
-    "CD27",
-    "FoxP3",
-    "CD14",
-    "CD20",
-]
-conditions = ["Untreated", "IFNg-50ng", "IL10-50ng", "IL4-50ng", "IL2-50ng", "IL6-50ng"]
 
 justmark = list((Counter(marker_dict_surface) - Counter(marker_dict_stat)).elements())
