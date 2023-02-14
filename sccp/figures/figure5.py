@@ -29,8 +29,8 @@ def makeFigure():
     cohXA.values = np.nan_to_num(cohXA.values)
     
     # Shrink dataset
-    cohXA = cohXA.loc[:, :, ::200, :]
-    celltypeXA = celltypeXA.loc[:, :, ::200]
+    cohXA = cohXA.loc[:, :, :5, :]
+    celltypeXA = celltypeXA.loc[:, :, :5]
 
     # Performing parafac2 on single-cell Xarray
     rank = 3
@@ -56,10 +56,13 @@ color_palette = [
     "black",
     "lightcoral",
     "red",
-    "darksalmon" "darkorange",
+    "darksalmon", 
+    "darkorange",
     "peru",
-    "tan" "yellow",
-    "darkgoldenrod" "green",
+    "tan", 
+    "yellow",
+    "darkgoldenrod",
+    "green",
     "turquoise",
     "blue",
     "blueviolet",
@@ -71,5 +74,6 @@ color_palette = [
     "olive",
     "darkseagreen",
     "aqua",
-    "fuchsia" "deeppink",
+    "fuchsia",
+    "deeppink",
 ]
