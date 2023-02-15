@@ -2,7 +2,7 @@ import numpy as np
 from tensorly.tenalg import khatri_rao
 from opt_einsum import contract
 from tensorly.cp_tensor import cp_flip_sign, cp_normalize
-from tensorly.decomposition import parafac
+from .parafac import parafac
 from tensorly.decomposition._parafac2 import (
     _project_tensor_slices,
     _compute_projections,
@@ -51,13 +51,11 @@ def parafac2_nd(
             projected_tensor, (*X_nd.shape[0:-2], rank, X_nd.shape[-1])
         )
 
-        _, factors_nD = parafac(
+        factors_nD = parafac(
             projected_tensor_nD,
             rank,
             n_iter_max=n_iter_parafac,
             init=init if iter == 0 else (None, factors_nD),
-            svd=svd,
-            tol=False,
         )
 
         # Convert factors to 3D
