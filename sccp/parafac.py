@@ -1,16 +1,22 @@
 import numpy as np
-
-import tensorly as tl
+from opt_einsum import contract
 from tensorly.decomposition._cp import initialize_cp
 
 
-def kr(matrices):
-    start = ord("a")
-    common_dim = "z"
-    target = "".join(chr(start + i) for i in range(len(matrices)))
-    source = ",".join(i + common_dim for i in target)
-    operation = source + "->" + target + common_dim
-    return np.einsum(operation, *matrices).reshape((-1, matrices[0].shape[1]))
+def unfolding_dot_khatri_rao(tensor, factors, mode):
+    """mode-n unfolding times khatri-rao product of factors
+    """
+    tensor_idx = "".join(chr(ord("a") + i) for i in range(tensor.ndim))
+    rank = chr(ord("a") + tensor.ndim + 1)
+    op = tensor_idx
+    for i in range(tensor.ndim):
+        if i != mode:
+            op += "," + "".join([tensor_idx[i], rank])
+        else:
+            result = "".join([tensor_idx[i], rank])
+    op += "->" + result
+    factors = [f for (i, f) in enumerate(factors) if i != mode]
+    return contract(op, tensor, *factors)
 
 
 def parafac(
@@ -27,8 +33,6 @@ def parafac(
         init=init,
         svd=svd,
     )
-    unfolds = [tl.unfold(tensor, mode) for mode in range(tensor.ndim)]
-
     for _ in range(n_iter_max):
         for mode in range(tensor.ndim):
             other_factors = [factors[i] for i in range(len(factors)) if i != mode]
@@ -37,7 +41,8 @@ def parafac(
             for f in other_factors:
                 pinv *= np.dot(f.T, f)
 
-            mttkrp = unfolds[mode] @ kr(other_factors)
+            mttkrp = unfolding_dot_khatri_rao(tensor, factors, mode)
+
             factors[mode] = np.linalg.solve(pinv.T, mttkrp.T).T
 
     return factors
