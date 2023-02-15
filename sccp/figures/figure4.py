@@ -32,7 +32,6 @@ def makeFigure():
         ax,
         celltypeXA[:2, :],
         color_palette,
-        plot_celltype=True,
         reorder=(0, 2),
         trim=(2, ),
     )
