@@ -137,7 +137,7 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA, color_palette,
             pps = ps[ind]
             
         sns.heatmap(
-            data=pps[ind],
+            data=np.flip(pps[ind]),
             xticklabels=xticks,
             yticklabels=False,
             center=0,
@@ -158,7 +158,7 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA, color_palette,
             label_colorbar = np.append(label_colorbar, label) 
 
         sns.heatmap(
-            data=celltypesDF.to_numpy(),
+            data=np.flip(celltypesDF.to_numpy()),
             xticklabels=False,
             yticklabels=False,
             ax=ax[2*i + len(factors) + 1],
