@@ -31,7 +31,7 @@ def makeFigure():
 
     # Performing parafac2 on single-cell Xarray
     rank = 2
-    _, factors, projs, _, _ = parafac2_nd(cohXA.to_numpy(), rank=rank, verbose=True,n_iter_max=1)
+    _, factors, projs, _, _ = parafac2_nd(cohXA.to_numpy(), rank=rank, verbose=True)
 
     plotSCCP_factors(
         factors,
