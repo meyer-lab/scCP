@@ -126,8 +126,9 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA, color_palette,
 
 
     for i, ps in enumerate(projs):
-        pps = ps[~np.all(ps == 0, axis=1)]
-        ctDF = celltypeXA[i,:].to_dataframe()
+        nonzero = ~np.all(ps == 0, axis=1)
+        pps = ps[nonzero]
+        ctDF = celltypeXA[i,nonzero].to_dataframe()
         ctDF.sort_values(by=["Cell Type"], inplace=True)
         ind = ctDF.index.values
         
