@@ -128,7 +128,7 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA, color_palette,
     for i, ps in enumerate(projs):
         nonzero = ~np.all(ps == 0, axis=1)
         pps = ps[nonzero]
-        ctDF = celltypeXA[i,nonzero].to_dataframe()
+        ctDF = celltypeXA[i,nonzero].to_dataframe().reset_index()
         ctDF.sort_values(by=["Cell Type"], inplace=True)
         ind = ctDF.index.values
         
@@ -144,8 +144,8 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA, color_palette,
             ax=ax[2*i + len(factors)],
             cmap=cmap,
         )
-
-        true_celltypes = celltypeXA[i, ind].to_dataframe().reset_index().set_index("Cell Type")
+        
+        true_celltypes = ctDF.loc[ind].set_index("Cell Type")
         celltypesDF = true_celltypes.drop(columns=true_celltypes.columns)
         allcelltypes = celltypesDF.copy()
         celltypesDF["Cell Type"] = 0
@@ -156,9 +156,9 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA, color_palette,
             celltypesDF[celltypesDF.index == label] = j
             choose_color_palette = np.append(choose_color_palette, color_palette[j])
             label_colorbar = np.append(label_colorbar, label) 
-            
+
         sns.heatmap(
-            data=np.flip(celltypesDF.to_numpy()),
+            data=celltypesDF.to_numpy(),
             xticklabels=False,
             yticklabels=False,
             ax=ax[2*i + len(factors) + 1],
