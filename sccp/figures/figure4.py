@@ -21,7 +21,7 @@ def makeFigure():
     # Performing parafac2 on single-cell Xarray
     _, factors, projs, _, _ = parafac2_nd(
         drugXA.to_numpy(),
-        rank=6,
+        rank=12,
         verbose=True
     )
 
@@ -39,7 +39,7 @@ def makeFigure():
     
     renamePlotscRNA(ax)
 
-    plotR2X_CC(drugXA.to_numpy(), 8, ax[10], ax[11])
+    plotR2X_CC(drugXA.to_numpy(), 6, ax[10], ax[11])
 
     return f
 

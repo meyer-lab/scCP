@@ -1,5 +1,4 @@
 import numpy as np
-from opt_einsum import contract
 from tensorly.decomposition._cp import initialize_cp
 
 
@@ -15,7 +14,7 @@ def unfolding_dot_khatri_rao(tensor, factors, mode):
             result = "".join([tensor_idx[i], rank])
     op += "->" + result
     factors = [f for (i, f) in enumerate(factors) if i != mode]
-    return contract(op, tensor, *factors)
+    return np.einsum(op, tensor, *factors)
 
 
 def parafac(
@@ -27,6 +26,7 @@ def parafac(
 ):
     """A simple CP ALS."""
     _, factors = initialize_cp(tensor, rank, init=init, svd=svd)
+
     for _ in range(n_iter_max):
         for mode in range(tensor.ndim):
             other_factors = [f for (i, f) in enumerate(factors) if i != mode]

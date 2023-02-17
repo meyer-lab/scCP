@@ -22,13 +22,13 @@ def _parafac2_reconstruction_error(X, decomposition):
 def parafac2_nd(
     X_nd,
     rank,
-    n_iter_max=50,
+    n_iter_max=200,
     init="svd",
     svd="randomized_svd",
-    tol=1e-6,
+    tol=1e-12,
     random_state=None,
     verbose=False,
-    n_iter_parafac=50,
+    n_iter_parafac=200,
 ):
     r"""The same interface as regular PARAFAC2."""
     # *** THIS IMPLEMENTATION REQUIRES A SINGLE ZERO-PADDED TENSOR. ***
