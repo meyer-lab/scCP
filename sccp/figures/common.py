@@ -5,10 +5,12 @@ from string import ascii_lowercase
 import sys
 import time
 import seaborn as sns
+import pandas as pd
 import matplotlib
 from matplotlib import gridspec, pyplot as plt
 import numpy as np
 import scipy.cluster.hierarchy as sch
+from sklearn.metrics import silhouette_samples
 
 matplotlib.use("AGG")
 
@@ -87,80 +89,95 @@ def genFigure():
     print(f"Figure {sys.argv[1]} is done after {time.time() - start} seconds.\n")
 
 
-def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA=None, color_palette=None, plot_celltype=False, reorder=tuple(), trim=tuple()):
+def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA, color_palette, reorder=tuple(), trim=tuple()):
     """Plots parafac2 factors and projection matrix"""
     rank = factors[0].shape[1]
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
 
+    iter = 0
     for i in range(0, len(factors)):
         # The single cell mode has a square factors matrix
-        if i == len(factors) - 2:
-            yt = xticks
-        else:
+        if i != len(factors)-2:
             yt = data_xarray.coords[data_xarray.dims[i]].values
+            X = factors[i]
 
-        X = factors[i]
+            if i in trim:
+                max_weight = np.max(np.abs(X), axis=1)
+                kept_idxs = max_weight > 0.08
+                X = X[kept_idxs]
+                yt = yt[kept_idxs]
 
-        if i in trim:
-            max_weight = np.max(np.abs(X), axis=1)
-            kept_idxs = max_weight > 0.08
-            X = X[kept_idxs]
-            yt = yt[kept_idxs]
-
-        if i in reorder:
-            X, ind = reorder_table(X)
-            yt = yt[ind]
-
-        sns.heatmap(
-            data=X,
-            xticklabels=xticks,
-            yticklabels=yt,
-            ax=ax[i],
-            center=0,
-            cmap=cmap,
-        )
-
-        ax[i].set_title("Mean Factors")
-        ax[i].tick_params(axis="y", rotation=0)
-
-
-    for i, ps in enumerate(projs):
-        pps = ps[~np.all(ps == 0, axis=1)]
-        reordered_projs, ind = reorder_table(pps)
-        sns.heatmap(
-            data=ps[ind],
-            xticklabels=xticks,
-            yticklabels=ind,
-            center=0,
-            ax=ax[2*i + len(factors)],
-            cmap=cmap,
-        )
-
-        if plot_celltype == True:
-            true_celltypes = celltypeXA[i, ind].to_dataframe().reset_index().set_index("Cell Type")
-            celltypesDF = true_celltypes.drop(columns=true_celltypes.columns)
-            allcelltypes = celltypesDF.copy()
-            celltypesDF["Cell Type"] = 0
-            label_colorbar = []
-            choose_color_palette = []
-            colorbar_numbers = np.arange(0, len(np.unique(allcelltypes.index)))
-            for j, label in enumerate(np.unique(allcelltypes.index)):
-                celltypesDF[celltypesDF.index == label] = j
-                choose_color_palette = np.append(choose_color_palette, color_palette[j])
-                label_colorbar = np.append(label_colorbar, label) 
+            if i in reorder:
+                X, ind = reorder_table(X)
+                yt = yt[ind]
 
             sns.heatmap(
-                data=celltypesDF.to_numpy(),
-                xticklabels=False,
-                yticklabels=False,
-                ax=ax[2*i + len(factors) + 1],
-                cmap=list(choose_color_palette),
-                )
+                data=X,
+                xticklabels=xticks,
+                yticklabels=yt,
+                ax=ax[iter],
+                center=0,
+                cmap=cmap,
+            )
+
+            ax[iter].set_title("Mean Factors")
+            ax[iter].tick_params(axis="y", rotation=0)
+            iter += 1
+
+    silhouetteDF =  pd.DataFrame([])
+    for i, ps in enumerate(projs):
+        ps = np.dot(ps, factors[-2])
+        nonzero = ~np.all(ps == 0, axis=1)
+        pps = ps[nonzero]
+        ctDF = celltypeXA[i,nonzero].to_dataframe().reset_index()
+        ctDF.sort_values(by=["Cell Type"], inplace=True)
+        ind = ctDF.index.values
         
-            cbar = ax[2*i + len(factors) + 1].collections[0].colorbar
-            cbar.set_ticks(colorbar_numbers)
-            cbar.set_ticklabels(np.unique(allcelltypes.index))
+        sns.heatmap(
+            data=np.flip(pps[ind],axis=0),
+            xticklabels=xticks,
+            yticklabels=False,
+            center=0,
+            ax=ax[2*i + len(factors)-1],
+            cmap=cmap,
+        )
+    
+        true_celltypes = ctDF.loc[ind].set_index("Cell Type")
+        celltypesDF = true_celltypes.drop(columns=true_celltypes.columns)
+        allcelltypes = celltypesDF.copy()
+        celltypesDF["Cell Type"] = 0
+        label_colorbar = []
+        choose_color_palette = []
+        colorbar_numbers = np.arange(0, len(np.unique(allcelltypes.index)))
+        for j, label in enumerate(np.unique(allcelltypes.index)):
+            celltypesDF[celltypesDF.index == label] = j
+            choose_color_palette = np.append(choose_color_palette, color_palette[j])
+            label_colorbar = np.append(label_colorbar, label) 
+
+
+        sns.heatmap(
+            data=np.flip(celltypesDF.to_numpy()),
+            xticklabels=False,
+            yticklabels=False,
+            ax=ax[2*i + len(factors)],
+            cmap=list(choose_color_palette),
+            )
+
+        cbar = ax[2*i + len(factors)].collections[0].colorbar
+        cbar.set_ticks(colorbar_numbers)
+        cbar.set_ticklabels(label_colorbar)
+        celltype_values = celltypesDF.to_numpy().ravel()
+
+        for k in range(factors[1].shape[1]):
+            ss = silhouette_samples(pps[ind, k].reshape(-1, 1), celltype_values) 
+            for l, label in enumerate(np.unique(allcelltypes.index)):
+                ss_score = np.mean(ss[celltype_values == l])
+                silhouetteDF = pd.concat([silhouetteDF , pd.DataFrame({"Projs": i, "Silhoutte Score": ss_score, "Cell Type": [label], "Cmp.": [xticks[k]]})]) 
+                
+    sns.barplot(data=silhouetteDF.loc[silhouetteDF["Projs"] == 0], x="Cell Type", y = "Silhoutte Score", hue = "Cmp.", ax=ax[2*i + len(factors) + 1])
+    sns.barplot(data=silhouetteDF.loc[silhouetteDF["Projs"] == 1], x="Cell Type", y = "Silhoutte Score", hue = "Cmp.", ax=ax[2*i + len(factors) + 2])
+
 
 def reorder_table(projs):
     """Reorder a table's rows using heirarchical clustering"""
@@ -172,19 +189,28 @@ def reorder_table(projs):
 
 def renamePlotSynthetic(xarray, ax):
     ax[0].set_yticklabels([f"Time:{i}" for i in np.arange(1, xarray.shape[0] + 1)])
-    ax[3].set_title("Projection Matrix - " + "Time:0")
-    ax[5].set_title("Projection Matrix - " + "Time:5")
+    ax[2].set_title("Projection Matrix - " + "Time:0")
+    ax[4].set_title("Projection Matrix - " + "Time:6")
+    ax[6].set_title("Time:0")
+    ax[7].set_title("Time:6")
+
 
 def renamePlotIL2(ax):
     ax[2].set_yticklabels([f"Time:{i}" for i in [1, 2, 4]])
-    ax[5].set_title("Projection Matrix - " + "Time:1")
-    ax[7].set_title("Projection Matrix - " + "Time:2")
-        
+    ax[4].set_title("Projection Matrix - " + "Time:1")
+    ax[6].set_title("Projection Matrix - " + "Time:2")
+    ax[8].set_title("Time:1")
+    ax[9].set_title("Time:2")
+      
 def renamePlotscRNA(ax):
-    ax[3].set_title("Projection Matrix - " + "Acetylcysteine")
-    ax[5].set_title("Projection Matrix - " + "Adapalene")
-    
+    ax[2].set_title("Projection Matrix - " + "Acetylcysteine")
+    ax[4].set_title("Projection Matrix - " + "Adapalene")
+    ax[6].set_title("Acetylcysteine")
+    ax[7].set_title("Adapalene")
+
+
 def renamePlotsCoH(ax):
-    ax[5].set_title("Projection Matrix - " + "Patient 0 - IFN")
+    ax[3].set_title("Projection Matrix - " + "Patient 0 - IFN")
+    ax[5].set_title("Projection Matrix - " + "Patient 0 - IL10")
     ax[7].set_title("Projection Matrix - " + "Patient 0 - IL10")
-    ax[7].set_title("Projection Matrix - " + "Patient 0 - IL2")
+    ax[8].set_title("Projection Matrix - " + "Patient 0 - IL2")
