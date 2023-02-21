@@ -7,22 +7,17 @@ import tlviz
 
 
 def _compute_projections(X_nd, recon_nD, rank):
-    X = np.reshape(X_nd, (-1, X_nd.shape[-2], X_nd.shape[-1]))
-    recon = np.reshape(recon_nD, (-1, rank, X_nd.shape[-1]))
+    """Compute the projections, projected X, and error. It is more efficient to do this all together."""
+    last_axes = (X_nd.ndim - 1, X_nd.ndim - 2)
 
-    svd_in = recon @ np.swapaxes(X, 1, 2)  # recon @ X.T
+    svd_in = recon_nD @ np.swapaxes(X_nd, *last_axes)  # recon @ X.T
     U, _, Vh = np.linalg.svd(svd_in, full_matrices=False)
-    U, Vh = U[:, :, :rank], Vh[:, :rank, :]
-    projections = np.swapaxes(U @ Vh, 1, 2)
-    proj_X = np.swapaxes(projections, 1, 2) @ X  # proj.T @ X
+    projections_nD = U[..., :, :rank] @ Vh[..., :rank, :]
 
-    # Convert projections and projected tensor to nD
-    projections_nD = np.reshape(projections, (*X_nd.shape[0:-1], rank))
-    projected_X_nD = np.reshape(
-        proj_X, (*X_nd.shape[0:-2], rank, X_nd.shape[-1])
-    )
+    projected_X_nD = projections_nD @ X_nd  # proj.T @ X
+    projections_nD = np.swapaxes(projections_nD, *last_axes)
 
-    error = np.linalg.norm(X - projections @ recon) ** 2
+    error = np.linalg.norm(X_nd - projections_nD @ recon_nD) ** 2
 
     return projections_nD, projected_X_nD, error
 
@@ -85,5 +80,4 @@ def parafac2_nd(
     print(f"Core consistency = {coreC}.")
 
     r2x = 1 - errs[-1]
-    profiler.print_stats()
     return weights, factors_nD, projections_nD, r2x, coreC
