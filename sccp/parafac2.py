@@ -1,6 +1,7 @@
 import numpy as np
 from tensorly.cp_tensor import cp_flip_sign, cp_normalize
 import tensorly as tl
+from tqdm import tqdm
 from tensorly.decomposition import parafac
 import tlviz
 
@@ -49,15 +50,20 @@ def parafac2_nd(
     factors_nD += [np.eye(rank), S]
     # End initialization
 
+    factors_nD.reverse()
+    _, factors_nD = parafac(projected_tensor_nD.T, rank, init=(None, factors_nD), tol=1e-14, fixed_modes=(0, 1))
+    factors_nD.reverse()
+
     errs = []
     norm_tensor = np.linalg.norm(X_nd) ** 2
 
-    for iter in range(n_iter_max):
+    tq = tqdm(range(n_iter_max), disable=(not verbose))
+    for iter in tq:
         _, factors_nD = parafac(
             projected_tensor_nD,
             rank,
             init=(None, factors_nD),
-            n_iter_max=4,
+            n_iter_max=20,
             svd="no svd", # should never be used anyway
             tol=None,
         )
@@ -68,10 +74,7 @@ def parafac2_nd(
         errs.append(rec_error / norm_tensor)
 
         if iter > 0:
-            if verbose:
-                print(
-                    f"iteration {iter + 1}: error={errs[-1]}, Δ={errs[-2] - errs[-1]}."
-                )
+            tq.set_postfix(R2X=1.0 - errs[-1], Δ=errs[-2] - errs[-1], refresh=False)
 
             if (errs[-2] - errs[-1]) < (tol * errs[-2]) or errs[-1] < 1e-12:
                 if verbose:
@@ -85,6 +88,4 @@ def parafac2_nd(
     print(f"Core consistency = {coreC}.")
 
     r2x = 1 - errs[-1]
-    print(f"R2X = {r2x}.")
-
     return weights, factors_nD, projections_nD, r2x, coreC

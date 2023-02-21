@@ -19,15 +19,20 @@ def makeFigure():
     # Import of single cells: [Patient, Treatment, Cell, Marker]
     cohXA, celltypeXA = CoH_xarray(saveXA=False)
 
+    cohXA = cohXA.drop(
+        labels=("SSC-H", "SSC-A", "FSC-H", "FSC-A", "SSC-B-H", "SSC-B-A", "Live/Dead"),
+        dim="Marker",
+    )
+
     # Normalize here
-    cohXA.values /= np.nanmean(cohXA.values, axis=(1, 2), keepdims=True)
+    cohXA.values -= np.nanmean(cohXA.values, axis=(0, 1, 2), keepdims=True)
 
     # Then finish off missing values with zero
     cohXA.values = np.nan_to_num(cohXA.values)
-    
+
     # Shrink dataset
-    cohXA = cohXA.loc[:, :, ::2000, :]
-    celltypeXA = celltypeXA.loc[:, :, ::2000]
+    cohXA = cohXA.loc[:, :, ::400, :]
+    celltypeXA = celltypeXA.loc[:, :, ::400]
 
     # Performing parafac2 on single-cell Xarray
     rank = 5
@@ -53,10 +58,10 @@ color_palette = [
     "black",
     "lightcoral",
     "red",
-    "darksalmon", 
+    "darksalmon",
     "darkorange",
     "peru",
-    "tan", 
+    "tan",
     "yellow",
     "darkgoldenrod",
     "green",
