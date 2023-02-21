@@ -10,21 +10,19 @@ def _compute_projections(X_nd, recon_nD, rank):
     X = np.reshape(X_nd, (-1, X_nd.shape[-2], X_nd.shape[-1]))
     recon = np.reshape(recon_nD, (-1, rank, X_nd.shape[-1]))
 
-    projections = np.empty((X.shape[0], X.shape[1], rank))
-    proj_X = np.empty((X.shape[0], rank, X.shape[2]))
-    error = 0.0
-
-    for i in range(X.shape[0]):
-        U, _, Vh = tl.tenalg.svd.truncated_svd(recon[i] @ X[i].T, rank)
-        projections[i] = (U @ Vh).T
-        error += np.linalg.norm(X[i] - projections[i] @ recon[i]) ** 2
-        proj_X[i] = projections[i].T @ X[i]
+    svd_in = recon @ np.swapaxes(X, 1, 2)  # recon @ X.T
+    U, _, Vh = np.linalg.svd(svd_in, full_matrices=False)
+    U, Vh = U[:, :, :rank], Vh[:, :rank, :]
+    projections = np.swapaxes(U @ Vh, 1, 2)
+    proj_X = np.swapaxes(projections, 1, 2) @ X  # proj.T @ X
 
     # Convert projections and projected tensor to nD
     projections_nD = np.reshape(projections, (*X_nd.shape[0:-1], rank))
     projected_X_nD = np.reshape(
         proj_X, (*X_nd.shape[0:-2], rank, X_nd.shape[-1])
     )
+
+    error = np.linalg.norm(X - projections @ recon) ** 2
 
     return projections_nD, projected_X_nD, error
 
@@ -33,7 +31,7 @@ def parafac2_nd(
     X_nd,
     rank,
     n_iter_max=200,
-    tol=1e-5,
+    tol=1e-6,
     verbose=False,
 ):
     r"""The same interface as regular PARAFAC2."""
@@ -74,18 +72,18 @@ def parafac2_nd(
         errs.append(rec_error / norm_tensor)
 
         if iter > 0:
-            tq.set_postfix(R2X=1.0 - errs[-1], Δ=errs[-2] - errs[-1], refresh=False)
+            delta = errs[-2] - errs[-1]
+            tq.set_postfix(R2X=1.0 - errs[-1], Δ=delta, refresh=False)
 
-            if (errs[-2] - errs[-1]) < (tol * errs[-2]) or errs[-1] < 1e-12:
-                if verbose:
-                    print(f"converged in {iter + 1} iterations.")
+            if delta < tol:
                 break
-    
+
     weights, factors_nD = cp_normalize((None, factors_nD))
-    weights, factors_nD = cp_flip_sign((weights, factors_nD), mode=1)
+    weights, factors_nD = cp_flip_sign((weights, factors_nD), mode=X_nd.ndim - 2)
 
     coreC = tlviz.model_evaluation.core_consistency((weights, factors_nD), projected_tensor_nD, normalised=True)
     print(f"Core consistency = {coreC}.")
 
     r2x = 1 - errs[-1]
+    profiler.print_stats()
     return weights, factors_nD, projections_nD, r2x, coreC
