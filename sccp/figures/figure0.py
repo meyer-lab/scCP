@@ -24,6 +24,8 @@ def makeFigure():
         rank=rank, verbose=True,
     )
     
+    
+    
     plotSCCP_factors(factors, blobXA, projs[0:9:6], ax, celltypeXA, color_palette)
     
     for i in np.arange(0, 2):

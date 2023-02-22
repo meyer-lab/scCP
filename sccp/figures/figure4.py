@@ -17,9 +17,10 @@ def makeFigure():
 
     # Import of single cells: [Drug, Cell, Gene]
     drugXA, celltypeXA = ThompsonXA_SCGenes(saveXA=False, offset=1.0)
+    # drugXA = drugXA[:,:,:25]
     
     # Performing parafac2 on single-cell Xarray
-    rank=2
+    rank=6
     _, factors, projs, _, _ = parafac2_nd(
         drugXA.to_numpy(),
         rank=rank,
@@ -33,7 +34,7 @@ def makeFigure():
         ax,
         celltypeXA[:2, :],
         color_palette,
-        reorder=(0, 2),
+        reorder=(0,),
         # trim=(2, ),
     )
     

@@ -111,6 +111,15 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA, color_palette,
             if i in reorder:
                 X, ind = reorder_table(X)
                 yt = yt[ind]
+                
+            if i == 2 and len(yt) > 20:
+                min_idx = np.argsort(X, axis=0)
+                max_idx = np.argsort(X, axis=0)
+                for j in range(rank):
+                    min = yt[min_idx[:, j]]
+                    max = yt[max_idx[:, j]]
+                    print("Bottom 10 Genes Cmp." + str(j+1) + ":", min[:10])
+                    print("Top 10 Genes Cmp." + str(j+1) + ":", np.flip(max[-10:]))  
 
             sns.heatmap(
                 data=X,
@@ -171,12 +180,15 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA, color_palette,
 
         for k in range(factors[1].shape[1]):
             ss = silhouette_samples(pps[ind, k].reshape(-1, 1), celltype_values) 
+            print(np.shape(ss))
             for l, label in enumerate(np.unique(allcelltypes.index)):
                 ss_score = np.mean(ss[celltype_values == l])
                 silhouetteDF = pd.concat([silhouetteDF , pd.DataFrame({"Projs": i, "Silhoutte Score": ss_score, "Cell Type": [label], "Cmp.": [xticks[k]]})]) 
                 
     sns.barplot(data=silhouetteDF.loc[silhouetteDF["Projs"] == 0], x="Cell Type", y = "Silhoutte Score", hue = "Cmp.", ax=ax[2*i + len(factors) + 1])
     sns.barplot(data=silhouetteDF.loc[silhouetteDF["Projs"] == 1], x="Cell Type", y = "Silhoutte Score", hue = "Cmp.", ax=ax[2*i + len(factors) + 2])
+    ax[2*i + len(factors) + 1].tick_params(axis="x", rotation=45)
+    ax[2*i + len(factors) + 2].tick_params(axis="x", rotation=45)
 
 
 def reorder_table(projs):

@@ -15,6 +15,16 @@ def CoH_xarray(saveXA=False):
             .reset_index(drop=True)
             .drop("Unnamed: 0", axis=1)
         )
+        
+        # print(scDF[marker_surface_stat])
+        
+        scDF = scDF.loc[scDF["CellType"].isin(cell_types)]
+        
+        print(scDF)
+        
+    
+        
+        
 
         scDF.drop(columns=["Cell", "Time"], axis=1, inplace=True)
 
@@ -57,10 +67,10 @@ def CoH_xarray(saveXA=False):
         celltypeXA.to_netcdf(join(path_here, "data/CoH_celltypeXA_AllMarkers.nc"))
     else:
         CoH_XA = open_dataarray(
-            join(path_here, "/opt/andrew/CoH_flowXA_AllMarkers.nc")
+            join(path_here, "/opt/andrew/CoH_flowXA_AllMarkers_LessCells.nc")
         )
         celltypeXA = open_dataarray(
-            join(path_here, "/opt/andrew/CoH_celltypeXA_AllMarkers.nc")
+            join(path_here, "/opt/andrew/CoH_celltypeXA_AllMarkers_LessCells.nc")
         )
         
     # Final Xarray has dimensions [Patient, Treatment, Cell, Marker]
@@ -93,5 +103,36 @@ marker_dict_surface = [
     "CD20",
 ]
 
+marker_surface_stat = [
+    "pSTAT6", 
+    "pSTAT3", 
+    "pSTAT1", 
+    "pSmad1-2", 
+    "pSTAT5", 
+    "pSTAT4",
+    "CD45RA",
+    "CD4",
+    "CD16",
+    "CD8",
+    "PD-L1",
+    "CD3",
+    "PD-1",
+    "CD14",
+    "CD33",
+    "CD27",
+    "FoxP3",
+    "CD20",
+]
+
+    
+cell_types = [
+    "CD16 NK",
+    "CD8+",
+    "CD4+",
+    "CD4-/CD8-",
+    "Treg",
+    "CD20 B",
+    "Classical Monocyte",
+    "NC Monocyte"]
 
 marker_dict_all = marker_dict_stat + marker_dict_surface
