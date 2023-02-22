@@ -6,9 +6,10 @@ from tensorly.decomposition import parafac
 import tlviz
 
 
-def _compute_projections(X_nd, recon_nD, rank):
+def _compute_projections(X_nd, CP_nD, rank):
     """Compute the projections, projected X, and error. It is more efficient to do this all together."""
     last_axes = (X_nd.ndim - 1, X_nd.ndim - 2)
+    recon_nD = tl.cp_to_tensor(CP_nD)
 
     svd_in = recon_nD @ np.swapaxes(X_nd, *last_axes)  # recon @ X.T
     U, _, Vh = np.linalg.svd(svd_in, full_matrices=False)
@@ -35,49 +36,40 @@ def parafac2_nd(
     # Initialization
     unfolded_mode_2 = tl.unfold(X_nd, X_nd.ndim - 1)
     assert rank < np.shape(unfolded_mode_2)[0]
-    S, _, D = tl.svd_interface(unfolded_mode_2, n_eigenvecs=rank, method="randomized_svd")
-    projections_nD = np.reshape(D, (*X_nd.shape[0:-1], rank))
-    projected_tensor_nD = np.einsum("...jk,...jl->...kl", projections_nD, X_nd)
+    S = tl.svd_interface(unfolded_mode_2, n_eigenvecs=rank, method="randomized_svd")[0]
 
-    factors_nD = [np.ones((X_nd.shape[i], rank)) for i in range(X_nd.ndim - 2)]
-    factors_nD += [np.eye(rank), S]
+    CP_nD = (None, [np.ones((X_nd.shape[i], rank)) for i in range(X_nd.ndim - 2)] + [np.eye(rank), S])
+    projections_nD, projected_X_nD, rec_error = _compute_projections(X_nd, CP_nD, rank)
     # End initialization
 
-    factors_nD.reverse()
-    _, factors_nD = parafac(projected_tensor_nD.T, rank, init=(None, factors_nD), tol=1e-14, fixed_modes=(0, 1))
-    factors_nD.reverse()
-
-    errs = []
+    errs = [rec_error]
     norm_tensor = np.linalg.norm(X_nd) ** 2
 
     tq = tqdm(range(n_iter_max), disable=(not verbose))
-    for iter in tq:
-        _, factors_nD = parafac(
-            projected_tensor_nD,
+    for _ in tq:
+        CP_nD = parafac(
+            projected_X_nD,
             rank,
-            init=(None, factors_nD),
+            init=CP_nD,
             n_iter_max=20,
             svd="no svd", # should never be used anyway
             tol=None,
         )
 
-        reconstruction_nD = tl.cp_to_tensor((None, factors_nD))
-
-        projections_nD, projected_tensor_nD, rec_error = _compute_projections(X_nd, reconstruction_nD, rank)
+        projections_nD, projected_X_nD, rec_error = _compute_projections(X_nd, CP_nD, rank)
         errs.append(rec_error / norm_tensor)
 
-        if iter > 0:
-            delta = errs[-2] - errs[-1]
-            tq.set_postfix(R2X=1.0 - errs[-1], Δ=delta, refresh=False)
+        delta = errs[-2] - errs[-1]
+        tq.set_postfix(R2X=1.0 - errs[-1], Δ=delta, refresh=False)
 
-            if delta < tol:
-                break
+        if delta < tol:
+            break
 
-    weights, factors_nD = cp_normalize((None, factors_nD))
-    weights, factors_nD = cp_flip_sign((weights, factors_nD), mode=X_nd.ndim - 2)
+    CP_nD = cp_normalize(CP_nD)
+    CP_nD = cp_flip_sign(CP_nD, mode=X_nd.ndim - 2)
 
-    coreC = tlviz.model_evaluation.core_consistency((weights, factors_nD), projected_tensor_nD, normalised=True)
+    coreC = tlviz.model_evaluation.core_consistency(CP_nD, projected_X_nD, normalised=True)
     print(f"Core consistency = {coreC}.")
 
     r2x = 1 - errs[-1]
-    return weights, factors_nD, projections_nD, r2x, coreC
+    return CP_nD[0], CP_nD[1], projections_nD, r2x, coreC
