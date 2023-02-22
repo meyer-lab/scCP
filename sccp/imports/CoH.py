@@ -80,6 +80,7 @@ marker_dict_surface = [
     "SSC-B-H",
     "SSC-B-A",
     "CD45RA",
+    "Live/Dead",
     "CD4",
     "CD16",
     "CD8",
