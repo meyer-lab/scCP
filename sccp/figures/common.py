@@ -90,7 +90,7 @@ def genFigure():
 
 
 def plotFactors(factors, data_xarray, ax, reorder=tuple(), trim=tuple()):
-    """Plots parafac2 factors and projection matrix"""
+    """Plots parafac2 factors"""
     rank = factors[0].shape[1]
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
@@ -127,6 +127,7 @@ def plotFactors(factors, data_xarray, ax, reorder=tuple(), trim=tuple()):
     
     
 def plotProjs_SS(factors, projs, celltypeXA, color_palette, ax):
+    """Plots parafac2 projections matrix with compenent weights and silhoutte scores"""
     rank = factors[0].shape[1]
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
