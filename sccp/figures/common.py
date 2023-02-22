@@ -89,8 +89,8 @@ def genFigure():
     print(f"Figure {sys.argv[1]} is done after {time.time() - start} seconds.\n")
 
 
-def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA, color_palette, reorder=tuple(), trim=tuple()):
-    """Plots parafac2 factors and projection matrix"""
+def plotFactors(factors, data_xarray, ax, reorder=tuple(), trim=tuple()):
+    """Plots parafac2 factors"""
     rank = factors[0].shape[1]
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
@@ -131,7 +131,13 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA, color_palette,
                     sort_data = yt[sort_idx[:, j]]
                     print("Bottom 10 Genes Cmp." + str(j+1) + ":", sort_data[:10])
                     print("Top 10 Genes Cmp." + str(j+1) + ":", np.flip(sort_data[-10:]))  
-
+    
+    
+def plotProjs_SS(factors, projs, celltypeXA, color_palette, ax, size=100):
+    """Plots parafac2 projections matrix with compenent weights and silhoutte scores"""
+    rank = factors[0].shape[1]
+    xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
+    cmap = sns.diverging_palette(240, 10, as_cmap=True)
     silhouetteDF =  pd.DataFrame([])
     for i, ps in enumerate(projs):
         ps = np.dot(ps, factors[-2])
@@ -140,9 +146,11 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA, color_palette,
         ctDF = celltypeXA[i,nonzero].to_dataframe().reset_index()
         ctDF.sort_values(by=["Cell Type"], inplace=True)
         ind = ctDF.index.values
-        
+        reordered_projs = pps[ind]
+        random_index = np.sort(np.random.choice(reordered_projs.shape[0], size=size, replace=False))
+    
         sns.heatmap(
-            data=np.flip(pps[ind],axis=0),
+            data=np.flip(reordered_projs[random_index],axis=0),
             xticklabels=xticks,
             yticklabels=False,
             center=0,
@@ -162,9 +170,9 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA, color_palette,
             choose_color_palette = np.append(choose_color_palette, color_palette[j])
             label_colorbar = np.append(label_colorbar, label) 
 
-
+        celltypes_matrix = celltypesDF.to_numpy()
         sns.heatmap(
-            data=np.flip(celltypesDF.to_numpy()),
+            data=np.flip(celltypes_matrix[random_index]),
             xticklabels=False,
             yticklabels=False,
             ax=ax[2*i + len(factors)],
@@ -174,7 +182,7 @@ def plotSCCP_factors(factors, data_xarray, projs, ax, celltypeXA, color_palette,
         cbar = ax[2*i + len(factors)].collections[0].colorbar
         cbar.set_ticks(colorbar_numbers)
         cbar.set_ticklabels(label_colorbar)
-        celltype_values = celltypesDF.to_numpy().ravel()
+        celltype_values = celltypes_matrix.ravel()
 
         for k in range(factors[1].shape[1]):
             ss = silhouette_samples(pps[ind, k].reshape(-1, 1), celltype_values) 
