@@ -3,7 +3,8 @@ from tensorly.cp_tensor import cp_flip_sign, cp_normalize
 import tensorly as tl
 from tqdm import tqdm
 from tensorly.decomposition import parafac
-import tlviz
+from sklearn.utils.extmath import randomized_svd
+from tlviz.model_evaluation import core_consistency
 
 
 def _compute_projections(X_nd, CP_nD, rank):
@@ -36,9 +37,13 @@ def parafac2_nd(
     # Initialization
     unfolded_mode_2 = tl.unfold(X_nd, X_nd.ndim - 1)
     assert rank < np.shape(unfolded_mode_2)[0]
-    S = tl.svd_interface(unfolded_mode_2, n_eigenvecs=rank, method="randomized_svd")[0]
+    S = randomized_svd(unfolded_mode_2, rank, flip_sign=False)[0]
 
-    CP_nD = (None, [np.ones((X_nd.shape[i], rank)) for i in range(X_nd.ndim - 2)] + [np.eye(rank), S])
+    CP_nD = (
+        None,
+        [np.ones((X_nd.shape[i], rank)) for i in range(X_nd.ndim - 2)]
+        + [np.eye(rank), S],
+    )
     projections_nD, projected_X_nD, rec_error = _compute_projections(X_nd, CP_nD, rank)
     # End initialization
 
@@ -51,12 +56,14 @@ def parafac2_nd(
             projected_X_nD,
             rank,
             init=CP_nD,
-            n_iter_max=20,
-            svd="no svd", # should never be used anyway
+            n_iter_max=10,
+            svd="no svd",  # should never be used anyway
             tol=None,
         )
 
-        projections_nD, projected_X_nD, rec_error = _compute_projections(X_nd, CP_nD, rank)
+        projections_nD, projected_X_nD, rec_error = _compute_projections(
+            X_nd, CP_nD, rank
+        )
         errs.append(rec_error / norm_tensor)
 
         delta = errs[-2] - errs[-1]
@@ -68,7 +75,7 @@ def parafac2_nd(
     CP_nD = cp_normalize(CP_nD)
     CP_nD = cp_flip_sign(CP_nD, mode=X_nd.ndim - 2)
 
-    coreC = tlviz.model_evaluation.core_consistency(CP_nD, projected_X_nD, normalised=True)
+    coreC = core_consistency(CP_nD, projected_X_nD, normalised=True)
     print(f"Core consistency = {coreC}.")
 
     r2x = 1 - errs[-1]

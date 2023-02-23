@@ -40,12 +40,11 @@ def IL2_flowXA(saveXA=False, IncludeNoneCells=True):
         )
         flowDF.drop(columns=["Valency"], axis=1, inplace=True)
 
-        flowDF["pSTAT5"] /= np.std(
-            flowDF["pSTAT5"])  
+        flowDF["pSTAT5"] /= np.std(flowDF["pSTAT5"])
         # For pSTAT5 only, dividing my std of all experiments
-        
+
         if IncludeNoneCells is False:
-            flowDF = flowDF.loc[flowDF['Cell Type'].isin(["Thelper", "Treg"])]
+            flowDF = flowDF.loc[flowDF["Cell Type"].isin(["Thelper", "Treg"])]
 
         flowDF.sort_values(by=["Time", "Dose", "Ligand"], inplace=True)
 
@@ -74,9 +73,15 @@ def IL2_flowXA(saveXA=False, IncludeNoneCells=True):
     else:
         if IncludeNoneCells == True:
             flowXA = xa.open_dataarray(join(path_here, "/opt/andrew/IL2_flowXA.nc"))
-            celltypeXA = xa.open_dataarray(join(path_here, "/opt/andrew/IL2_celltypeXA.nc"))
-        else:    
-            flowXA = xa.open_dataarray(join(path_here, "/opt/andrew/IL2_flowXA_WO_NoneCells.nc"))
-            celltypeXA = xa.open_dataarray(join(path_here, "/opt/andrew/IL2_celltypeXA_WO_NoneCells.nc"))
+            celltypeXA = xa.open_dataarray(
+                join(path_here, "/opt/andrew/IL2_celltypeXA.nc")
+            )
+        else:
+            flowXA = xa.open_dataarray(
+                join(path_here, "/opt/andrew/IL2_flowXA_WO_NoneCells.nc")
+            )
+            celltypeXA = xa.open_dataarray(
+                join(path_here, "/opt/andrew/IL2_celltypeXA_WO_NoneCells.nc")
+            )
 
     return flowXA, celltypeXA

@@ -155,7 +155,7 @@ def ThompsonXA_SCGenes(saveXA=False, offset=1.0):
 
         df = df.sort_values(by=["Drug"])
         df = assign_celltype(df)
-            
+
         # Assign cells a count per-experiment so we can reindex
         cellCount = df.groupby(by=["Drug"]).size().values
         df["Cell"] = np.concatenate([np.arange(int(cnt)) for cnt in cellCount])
@@ -173,38 +173,43 @@ def ThompsonXA_SCGenes(saveXA=False, offset=1.0):
 
         XA.to_netcdf(join(path_here, "data/scRNA_drugXA.nc"))
         celltypeXA.to_netcdf(join(path_here, "data/scRNA_celltypeXA.nc"))
-        
+
     else:
         if offset == 1.0:
-            XA = xa.open_dataarray(join(path_here, "/opt/andrew/scRNA_drugXA_NoOffset.nc"))
-            celltypeXA = xa.open_dataarray(join(path_here, "/opt/andrew/scRNA_celltypeXA_NoOffset.nc"))
+            XA = xa.open_dataarray(
+                join(path_here, "/opt/andrew/scRNA_drugXA_NoOffset.nc")
+            )
+            celltypeXA = xa.open_dataarray(
+                join(path_here, "/opt/andrew/scRNA_celltypeXA_NoOffset.nc")
+            )
         else:
             XA = xa.open_dataarray(join(path_here, "/opt/andrew/scRNA_drugXA.nc"))
 
     return XA, celltypeXA
 
 
-
 def assign_celltype(df):
     """Assignign cell types via scanpy and SVM"""
     import scanpy as sc
+
     celltypeDF = df.drop(columns=["Drug"], axis=1)
     genes_list = celltypeDF.columns
     adata = sc.AnnData(celltypeDF)
-    sc.pp.pca(adata, svd_solver='arpack')
+    sc.pp.pca(adata, svd_solver="arpack")
     sc.pp.neighbors(adata)
     sc.tl.leiden(adata, resolution=0.75)
-    sc.tl.rank_genes_groups(adata, groupby='leiden')
+    sc.tl.rank_genes_groups(adata, groupby="leiden")
     marker_matches = sc.tl.marker_gene_overlap(adata, marker_genes)
     sc.tl.umap(adata)
     adata.obs = adata.obs.replace(clust_names)
     adata.obs.columns = ["Cell Type"]
     adata = drug_SVM(adata, genes_list)
-    
-    df["Cell Type"] = adata.obs.values  
-     
+
+    df["Cell Type"] = adata.obs.values
+
     return df.reset_index(drop=True)
-    
+
+
 def drug_SVM(save_data, genes):
     """Retrieves cell types from perturbed data"""
     completeDF = pd.DataFrame(data=save_data.X)
