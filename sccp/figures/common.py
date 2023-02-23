@@ -142,10 +142,7 @@ def plotProjs_SS(factors, projs, celltypeXA, color_palette, ax, size=100):
     for i, ps in enumerate(projs):
         ps = np.dot(ps, factors[-2])
         nonzero = ~np.all(ps == 0, axis=1)
-        print(np.shape(ps))
-        print(np.shape(nonzero))
         pps = ps[nonzero]
-        print(np.shape(pps))
         ctDF = celltypeXA[i,nonzero].to_dataframe().reset_index()
         ctDF.sort_values(by=["Cell Type"], inplace=True)
         ind = ctDF.index.values
@@ -200,9 +197,6 @@ def plotProjs_SS(factors, projs, celltypeXA, color_palette, ax, size=100):
 
 def plotAllProjs_SS(projs, celltypeXA, color_palette, ax):
     """Plots parafac2 projections and silhoutte scores"""
-    
-    print(np.shape(projs))
-    print(np.shape(celltypeXA))
     rank = projs.shape[-1]
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
 
@@ -213,26 +207,16 @@ def plotAllProjs_SS(projs, celltypeXA, color_palette, ax):
     len_celltypes = np.zeros(len(np.unique(celltypeXA))+1)
     silhouetteDF =  pd.DataFrame([])
     totalcell = 0
+    ctXA = celltypeXA.copy()
+    
     for i in range(rank):
         projs_rank = projs[:, :, i]
-        print(np.shape(projs_rank))
-        nonzero = ~np.all(projs_rank == 0, axis=0)
-        print(np.shape(nonzero))
-        projs_rank = projs_rank[:, nonzero]
-        print(np.shape(projs_rank))
-        print(np.shape(celltypeXA))
-        print(np.unique(celltypeXA))
-        celltypeXA = celltypeXA[:, nonzero]
-        print(np.unique(celltypeXA))
-        print(np.shape(celltypeXA))
-        ctXA = celltypeXA.copy()
         for j, label in enumerate(np.unique(ctXA)):
-            print(label)
-            celltypeXA = np.where(celltypeXA == label, j, celltypeXA)
-            celltype_idx = celltypeXA == j
-            total_celltypes = np.append(total_celltypes, celltypeXA[celltype_idx])
+            celltypeTensor = np.where(celltypeXA == label, j, celltypeXA)
+            celltype_idx = celltypeTensor == j
+            total_celltypes = np.append(total_celltypes, celltypeTensor[celltype_idx])
             total_projs = np.append(total_projs, projs_rank[celltype_idx])
-            totalcell += len(celltypeXA[celltype_idx])
+            totalcell += len(celltypeTensor[celltype_idx])
             len_celltypes[j+1] = totalcell
             
         ss = silhouette_samples(total_projs.reshape(-1, 1), total_celltypes) 
@@ -241,8 +225,11 @@ def plotAllProjs_SS(projs, celltypeXA, color_palette, ax):
             silhouetteDF = pd.concat([silhouetteDF , pd.DataFrame({"Silhoutte Score": ss_score, "Cell Type": [label], "Cmp.": [xticks[i]]})])
             
     sns.barplot(data=silhouetteDF, x="Cell Type", y = "Silhoutte Score", hue = "Cmp.", ax=ax)
-
+    
+    ax.tick_params(axis="x", rotation=45)
+    
     print(silhouetteDF)
+
 def reorder_table(projs):
     """Reorder a table's rows using heirarchical clustering"""
     assert projs.ndim == 2
