@@ -1,86 +1,87 @@
-import numpy as np
+import cupy as cp
+from tqdm import tqdm
+import tensorly as tl
 from tensorly.cp_tensor import cp_flip_sign, cp_normalize
 from tensorly.tenalg import khatri_rao
-from opt_einsum import contract
 from tensorly.decomposition import parafac
 from tensorly.decomposition._parafac2 import (
     _project_tensor_slices,
     _compute_projections,
-    initialize_decomposition,
     _parafac2_reconstruction_error
 )
-import tlviz
+from tlviz.model_evaluation import core_consistency
 
 
 def parafac2_nd(
     X_nd,
-    rank,
-    n_iter_max=20,
+    rank: int,
+    n_iter_max: int=50,
     init="svd",
-    svd="randomized_svd",
-    tol=1e-6,
-    random_state=None,
+    tol=1e-7,
     verbose=False,
-    n_iter_parafac=5,
+    n_iter_parafac=30,
 ):
     r"""The same interface as regular PARAFAC2."""
     # *** THIS IMPLEMENTATION REQUIRES A SINGLE ZERO-PADDED TENSOR. ***
-    X = np.reshape(X_nd, (-1, X_nd.shape[-2], X_nd.shape[-1]))
-    _, factors, projections = initialize_decomposition(
-        X, rank, init=init, svd=svd, random_state=random_state
-    )
+    tl.set_backend("cupy")
+    X_nd = cp.array(X_nd)
+    X = cp.reshape(X_nd, (-1, X_nd.shape[-2], X_nd.shape[-1]))
+
+    # Initialization
+    unfolded = tl.unfold(X, 2)
+    assert cp.shape(unfolded)[0] > rank
+    C = tl.svd_interface(unfolded, n_eigenvecs=rank, method="randomized_svd")[0]
+    factors = [cp.ones((X.shape[0], rank)), cp.eye(rank), C]
+    projections = _compute_projections(X, factors, "truncated_svd")
 
     errs = []
-    norm_tensor = np.linalg.norm(X) ** 2
+    norm_tensor = cp.asnumpy(cp.linalg.norm(X) ** 2)
 
-    for iter in range(n_iter_max):
-        for _ in range(8):
-            projections = _compute_projections(X, factors, svd)
-            projected_tensor = _project_tensor_slices(X, projections)
+    err = cp.asnumpy(_parafac2_reconstruction_error(X, (None, factors, projections)) ** 2)
+    errs.append(err / norm_tensor)
 
-            # Convert projections and projected tensor to nD
-            projections_nD = np.reshape(projections, (*X_nd.shape[0:-1], rank))
-            projected_tensor_nD = np.reshape(
-                projected_tensor, (*X_nd.shape[0:-2], rank, X_nd.shape[-1])
-            )
+    tq = tqdm(range(n_iter_max), disable=(not verbose))
+    for iter in tq:
+        projections = _compute_projections(X, factors, "truncated_svd")
+        projected_X = _project_tensor_slices(X, projections)
 
-            _, factors_nD = parafac(
-                projected_tensor_nD,
-                rank,
-                n_iter_max=n_iter_parafac,
-                init=init if iter == 0 else (None, factors_nD),
-                svd=svd,
-                tol=False,
-            )
+        # Convert projections and projected tensor to nD
+        projected_X = cp.stack(projected_X, axis=0)
+        projected_X_nD = cp.reshape(
+            projected_X, (*X_nd.shape[0:-2], rank, X_nd.shape[-1])
+        )
 
-            # Convert factors to 3D
-            factors = [khatri_rao(factors_nD[:-2]), factors_nD[-2], factors_nD[-1]]
+        CP_nD = parafac(
+            projected_X_nD,
+            rank,
+            n_iter_max=n_iter_parafac,
+            init=init if iter == 0 else CP_nD,
+            svd="truncated_svd",
+            tol=False,
+            normalize_factors=False,
+        )
 
-        rec_error = _parafac2_reconstruction_error(X, (None, factors, projections)) ** 2
+        # Convert factors to 3D
+        factors = [khatri_rao(CP_nD.factors[:-2]), CP_nD.factors[-2], CP_nD.factors[-1]]
 
-        errs.append(rec_error / norm_tensor)
+        err = cp.asnumpy(_parafac2_reconstruction_error(X, (None, factors, projections)) ** 2)
+        errs.append(err / norm_tensor)
 
-        if iter >= 1:
-            if verbose:
-                print(
-                    f"iteration {iter + 1}: error={errs[-1]}, Δ={errs[-2] - errs[-1]}."
-                )
+        delta = errs[-2] - errs[-1]
+        tq.set_postfix(R2X=1.0 - errs[-1], Δ=delta, refresh=False)
 
-            if (errs[-2] - errs[-1]) < (tol * errs[-2]) or errs[-1] < 1e-12:
-                if verbose:
-                    print(f"converged in {iter + 1} iterations.")
-                    break
-        else:
-            if verbose:
-                print(f"iteration 1: error={errs[-1]}.")
+        if delta < tol:
+            break
 
-    weights, factors_nD = cp_normalize((None, factors_nD))
-    weights, factors_nD = cp_flip_sign((weights, factors_nD), mode=1)
+    CP_nD = cp_normalize(CP_nD)
+    CP_nD = cp_flip_sign(CP_nD, mode=1)
 
-    coreC = tlviz.model_evaluation.core_consistency(
-        (weights, factors_nD), projected_tensor_nD, normalised=True
-    )
+    coreC = core_consistency(CP_nD, projected_X_nD, normalised=True)
     print(f"Core consistency = {coreC}.")
 
-    r2x = 1 - errs[-1]
-    return weights, factors_nD, projections_nD, r2x, coreC
+    projections = cp.stack(projections, axis=0)
+    projections_nD = cp.reshape(projections, (*X_nd.shape[0:-1], rank))
+
+    R2X = 1 - errs[-1]
+    tl.set_backend("numpy")
+    return cp.asnumpy(CP_nD[0]), [cp.asnumpy(f) for f in CP_nD[1]], cp.asnumpy(projections_nD), R2X, coreC
