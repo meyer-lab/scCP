@@ -12,27 +12,30 @@ from tensorly.decomposition._parafac2 import (
 from tlviz.model_evaluation import core_consistency
 
 
+cp._cupyx.seterr(linalg="raise", fallback_mode="raise")
+
+
 def parafac2_nd(
     X_nd,
     rank: int,
-    n_iter_max: int=50,
+    n_iter_max: int=200,
     init="svd",
     tol=1e-7,
     verbose=False,
-    n_iter_parafac=30,
+    n_iter_parafac=20,
 ):
     r"""The same interface as regular PARAFAC2."""
     # *** THIS IMPLEMENTATION REQUIRES A SINGLE ZERO-PADDED TENSOR. ***
     tl.set_backend("cupy")
-    X_nd = cp.array(X_nd)
+    X_nd = cp.array(X_nd, dtype=cp.float32)
     X = cp.reshape(X_nd, (-1, X_nd.shape[-2], X_nd.shape[-1]))
 
     # Initialization
     unfolded = tl.unfold(X, 2)
     assert cp.shape(unfolded)[0] > rank
-    C = tl.svd_interface(unfolded, n_eigenvecs=rank, method="randomized_svd")[0]
+    C = tl.svd_interface(unfolded, n_eigenvecs=rank, method="randomized_svd", n_oversamples=2)[0]
     factors = [cp.ones((X.shape[0], rank)), cp.eye(rank), C]
-    projections = _compute_projections(X, factors, "truncated_svd")
+    projections = _compute_projections(X, factors, "randomized_svd")
 
     errs = []
     norm_tensor = cp.asnumpy(cp.linalg.norm(X) ** 2)
@@ -42,7 +45,7 @@ def parafac2_nd(
 
     tq = tqdm(range(n_iter_max), disable=(not verbose))
     for iter in tq:
-        projections = _compute_projections(X, factors, "truncated_svd")
+        projections = _compute_projections(X, factors, "randomized_svd")
         projected_X = _project_tensor_slices(X, projections)
 
         # Convert projections and projected tensor to nD
@@ -74,7 +77,7 @@ def parafac2_nd(
             break
 
     CP_nD = cp_normalize(CP_nD)
-    CP_nD = cp_flip_sign(CP_nD, mode=1)
+    CP_nD = cp_flip_sign(CP_nD, mode=X_nd.ndim - 2)
 
     coreC = core_consistency(CP_nD, projected_X_nD, normalised=True)
     print(f"Core consistency = {coreC}.")
