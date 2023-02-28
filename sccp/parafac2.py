@@ -1,3 +1,4 @@
+import numpy as np
 import cupy as cp
 from tqdm import tqdm
 import tensorly as tl
@@ -24,8 +25,7 @@ def parafac2_nd(
     r"""The same interface as regular PARAFAC2."""
     # *** THIS IMPLEMENTATION REQUIRES A SINGLE ZERO-PADDED TENSOR. ***
     tl.set_backend("cupy")
-    X_nd = cp.array(X_nd)
-    X = cp.reshape(X_nd, (-1, X_nd.shape[-2], X_nd.shape[-1]))
+    X = cp.array(np.reshape(X_nd, (-1, X_nd.shape[-2], X_nd.shape[-1])))
 
     # Initialization
     unfolded = tl.unfold(X, 2)
@@ -76,12 +76,24 @@ def parafac2_nd(
     CP_nD = cp_normalize(CP_nD)
     CP_nD = cp_flip_sign(CP_nD, mode=1)
 
-    coreC = core_consistency(CP_nD, projected_X_nD, normalised=True)
+    coreC = cp.asnumpy(core_consistency(CP_nD, projected_X_nD, normalised=True))
     print(f"Core consistency = {coreC}.")
 
     projections = cp.stack(projections, axis=0)
     projections_nD = cp.reshape(projections, (*X_nd.shape[0:-1], rank))
+    projections_nD = cp.asnumpy(projections_nD)
 
     R2X = 1 - errs[-1]
     tl.set_backend("numpy")
-    return cp.asnumpy(CP_nD[0]), [cp.asnumpy(f) for f in CP_nD[1]], cp.asnumpy(projections_nD), R2X, coreC
+
+    # For some reason these weren't being naturally freed
+    del X
+    del projected_X_nD
+    del projected_X
+    del factors
+    del projections
+
+    weights = cp.asnumpy(CP_nD[0])
+    factors_nD = [cp.asnumpy(f) for f in CP_nD[1]]
+    del CP_nD
+    return weights, factors_nD, projections_nD, R2X, coreC
