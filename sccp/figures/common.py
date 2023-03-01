@@ -89,48 +89,59 @@ def genFigure():
     print(f"Figure {sys.argv[1]} is done after {time.time() - start} seconds.\n")
 
 
-def plotFactors(factors, data_xarray, ax, reorder=tuple(), trim=tuple()):
+def plotFactors(factors, data_xarray, ax, plotTime=False, reorder=tuple(), trim=tuple()):
     """Plots parafac2 factors"""
     rank = factors[0].shape[1]
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
-
     iter = 0
+    
     for i in range(0, len(factors)):
-        # The single cell mode has a square factors matrix
+        # The single cell mode has a square factors matrix       
         if i != len(factors)-2:
-            yt = data_xarray.coords[data_xarray.dims[i]].values
-            X = factors[i]
+            if plotTime == True and i == 0:
+                cmp_names = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
+                timeDF = pd.DataFrame(factors[i], columns = [f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+                timeDF["Time"] = np.arange(1, data_xarray.shape[i] + 1)
+                sns.lineplot(data=timeDF[cmp_names], ax=ax[iter])
+                ax[iter].set(
+                    ylabel="Cmp. Weight",
+                    xlabel="Time",
+                    xticks=np.arange(0, data_xarray.shape[i]))
+            
+            else:  
+                yt = data_xarray.coords[data_xarray.dims[i]].values
+                X = factors[i]
 
-            if i in trim:
-                max_weight = np.max(np.abs(X), axis=1)
-                kept_idxs = max_weight > 0.08
-                X = X[kept_idxs]
-                yt = yt[kept_idxs]
+                if i in trim:
+                    max_weight = np.max(np.abs(X), axis=1)
+                    kept_idxs = max_weight > 0.08
+                    X = X[kept_idxs]
+                    yt = yt[kept_idxs]
 
-            if i in reorder:
-                X, ind = reorder_table(X)
-                yt = yt[ind]
+                if i in reorder:
+                    X, ind = reorder_table(X)
+                    yt = yt[ind]
 
-            sns.heatmap(
-                data=X,
-                xticklabels=xticks,
-                yticklabels=yt,
-                ax=ax[iter],
-                center=0,
-                cmap=cmap,
-            )
-
+                sns.heatmap(
+                    data=X,
+                    xticklabels=xticks,
+                    yticklabels=yt,
+                    ax=ax[iter],
+                    center=0,
+                    cmap=cmap,
+                )
+                ax[iter].tick_params(axis="y", rotation=0)
+                
+                if i == 2 and len(yt) > 50:
+                    sort_idx = np.argsort(X, axis=0)
+                    for j in range(rank):
+                        sort_data = yt[sort_idx[:, j]]
+                        print("Bottom 10 Genes Cmp." + str(j+1) + ":", sort_data[:10])
+                        print("Top 10 Genes Cmp." + str(j+1) + ":", np.flip(sort_data[-10:]))  
+                        
             ax[iter].set_title("Mean Factors")
-            ax[iter].tick_params(axis="y", rotation=0)
             iter += 1
-              
-            if i == 2 and len(yt) > 50:
-                sort_idx = np.argsort(X, axis=0)
-                for j in range(rank):
-                    sort_data = yt[sort_idx[:, j]]
-                    print("Bottom 10 Genes Cmp." + str(j+1) + ":", sort_data[:10])
-                    print("Top 10 Genes Cmp." + str(j+1) + ":", np.flip(sort_data[-10:]))  
     
     
 def plotProjs_SS(factors, projs, celltypeXA, color_palette, ax, size=100):
@@ -203,7 +214,6 @@ def reorder_table(projs):
 
 
 def renamePlotSynthetic(xarray, ax):
-    ax[0].set_yticklabels([f"Time:{i}" for i in np.arange(1, xarray.shape[0] + 1)])
     ax[2].set_title("Projection Matrix - " + "Time:0")
     ax[4].set_title("Projection Matrix - " + "Time:6")
     ax[6].set_title("Time:0")

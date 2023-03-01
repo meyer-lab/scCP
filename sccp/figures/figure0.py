@@ -6,6 +6,8 @@ from .common import subplotLabel, getSetup, plotFactors, plotProjs_SS, renamePlo
 from ..synthetic import synthXA, plot_synth_pic
 from ..parafac2 import parafac2_nd
 from ..decomposition import plotR2X_CC
+import seaborn as sns
+import pandas as pd
 
 
 def makeFigure():
@@ -23,14 +25,13 @@ def makeFigure():
         blobXA.to_numpy(),
         rank=rank,
     )
-    
-    plotFactors(factors, blobXA, ax)
+    plotFactors(factors, blobXA, ax, plotTime=True)
     plotProjs_SS(factors, projs[0:9:6], celltypeXA, color_palette, ax)
     
     for i in np.arange(0, 2):
         plot_synth_pic(blobDF[["X","Y","Time","Cell Type"]], t=i*6, palette=palette, type="beach", ax=ax[i+8])
     
-    plotR2X_CC(blobXA.to_numpy(), rank, ax[10], ax[11])
+    plotR2X_CC(blobXA.to_numpy(), 5, ax[10], ax[11])
     renamePlotSynthetic(blobXA, ax)
 
     return f
