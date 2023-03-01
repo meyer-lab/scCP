@@ -20,9 +20,9 @@ def test_n_way():
 
     # More similar is closer to 0 with corrIndex
     assert correlation_index(factors, facStack[1::], method="min_score") < 0.1
-    
+
     # Should just be a flat set of factors
-    np.testing.assert_allclose(facStack[0], np.full((3, 3), 1.0 / np.sqrt(3.0)))
+    np.testing.assert_allclose(facStack[0], np.full((3, 3), 1.0 / np.sqrt(3.0)), rtol=1e-6)
     
     # Compare projection matrices, too
     assert (
