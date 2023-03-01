@@ -1,4 +1,4 @@
-import cupy as cp
+import torch
 from tqdm import tqdm
 import tensorly as tl
 from tensorly.cp_tensor import cp_flip_sign, cp_normalize
@@ -12,54 +12,73 @@ from tensorly.decomposition._parafac2 import (
 from tlviz.model_evaluation import core_consistency
 
 
-cp._cupyx.seterr(linalg="raise", fallback_mode="raise")
+def initialize_cp(tensor, rank):
+    factors = []
+    for mode in range(tl.ndim(tensor)):
+        U, S, _ = tl.truncated_svd(tl.unfold(tensor, mode), rank)
+
+        # Put SVD initialization on the same scaling as the tensor in case normalize_factors=False
+        if mode == 0:
+            idx = min(rank, tl.shape(S)[0])
+            U = tl.index_update(U, tl.index[:, :idx], U[:, :idx] * S[:idx])
+
+        if tensor.shape[mode] < rank:
+            # TODO: this is a hack but it seems to do the job for now
+            random_part = torch.randn(U.shape[0], rank - tl.shape(tensor)[mode]).cuda()
+            U = tl.concatenate([U, random_part], axis=1)
+
+        factors.append(U[:, :rank])
+
+    return (None, factors)
 
 
+
+@torch.inference_mode()
 def parafac2_nd(
     X_nd,
     rank: int,
-    n_iter_max: int=200,
-    init="svd",
+    n_iter_max: int=100,
     tol=1e-7,
     verbose=False,
-    n_iter_parafac=20,
 ):
     r"""The same interface as regular PARAFAC2."""
     # *** THIS IMPLEMENTATION REQUIRES A SINGLE ZERO-PADDED TENSOR. ***
-    tl.set_backend("cupy")
-    X_nd = cp.array(X_nd, dtype=cp.float32)
-    X = cp.reshape(X_nd, (-1, X_nd.shape[-2], X_nd.shape[-1]))
+    tl.set_backend("pytorch")
+    X_nd = tl.tensor(X_nd).cuda()
+    X = tl.reshape(X_nd, (-1, X_nd.shape[-2], X_nd.shape[-1]))
 
     # Initialization
     unfolded = tl.unfold(X, 2)
-    assert cp.shape(unfolded)[0] > rank
-    C = tl.svd_interface(unfolded, n_eigenvecs=rank, method="randomized_svd", n_oversamples=2)[0]
-    factors = [cp.ones((X.shape[0], rank)), cp.eye(rank), C]
-    projections = _compute_projections(X, factors, "randomized_svd")
+    assert tl.shape(unfolded)[0] > rank
+    C = tl.svd_interface(unfolded, n_eigenvecs=rank, method="randomized_svd")[0]
+    factors = [tl.ones((X.shape[0], rank)).cuda(), tl.eye(rank).cuda(), C]
+    projections = _compute_projections(X, factors, "truncated_svd")
 
     errs = []
-    norm_tensor = cp.asnumpy(cp.linalg.norm(X) ** 2)
+    norm_tensor = tl.norm(X) ** 2
 
-    err = cp.asnumpy(_parafac2_reconstruction_error(X, (None, factors, projections)) ** 2)
-    errs.append(err / norm_tensor)
+    err = _parafac2_reconstruction_error(X, (None, factors, projections)) ** 2
+    errs.append(tl.to_numpy((err / norm_tensor).cpu()))
 
     tq = tqdm(range(n_iter_max), disable=(not verbose))
     for iter in tq:
-        projections = _compute_projections(X, factors, "randomized_svd")
+        projections = _compute_projections(X, factors, "truncated_svd")
         projected_X = _project_tensor_slices(X, projections)
 
         # Convert projections and projected tensor to nD
-        projected_X = cp.stack(projected_X, axis=0)
-        projected_X_nD = cp.reshape(
+        projected_X_nD = tl.reshape(
             projected_X, (*X_nd.shape[0:-2], rank, X_nd.shape[-1])
         )
+
+        if iter == 0:
+            CP_nD = initialize_cp(projected_X_nD, rank)
 
         CP_nD = parafac(
             projected_X_nD,
             rank,
-            n_iter_max=n_iter_parafac,
-            init=init if iter == 0 else CP_nD,
-            svd="truncated_svd",
+            n_iter_max=5,
+            init=CP_nD,
+            svd="no svd",
             tol=False,
             normalize_factors=False,
         )
@@ -67,8 +86,8 @@ def parafac2_nd(
         # Convert factors to 3D
         factors = [khatri_rao(CP_nD.factors[:-2]), CP_nD.factors[-2], CP_nD.factors[-1]]
 
-        err = cp.asnumpy(_parafac2_reconstruction_error(X, (None, factors, projections)) ** 2)
-        errs.append(err / norm_tensor)
+        err = _parafac2_reconstruction_error(X, (None, factors, projections)) ** 2
+        errs.append(tl.to_numpy((err / norm_tensor).cpu()))
 
         delta = errs[-2] - errs[-1]
         tq.set_postfix(R2X=1.0 - errs[-1], Δ=delta, refresh=False)
@@ -77,14 +96,18 @@ def parafac2_nd(
             break
 
     CP_nD = cp_normalize(CP_nD)
-    CP_nD = cp_flip_sign(CP_nD, mode=X_nd.ndim - 2)
+    CP_nD = cp_flip_sign(CP_nD, mode=1)
 
     coreC = core_consistency(CP_nD, projected_X_nD, normalised=True)
     print(f"Core consistency = {coreC}.")
 
-    projections = cp.stack(projections, axis=0)
-    projections_nD = cp.reshape(projections, (*X_nd.shape[0:-1], rank))
+    projections = tl.stack(projections, axis=0)
+    projections_nD = tl.reshape(projections, (*X_nd.shape[0:-1], rank))
+    projections_nD = tl.to_numpy(projections_nD.cpu())
 
     R2X = 1 - errs[-1]
     tl.set_backend("numpy")
-    return cp.asnumpy(CP_nD[0]), [cp.asnumpy(f) for f in CP_nD[1]], cp.asnumpy(projections_nD), R2X, coreC
+
+    weights = tl.to_numpy(CP_nD[0].cpu())
+    factors_nD = [tl.to_numpy(f.cpu()) for f in CP_nD[1]]
+    return weights, factors_nD, projections_nD, R2X, coreC
