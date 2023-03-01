@@ -9,7 +9,6 @@ import seaborn as sns
 def synthXA(magnitude, type):
     """Makes blob of points depicting beach scene with sinusoidally moving sun"""
     ts = np.arange(10)
-    print(ts)
     blob_DF = None
     if type == "beach":
         blob_means = [(5, -8), (0, -5), (8, -5), (0, -2), (8, -2)]
