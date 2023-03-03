@@ -20,7 +20,7 @@ def makeFigure():
     print(X.shape)
 
     # Only have memory for some genes
-    X = X[:600, :, :]
+    X = X[:900, :, :]
 
     # Performing parafac2 on single-cell Xarray
     _, factors, _, _, _ = parafac2_nd(
