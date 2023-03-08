@@ -3,8 +3,8 @@
 # """
 import pandas as pd
 from .common import subplotLabel, getSetup
-# from gmm.scImport import gene_import
-# import scanpy as sc
+from ..imports.scRNA import ThompsonXA_SCGenes
+import scanpy as sc
 import numpy as np
 from copy import copy
 from sklearn.pipeline import make_pipeline
@@ -17,7 +17,35 @@ def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
     ax, f = getSetup((15, 15), (3, 3))
+    
+    # Add subplot labels
     subplotLabel(ax)
+    
+    drugXA, celltypeXA = ThompsonXA_SCGenes(saveXA=False, offset=1.0)
+    drugXA = drugXA[:5,:5,:5]
+    celltypeXA = celltypeXA[:5,:5]
+    
+
+    drugDF = drugXA.to_dataframe("DF").unstack().reset_index()
+    drugDF.columns = drugDF.columns.map(''.join)
+    celltypeDF = celltypeXA.to_dataframe()
+    drugDF["Cell Type"] = celltypeDF["Cell Type"].values
+    # print(celltypeDF)
+    # celltypeDF.columns = celltypeDF.columns.map(''.join)
+    print(drugDF)
+    # print(celltypeDF)
+    # print(celltypeXA.to_dataframe())
+    # CoH_Data_DF = CoH_Data_DF.rename(columns={"Tensor": "Mean"})
+    # drugDF = drugDF.CategoricalIndex.remove_categories(["drugDF"])
+    # drugDF.reset_index(inplace=True)
+    # print(drugDF.columns)
+    # print(drugDF(drugDF.melt(id_vars=["Cell"])))
+    # print(drugDF)
+    # print(np.shape(drugDF))
+    # print(drugXA.to_dataframe("drugDF"))
+    
+    # print(drugXA.to_dataframe("yes").unstack())
+    
 
     # Add subplot labels
     # geneDF = gene_import(offset=1, filter=False)
