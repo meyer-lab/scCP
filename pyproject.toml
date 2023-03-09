@@ -7,7 +7,7 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
-numpy = "^1.24.1"
+numpy = "^1.23.1"
 scipy = "^1.10.0"
 scikit-learn = "^1.2.0"
 seaborn = "^0.11.2"
@@ -22,6 +22,9 @@ tqdm = "^4.64.1"
 h5netcdf = "^1.1.0"
 anndata = "^0.8.0"
 torch = "^1.13.1"
+llvmlite = "^0.39.1"
+scanpy = {git = "https://github.com/scverse/scanpy.git"}
+numba = "^0.56.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
