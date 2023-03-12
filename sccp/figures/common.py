@@ -218,7 +218,7 @@ def plotSS(projs: xa.Dataset, ax: matplotlib.axes._axes.Axes):
     ax.set_title("All Condition Projections")
     ax.tick_params(axis="x", rotation=45)
 
-    
+
 def plotProj(projs, axs):
     """Plot a projection matrix along with cell type annotations."""
     celltypeDF = projs["Cell Type"].to_dataframe()

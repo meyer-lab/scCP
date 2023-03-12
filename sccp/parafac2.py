@@ -33,18 +33,12 @@ def _cmf_reconstruction_error(matrices, decomposition, norm_X_sq):
 
     norm_cmf_sq = 0
     inner_product = 0
-    CtC = tl.dot(tl.transpose(C), C)
+    CtC = C.T @ C
 
     for i, proj in enumerate(projections):
         B_i = tl.dot(proj, B) * A[i]
-
-        if tl.shape(B_i)[0] > tl.shape(C)[0]:
-            tmp = tl.dot(B_i.T, matrices[i])
-            inner_product += tl.trace(tl.dot(tmp, C))
-        else:
-            tmp = tl.dot(matrices[i], C)
-            inner_product += tl.trace(tl.dot(B_i.T, tmp))
-
+        # trace of the multiplication products
+        inner_product += tl.einsum("ji,jk,ki", B_i, matrices[i], C)
         norm_cmf_sq += tl.sum((B_i.T @ B_i) * CtC)
 
     return norm_X_sq - 2 * inner_product + norm_cmf_sq
