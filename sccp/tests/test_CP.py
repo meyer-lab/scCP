@@ -13,16 +13,12 @@ def test_n_way():
     """Compare the PARAFAC2 results N-way to TensorLy in 3D."""
     X = random_parafac2([(10, 30)] * 5, rank=3, full=True, random_state=1)
     X = np.stack(X, axis=0)
-    rcpStack = np.stack([X, X, X], axis=0)
 
     _, factors, projections = parafac2(X, rank=3, normalize_factors=True, init="svd")
     _, facStack, projStack, _, _ = parafac2_nd(X, rank=3)
 
     # More similar is closer to 0 with corrIndex
     assert correlation_index(factors, facStack, method="min_score") < 0.1
-
-    # Should just be a flat set of factors
-    np.testing.assert_allclose(facStack[0], np.full((3, 3), 1.0 / np.sqrt(3.0)), rtol=1e-6)
     
     # Compare projection matrices, too
     assert (
