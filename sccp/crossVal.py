@@ -41,4 +41,4 @@ def crossvalidate(X, rank, trainPerc=0.75):
     recon_error = np.linalg.norm(X_err[:, X_B_idx:, X_C_idx:])
     total_var = np.linalg.norm(X[:, X_B_idx:, X_C_idx:])
 
-    print(1.0 - recon_error / total_var)
+    return 1.0 - recon_error / total_var
