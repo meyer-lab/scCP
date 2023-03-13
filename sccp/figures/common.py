@@ -174,28 +174,6 @@ def reorder_table(projs):
     Z = sch.linkage(projs, method="centroid", optimal_ordering=True)
     index = sch.leaves_list(Z)
     return projs[index, :], index
-
-
-def renamePlotSynthetic(xarray, ax):
-    ax[2].set_title("Projection Matrix - " + "Time:0")
-    ax[4].set_title("Projection Matrix - " + "Time:6")
-    ax[6].set_title("Time:0")
-    ax[7].set_title("Time:6")
-
-
-def renamePlotIL2(ax):
-    ax[2].set_yticklabels([f"Time:{i}" for i in [1, 2, 4]])
-    ax[4].set_title("Projection Matrix - " + "Time:1")
-    ax[6].set_title("Projection Matrix - " + "Time:2")
-    ax[8].set_title("Time:1")
-    ax[9].set_title("Time:2")
-
-
-def renamePlotsCoH(ax):
-    ax[3].set_title("Projection Matrix - " + "Patient 0 - IFN")
-    ax[5].set_title("Projection Matrix - " + "Patient 0 - IL10")
-    ax[7].set_title("Projection Matrix - " + "Patient 0 - IL10")
-    ax[8].set_title("Projection Matrix - " + "Patient 0 - IL2")
     
 
 def plotSS(projs: xa.Dataset, ax: matplotlib.axes._axes.Axes):
