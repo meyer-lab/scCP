@@ -12,7 +12,7 @@ from .common import (
 )
 from ..imports.scRNA import ThompsonXA_SCGenes
 from ..parafac2 import parafac2_nd
-from ..decomposition import plotR2X_CC
+from ..decomposition import plotR2X
 
 
 def makeFigure():
@@ -58,6 +58,6 @@ def makeFigure():
 
     plotFactors(factors, data["data"], ax, reorder=(0, 2), trim=(2,))
 
-    plotR2X_CC(data["data"].to_numpy(), 8, ax[11], ax[12])
+    plotR2X(data["data"].to_numpy(), 8, ax[11])
 
     return f

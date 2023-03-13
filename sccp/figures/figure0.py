@@ -12,7 +12,7 @@ from .common import (
 )
 from ..synthetic import synthXA, plot_synth_pic
 from ..parafac2 import parafac2_nd
-from ..decomposition import plotR2X_CC
+from ..decomposition import plotR2X
 
 
 def makeFigure():
@@ -57,7 +57,7 @@ def makeFigure():
     idxx = np.random.choice(len(flattened_projs.coords["AllCells"]), size=200, replace=False)
     plotProj(flattened_projs.isel(AllCells=idxx), ax[4:6])
 
-    plotR2X_CC(blobInfo["data"].to_numpy(), 3, ax[7], ax[8])  
+    plotR2X(blobInfo["data"].to_numpy(), 3, ax[7])  
 
     return f
     
