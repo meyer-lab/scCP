@@ -24,7 +24,7 @@ def makeFigure():
     subplotLabel(ax)
 
     blobInfo, blobDF = synthXA(magnitude=200, type="beach")
-    
+
     # Performing parafac2 on single-cell Xarray
     _, factors, projs, _ = parafac2_nd(
         blobInfo["data"].to_numpy(),
@@ -40,9 +40,9 @@ def makeFigure():
         coords=dict(
             Time=blobInfo.coords["Time"],
             Cell=blobInfo.coords["Cell"],
-            Cmp=[f"Cmp. {i}" for i in np.arange(1, projs.shape[2] + 1)]
+            Cmp=[f"Cmp. {i}" for i in np.arange(1, projs.shape[2] + 1)],
         ),
-        name="projections"
+        name="projections",
     )
     projs = xa.merge([projs, blobInfo["Cell Type"]], compat="no_conflicts")
 
@@ -54,13 +54,22 @@ def makeFigure():
 
     plotSS(flattened_projs, ax[3])
 
-    idxx = np.random.choice(len(flattened_projs.coords["AllCells"]), size=200, replace=False)
+    idxx = np.random.choice(
+        len(flattened_projs.coords["AllCells"]), size=200, replace=False
+    )
     plotProj(flattened_projs.isel(AllCells=idxx), ax[4:6])
 
-    plotR2X(blobInfo["data"].to_numpy(), 3, ax[7])  
+    plotR2X(blobInfo["data"].to_numpy(), 3, ax[7])
 
     return f
-    
-    
-palette = {"Ground": "khaki", "Leaf1": "limegreen", "Leaf2": "darkgreen", "Sun": "yellow", "Trunk1": "sienna", "Trunk2": "chocolate"}
+
+
+palette = {
+    "Ground": "khaki",
+    "Leaf1": "limegreen",
+    "Leaf2": "darkgreen",
+    "Sun": "yellow",
+    "Trunk1": "sienna",
+    "Trunk2": "chocolate",
+}
 color_palette = ["khaki", "limegreen", "darkgreen", "yellow", "sienna", "chocolate"]

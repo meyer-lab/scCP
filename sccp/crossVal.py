@@ -22,16 +22,13 @@ def crossvalidate(X, rank, trainPerc=0.75, verbose=False):
     C_train = X[:, :, :X_C_idx]
 
     w_B, fac_B, proj_B, _ = parafac2_nd(B_train, rank, verbose=verbose)
-    w_C, fac_C, proj_C, _ = parafac2_nd(C_train, rank, verbose=verbose)
-
-    print("...")
-
-    print(fac_B[1])
-    print(fac_C[1])
+    _, _, proj_C, _ = parafac2_nd(C_train, rank, verbose=verbose)
 
     # Solve procrustes to project C onto B
-    prod = np.einsum("abc,def->cf", proj_B, proj_C[:, :X_B_idx, :])
-    S, _, Vh = np.linalg.svd(prod)
+    proj_B_flat = np.reshape(proj_B, (-1, proj_B.shape[2]))
+    proj_C_flat = np.reshape(proj_C[:, :X_B_idx, :], (-1, proj_C.shape[2]))
+
+    S, _, Vh = np.linalg.svd(proj_B_flat.T @ proj_C_flat)
     procM = (S @ Vh).T
 
     # Project projections into B space
