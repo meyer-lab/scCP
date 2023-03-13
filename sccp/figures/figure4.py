@@ -18,7 +18,7 @@ from ..decomposition import plotR2X_CC
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((18, 25), (2, 4))
+    ax, f = getSetup((18, 25), (4, 4))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -56,8 +56,8 @@ def makeFigure():
     idxx = np.random.choice(len(flattened_projs.coords["AllCells"]), size=200, replace=False)
     plotProj(flattened_projs.isel(AllCells=idxx), ax[5:7])
 
-    # plotFactors(factors, data["data"], ax, reorder=(0, 2), trim=(2,))
+    plotFactors(factors, data["data"], ax, reorder=(0, 2), trim=(2,))
 
-    # plotR2X_CC(drugXA.to_numpy(), 8, ax[5], ax[6])
+    plotR2X_CC(data["data"].to_numpy(), 8, ax[11], ax[12])
 
     return f
