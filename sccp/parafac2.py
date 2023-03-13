@@ -80,11 +80,8 @@ def parafac2_nd(
             tol=1e-100,
             normalize_factors=False,
         )
-        
-        # Convert factors to 3D
-        factors = [khatri_rao(CP.factors[0]), CP.factors[1], CP.factors[2]]
 
-        err = _cmf_reconstruction_error(X, (factors, projections), norm_tensor)
+        err = _cmf_reconstruction_error(X, (CP[1], projections), norm_tensor)
         errs.append(tl.to_numpy((err / norm_tensor).cpu()))
 
         delta = errs[-2] - errs[-1]
