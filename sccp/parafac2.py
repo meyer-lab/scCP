@@ -5,7 +5,6 @@ from tensorly.cp_tensor import cp_flip_sign, cp_normalize
 from tensorly.tenalg import khatri_rao
 from tensorly.decomposition import parafac
 from tlviz.model_evaluation import core_consistency
-import numpy as np
 
 
 def _compute_projections(tensor_slices, factors):
