@@ -7,6 +7,7 @@ from tensorly.random import random_parafac2
 from tensorly.metrics import correlation_index
 from ..parafac2 import parafac2_nd
 from ..imports.scRNA import ThompsonXA_SCGenes
+from ..crossVal import crossvalidate
 
 
 def test_parafac():
