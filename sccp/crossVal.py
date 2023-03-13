@@ -14,27 +14,28 @@ def parafac2_to_tensor(parafac2_tensor):
     return tensor
 
 
-def crossvalidate(X, rank, trainPerc=0.75):
+def crossvalidate(X, rank, trainPerc=0.75, verbose=False):
     X_B_idx = int(X.shape[1] * trainPerc)
     B_train = X[:, :X_B_idx, :]
 
     X_C_idx = int(X.shape[2] * trainPerc)
     C_train = X[:, :, :X_C_idx]
 
-    w_B, fac_B, proj_B, _ = parafac2_nd(B_train, rank, verbose=True)
-    _, _, proj_C, _ = parafac2_nd(C_train, rank, verbose=True)
+    w_B, fac_B, proj_B, _ = parafac2_nd(B_train, rank, verbose=verbose)
+    w_C, fac_C, proj_C, _ = parafac2_nd(C_train, rank, verbose=verbose)
+
+    print("...")
+
+    print(fac_B[1])
+    print(fac_C[1])
 
     # Solve procrustes to project C onto B
-    proj_B_flat = np.reshape(proj_B, (-1, proj_B.shape[2]))
-    proj_C_flat = np.reshape(proj_C[:, :X_B_idx, :], (-1, proj_C.shape[2]))
-
-    S, _, Vh = np.linalg.svd(proj_B_flat.T @ proj_C_flat)
-    P = S @ Vh
+    prod = np.einsum("abc,def->cf", proj_B, proj_C[:, :X_B_idx, :])
+    S, _, Vh = np.linalg.svd(prod)
+    procM = (S @ Vh).T
 
     # Project projections into B space
-    proj_C = proj_C @ P.T
-
-    X_reconst = parafac2_to_tensor((w_B, fac_B, proj_C))
+    X_reconst = parafac2_to_tensor((w_B, fac_B, proj_C @ procM))
     X_reconst = np.stack(X_reconst, axis=0)
     X_err = X_reconst - X
 

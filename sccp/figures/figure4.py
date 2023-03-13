@@ -39,9 +39,9 @@ def makeFigure():
         coords=dict(
             Drug=data.coords["Drug"],
             Cell=data.coords["Cell"],
-            Cmp=[f"Cmp. {i}" for i in np.arange(1, projs.shape[2] + 1)]
+            Cmp=[f"Cmp. {i}" for i in np.arange(1, projs.shape[2] + 1)],
         ),
-        name="projections"
+        name="projections",
     )
     projs = xa.merge([projs, data["Cell Type"]], compat="no_conflicts")
 
@@ -53,7 +53,9 @@ def makeFigure():
 
     plotSS(flattened_projs, ax[4])
 
-    idxx = np.random.choice(len(flattened_projs.coords["AllCells"]), size=200, replace=False)
+    idxx = np.random.choice(
+        len(flattened_projs.coords["AllCells"]), size=200, replace=False
+    )
     plotProj(flattened_projs.isel(AllCells=idxx), ax[5:7])
 
     plotFactors(factors, data["data"], ax, reorder=(0, 2), trim=(2,))

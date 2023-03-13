@@ -6,14 +6,13 @@ from tensorly.random import random_parafac2
 from ..crossVal import crossvalidate
 
 
-def test_crosval():
+def test_crossval():
     """Test for correctness of cross validation."""
-    X = random_parafac2([(100, 50)] * 10, rank=1, full=True, random_state=1)
+    rank = 3
+    X = random_parafac2([(10, 5000)] * 30, rank=rank, full=True, random_state=1)
     X = np.stack(X, axis=0)
-    
-    err = crossvalidate(X, rank=1, trainPerc=0.75)
-    
-    assert err > 0.8
 
+    err = crossvalidate(X, rank=rank, trainPerc=0.75)
+    print(err)
 
-
+    assert err > 0.85

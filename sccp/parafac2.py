@@ -2,7 +2,6 @@ import torch
 from tqdm import tqdm
 import tensorly as tl
 from tensorly.cp_tensor import cp_flip_sign, cp_normalize
-from tensorly.tenalg import khatri_rao
 from tensorly.decomposition import parafac
 
 
@@ -40,7 +39,7 @@ def _cmf_reconstruction_error(matrices, decomposition, norm_X_sq):
 def parafac2_nd(
     X,
     rank: int,
-    n_iter_max: int=200,
+    n_iter_max: int = 200,
     tol=1e-9,
     verbose=False,
 ):

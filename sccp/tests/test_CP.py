@@ -6,6 +6,7 @@ from tensorly.decomposition import parafac2
 from tensorly.random import random_parafac2
 from tensorly.metrics import correlation_index
 from ..parafac2 import parafac2_nd
+from ..crossVal import crossvalidate
 from ..imports.scRNA import ThompsonXA_SCGenes
 
 
@@ -19,20 +20,18 @@ def test_parafac():
 
     # More similar is closer to 0 with corrIndex
     assert correlation_index(factors, facStack, method="min_score") < 0.1
-    
+
     # Compare projection matrices, too
     assert (
-        correlation_index(
-            list(projections), list(projStack), method="min_score"
-        )
-        < 0.1
+        correlation_index(list(projections), list(projStack), method="min_score") < 0.1
     )
 
 
 def test_pf2_speed():
-    """Compare run time for different SVD initialization """
-    drugXA, _ = ThompsonXA_SCGenes(saveXA=False, offset=1.0)
+    """Compare run time for different SVD initialization"""
+    drugXA = ThompsonXA_SCGenes(saveXA=False, offset=1.0)
+    X = drugXA["data"].to_numpy()
 
-    crossvalidate(drugXA.to_numpy(), rank=3)
-    
-    _, _, _, _ = parafac2_nd(drugXA.to_numpy(), rank=4, verbose=True)
+    crossvalidate(X, rank=3)
+
+    _, _, _, _ = parafac2_nd(X, rank=4, verbose=True)
