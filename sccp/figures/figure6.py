@@ -9,7 +9,7 @@ from .common import (
 )
 from ..imports.scRNA import import_perturb_RPE
 from ..parafac2 import parafac2_nd
-from ..decomposition import plotR2X_CC
+from ..decomposition import plotR2X
 import seaborn as sns
 
 
@@ -44,6 +44,6 @@ def makeFigure():
         cmap=sns.diverging_palette(240, 10, as_cmap=True),
     )
 
-    plotR2X_CC(X.to_numpy(), 6, ax[2])
+    plotR2X(X.to_numpy(), 6, ax[2])
 
     return f

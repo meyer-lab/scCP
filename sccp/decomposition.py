@@ -4,7 +4,7 @@ import tensorly as tl
 from .parafac2 import parafac2_nd
 
 
-def plotR2X_CC(tensor, rank, ax1):
+def plotR2X(tensor, rank, ax1):
     """Creates R2X plot for parafac2 tensor decomposition"""
     rank_vec = np.arange(1, rank + 1)
 
