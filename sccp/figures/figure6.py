@@ -24,7 +24,7 @@ def makeFigure():
     X = X[:1200, :, :]
 
     # Performing parafac2 on single-cell Xarray
-    _, factors, projs, _, _ = parafac2_nd(
+    _, factors, projs, _ = parafac2_nd(
         X.to_numpy(),
         rank=24,
         verbose=True,
@@ -39,6 +39,6 @@ def makeFigure():
         cmap=sns.diverging_palette(240, 10, as_cmap=True),
     )
 
-    plotR2X_CC(X.to_numpy(), 6, ax[2], ax[3])
+    plotR2X_CC(X.to_numpy(), 6, ax[2])
 
     return f
