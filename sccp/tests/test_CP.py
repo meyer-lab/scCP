@@ -23,7 +23,7 @@ def test_n_way():
     # Compare projection matrices, too
     assert (
         correlation_index(
-            list(projections), list(projStack[0, :, :, :]), method="min_score"
+            list(projections), list(projStack), method="min_score"
         )
         < 0.1
     )
