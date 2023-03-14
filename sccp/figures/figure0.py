@@ -24,7 +24,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    blobInfo, blobDF = synthXA(magnitude=20, type="beach")
+    blobInfo, blobDF = synthXA(magnitude=200, type="beach")
 
     # Performing parafac2 on single-cell Xarray
     _, factors, projs, _ = parafac2_nd(
@@ -53,33 +53,18 @@ def makeFigure():
     nonzero_index = np.any(flattened_projs["projections"].to_numpy() != 0, axis=0)
     flattened_projs = flattened_projs.isel(AllCells=nonzero_index)
 
-    gini_coeff(flattened_projs)
-    # plotSS(flattened_projs, ax[3])
+    plotSS(flattened_projs, ax[3])
 
-    # idxx = np.random.choice(
-    #     len(flattened_projs.coords["AllCells"]), size=200, replace=False
-    # )
-    # plotProj(flattened_projs.isel(AllCells=idxx), ax[4:6])
+    idxx = np.random.choice(
+        len(flattened_projs.coords["AllCells"]), size=200, replace=False
+    )
+    plotProj(flattened_projs.isel(AllCells=idxx), ax[4:6])
 
-    # plotR2X(blobInfo["data"].to_numpy(), 3, ax[7])
-    # plotCrossVal(blobInfo["data"].to_numpy(), 3,  ax[8], trainPerc=0.75)
+    plotR2X(blobInfo["data"].to_numpy(), 3, ax[7])
+    plotCrossVal(blobInfo["data"].to_numpy(), 3,  ax[8], trainPerc=0.75)
     
     return f
 
-def gini_coeff(projs: xa.Dataset):
-    proj_data = projs["projections"].to_numpy()
-    assert proj_data.ndim == 2
-    
-    gini = np.empty(proj_data.shape[0])
-    for i in range(proj_data.shape[0]):
-        projComp = np.sort(proj_data[i, :])
-        if np.amin(projComp) < 0:
-            projComp -= np.amin(projComp)
-            
-        index = np.arange(1, projComp.shape[0]+1)
-        gini[i] = (np.sum((2 * index - projComp.shape[0]  - 1) * projComp)) / (projComp.shape[0] * np.sum(projComp))
-   
-    print(gini)
     return
         
         
