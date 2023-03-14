@@ -62,12 +62,8 @@ def makeFigure():
 
     plotR2X(blobInfo["data"].to_numpy(), 3, ax[7])
     plotCrossVal(blobInfo["data"].to_numpy(), 3,  ax[8], trainPerc=0.75)
-    
-    return f
 
-    return
-        
-        
+    return f
 
 
 palette = {
