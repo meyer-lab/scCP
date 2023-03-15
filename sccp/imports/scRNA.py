@@ -217,7 +217,7 @@ def ThompsonXA_SCGenes(saveXA=False, offset=1.0):
         else:
             XA = xa.open_dataarray("/opt/andrew/scRNA_drugXA.nc")
             
-    XA.values -= np.nanmean(XA.values, axis=2, keepdims=True)
+    XA.values -= np.nanmean(XA.values, axis=(0,1), keepdims=True)
     XA.name = "data"
     celltypeXA.name = "Cell Type"
     return xa.merge([XA, celltypeXA], compat="no_conflicts")
