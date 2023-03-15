@@ -61,8 +61,8 @@ def makeFigure():
 
     plotFactors(factors, data["data"], ax, reorder=(0, 2), trim=(2,))
 
-    plotR2X(data["data"].to_numpy(), 8, ax[11])
+    plotR2X(data["data"].to_numpy(), 15, ax[11])
     
-    plotCrossVal(data["data"].to_numpy(), 13, ax[12], trainPerc=0.75)
+    plotCrossVal(data["data"].to_numpy(), 15, ax[12], trainPerc=0.75)
 
     return f
