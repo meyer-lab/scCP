@@ -183,8 +183,6 @@ def ThompsonXA_SCGenes(saveXA=False, offset=1.0):
     if saveXA is True:
         if offset == 1.0:
             df = pd.read_csv("/opt/andrew/scRNA_drugDF_NoOffset.csv")
-            # df = df.iloc[:100, :]
-            print(df)
             df = df.drop(columns=["Unnamed: 0"], axis=1)
         else:
             df = gene_import(offset=offset)
