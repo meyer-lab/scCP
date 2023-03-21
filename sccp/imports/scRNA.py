@@ -183,8 +183,8 @@ def ThompsonXA_SCGenes(saveXA=False):
         XA = XA.transpose()
         celltypeXA = celltypeXA.transpose()
 
-        XA.to_netcdf(join(path_here, "data/scRNA_drugXA.nc"))
-        celltypeXA.to_netcdf(join(path_here, "data/scRNA_celltypeXA.nc"))
+        XA.to_netcdf(join(path_here, "data/scRNA_drugXA_NoOffset.nc"))
+        celltypeXA.to_netcdf(join(path_here, "data/scRNA_celltypeXA_NoOffset.nc"))
 
     else:
         XA = xa.open_dataarray("/opt/andrew/scRNA_drugXA_NoOffset.nc")
