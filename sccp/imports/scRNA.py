@@ -154,39 +154,20 @@ def mu_sigma_normalize(geneDF, scalingfactor=1000):
     return normDF, np.log10(means + 1e-10), np.log10(cv + 1e-10)
 
 
-def gene_filter(geneDF, mean, std, offset_value=1.0):
-    """Filters genes whos variance are higher than woudl be predicted by a Poisson distribution"""
-    slope, intercept, _, _, _ = linregress(mean, std)
-    inter = intercept + np.log10(offset_value)
-
-    above_idx = np.where(std > mean * slope + inter)
-    finalDF = geneDF.iloc[
-        :, np.append(np.asarray(above_idx).flatten(), geneDF.shape[1] - 1)
-    ]
-
-    return finalDF, above_idx
-
-
 def gene_import(offset=1.0):
     """Imports gene data from PopAlign and perfroms gene filtering process"""
     genesDF, _ = import_thompson_drug()
-    filteredGeneDF, logmean, logstd = mu_sigma_normalize(genesDF, scalingfactor=1000)
-    if offset != 1.0:
-        filteredGeneDF, _ = gene_filter(
-            filteredGeneDF, logmean, logstd, offset_value=offset
-        )
+    filteredGeneDF, _, _ = mu_sigma_normalize(genesDF, scalingfactor=1000)
+ 
     return filteredGeneDF
 
 
-def ThompsonXA_SCGenes(saveXA=False, offset=1.0):
+def ThompsonXA_SCGenes(saveXA=False):
     """Turns filtered and normalized cells into an Xarray."""
     if saveXA is True:
-        if offset == 1.0:
-            df = pd.read_csv("/opt/andrew/scRNA_drugDF_NoOffset.csv")
-            df = df.drop(columns=["Unnamed: 0"], axis=1)
-        else:
-            df = gene_import(offset=offset)
-
+        df = pd.read_csv("/opt/andrew/scRNA_drugDF_NoOffset.csv")
+        df = df.drop(columns=["Unnamed: 0"], axis=1)
+ 
         df = df.sort_values(by=["Drug"])
         df = assign_celltype(df)
 
@@ -206,11 +187,9 @@ def ThompsonXA_SCGenes(saveXA=False, offset=1.0):
         celltypeXA.to_netcdf(join(path_here, "data/scRNA_celltypeXA.nc"))
 
     else:
-        if offset == 1.0:
-            XA = xa.open_dataarray("/opt/andrew/scRNA_drugXA_NoOffset.nc")
-            celltypeXA = xa.open_dataarray("/opt/andrew/scRNA_celltypeXA_NoOffset.nc")
-        else:
-            XA = xa.open_dataarray("/opt/andrew/scRNA_drugXA.nc")
+        XA = xa.open_dataarray("/opt/andrew/scRNA_drugXA_NoOffset.nc")
+        celltypeXA = xa.open_dataarray("/opt/andrew/scRNA_celltypeXA_NoOffset.nc")
+
     
     ### I *believe* that padding with zeros does not affect PARAFAC2 results.
     ### We should check this though.
