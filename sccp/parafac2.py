@@ -40,27 +40,24 @@ def parafac2_nd(
     unfolded = tl.unfold(X, 2)
     assert tl.shape(unfolded)[0] > rank
     C = randomized_svd(unfolded, rank)[0]
-    factors = [tl.ones((X.shape[0], rank)).cuda(), tl.eye(rank).cuda(), C]
-    projections = _compute_projections(X, factors, "truncated_svd")
+    CP = tl.cp_tensor.CPTensor((None, [tl.ones((X.shape[0], rank)).cuda(), tl.eye(rank), C]).cuda())
+    projections = _compute_projections(X, CP.factors, "truncated_svd")
 
     errs = []
     norm_tensor = tl.norm(X) ** 2
 
-    err = _cmf_reconstruction_error(X, (factors, projections), norm_tensor)
+    err = _cmf_reconstruction_error(X, (CP.factors, projections), norm_tensor)
     errs.append(tl.to_numpy((err / norm_tensor).cpu()))
 
-    CP = "svd"
-
     tq = tqdm(range(n_iter_max), disable=(not verbose))
-    for iter in tq:
-        projections = _compute_projections(X, factors, "truncated_svd")
+    for _ in tq:
+        # Push the genes factors to be orthogonal
+        CP.factors[2] = tl.qr(CP.factors[2])[0]
+
+        projections = _compute_projections(X, CP.factors, "truncated_svd")
 
         # Project tensor slices
         projected_X = _project_tensor_slices(X, projections)
-
-        # Push the genes factors to be orthogonal
-        if iter > 0:
-            CP.factors[2] = tl.qr(CP.factors[2])[0]
 
         CP = parafac(
             projected_X,
