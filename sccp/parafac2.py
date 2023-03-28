@@ -34,13 +34,16 @@ def parafac2_nd(
     r"""The same interface as regular PARAFAC2."""
     # *** THIS IMPLEMENTATION REQUIRES A SINGLE ZERO-PADDED TENSOR. ***
     tl.set_backend("pytorch")
-    X = tl.tensor(X).cuda()
+    if isinstance(X, list):
+        X = [tl.tensor(xx).cuda() for xx in X]
+    else:
+        X = tl.tensor(X).cuda()
 
     # Initialization
-    unfolded = tl.unfold(X, 2)
+    unfolded = tl.concatenate(list(X), axis=0).T
     assert tl.shape(unfolded)[0] > rank
     C = randomized_svd(unfolded, rank)[0]
-    CP = tl.cp_tensor.CPTensor((None, [tl.ones((X.shape[0], rank)).cuda(), tl.eye(rank), C]).cuda())
+    CP = tl.cp_tensor.CPTensor((None, [tl.ones((X.shape[0], rank)).cuda(), tl.eye(rank).cuda(), C]))
     projections = _compute_projections(X, CP.factors, "truncated_svd")
 
     errs = []
