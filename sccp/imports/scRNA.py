@@ -93,7 +93,7 @@ def mu_sigma_normalize(df, scalingfactor=1000):
     means = np.mean(logG, axis=0)
     cv = np.std(logG, axis=0) / means
 
-    normDF = df.iloc[:, np.append(keepGenes, True)]
+    normDF = logG.iloc[:, np.append(keepGenes, True)]
     means = means[keepGenes]
     cv = cv[keepGenes]
 
