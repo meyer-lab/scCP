@@ -152,7 +152,7 @@ def ThompsonXA_SCGenes(saveXA=False, offset=1.0):
     """Turns filtered and normalized cells into an Xarray."""
     if saveXA is True:
         if offset == 1.0:
-            df = pd.read_csv("/opt/andrew/scRNA_drugDF_NoOffset.csv")
+            df = pd.read_csv("/opt/andrew/scRNA_drugDF.csv")
             df = df.drop(columns=["Unnamed: 0"], axis=1)
         else:
             df = gene_import(offset=offset)
@@ -203,6 +203,9 @@ def assign_celltype(df):
     sc.tl.leiden(adata, resolution=0.75)
     sc.tl.rank_genes_groups(adata, groupby="leiden")
     marker_matches = sc.tl.marker_gene_overlap(adata, marker_genes)
+    print(marker_matches)
+    
+    a
     sc.tl.umap(adata)
     adata.obs = adata.obs.replace(clust_names)
     adata.obs.columns = ["Cell Type"]
@@ -287,26 +290,38 @@ clust_list = [
     "   Monocytes",
 ]
 
-
 marker_genes = {
+    # 'CD14+ Mono': [
+    #     'CD14',
+    #     'LYZ'],
     "Monocytes": ["CD14", "CD33", "LYZ", "LGALS3", "CSF1R", "ITGAX", "HLA-DRB1"],
-    "Dendritic Cells": ["LAD1", "LAMP3", "TSPAN13", "CLIC2", "FLT3"],
-    "B-cells": ["MS4A1", "CD19", "CD79A"],
-    "T-helpers": ["TNF", "TNFRSF18", "IFNG", "IL2RA", "BATF"],
-    "T cells": [
-        "CD27",
-        "CD69",
-        "CD2",
-        "CD3D",
-        "CXCR3",
-        "CCL5",
-        "IL7R",
-        "CXCL8",
-        "GZMK",
-    ],
-    "Natural Killers": ["NKG7", "GNLY", "PRF1", "FCGR3A", "NCAM1", "TYROBP"],
-    "CD8": ["CD8A", "CD8B"],
-}
+    "DC": ["LAD1", "LAMP3", "TSPAN13", "CLIC2", "FLT3"],
+    # 'FCGR3A Mono': [ 
+    #     'FCGR3A', 'MS4A7'],
+    'CD8': ['CD8A', 'CD8B'],
+    "B": ["MS4A1", "CD79A", "CD19"],
+    "CD4": ["IL7R", "CCR7"],
+    "NK": ["NKG7", "GNLY", "PRF1", "FCGR3A", "NCAM1", "TYROBP"]}
+
+# marker_genes = {
+#     "Monocytes": ["CD14", "CD33", "LYZ", "LGALS3", "CSF1R", "ITGAX", "HLA-DRB1"],
+    # "Dendritic Cells": ["LAD1", "LAMP3", "TSPAN13", "CLIC2", "FLT3"],
+#     "B-cells": ["MS4A1", "CD19", "CD79A"],
+#     "T-helpers": ["TNF", "TNFRSF18", "IFNG", "IL2RA", "BATF"],
+#     "T cells": [
+#         "CD27",
+#         "CD69",
+#         "CD2",
+#         "CD3D",
+#         "CXCR3",
+#         "CCL5",
+#         "IL7R",
+#         "CXCL8",
+#         "GZMK",
+#     ],
+#     "Natural Killers": ["NKG7", "GNLY", "PRF1", "FCGR3A", "NCAM1", "TYROBP"],
+#     "CD8": ["CD8A", "CD8B"],
+# }
 
 training_markers = {
     "Monocytes": ["CD14"],
