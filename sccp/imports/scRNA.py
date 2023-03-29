@@ -87,7 +87,7 @@ def mu_sigma_normalize(df, scalingfactor=1000):
     assert np.all(np.isfinite(X))
 
     keepGenes = np.mean(X > 0, axis=0) > 0.001
-    normG = X / np.mean(X, axis=0, keepdims=True)
+    normG = X / np.sum(X, axis=0, keepdims=True)
 
     logG = np.log10((scalingfactor * normG) + 1)
     means = np.mean(logG, axis=0)
