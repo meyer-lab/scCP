@@ -200,7 +200,7 @@ def assign_celltype(df):
     adata = sc.AnnData(celltypeDF)
     sc.pp.pca(adata, svd_solver="arpack")
     sc.pp.neighbors(adata)
-    sc.tl.leiden(adata, resolution=0.75)
+    sc.tl.leiden(adata, resolution=1.2)
     sc.tl.rank_genes_groups(adata, groupby="leiden")
     marker_matches = sc.tl.marker_gene_overlap(adata, marker_genes)
     print(marker_matches)
@@ -298,10 +298,12 @@ marker_genes = {
     "DC": ["LAD1", "LAMP3", "TSPAN13", "CLIC2", "FLT3"],
     # 'FCGR3A Mono': [ 
     #     'FCGR3A', 'MS4A7'],
-    'CD8': ['CD8A', 'CD8B'],
+    'CD8': ['CD8B'],
     "B": ["MS4A1", "CD79A", "CD19"],
-    "CD4": ["IL7R", "CCR7"],
-    "NK": ["NKG7", "GNLY", "PRF1", "FCGR3A", "NCAM1", "TYROBP"]}
+    "CD4": ["IL7R", "CCR7", "S100A4"],
+   "NK": ["GNLY", "NKG7", "KLRB1", "NCAM1"]}
+# 'NCAM1', 'NKG7', 'CD3G']
+    # "NK": ["NKG7", "GNLY", "PRF1", "FCGR3A", "NCAM1", "TYROBP"]}
 
 # marker_genes = {
 #     "Monocytes": ["CD14", "CD33", "LYZ", "LGALS3", "CSF1R", "ITGAX", "HLA-DRB1"],
