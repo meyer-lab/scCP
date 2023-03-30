@@ -162,7 +162,6 @@ def ThompsonXA_SCGenes(saveXA=False, offset=1.0):
 
         # Assign cells a count per-experiment so we can reindex
         cellCount = df.groupby(by=["Drug"]).size().values
-        print(df.groupby(by=["Drug"]).size())
         df["Cell"] = np.concatenate([np.arange(int(cnt)) for cnt in cellCount])
 
         XA = df.set_index(["Cell", "Drug"]).to_xarray()
@@ -175,7 +174,6 @@ def ThompsonXA_SCGenes(saveXA=False, offset=1.0):
 
         XA.to_netcdf(join(path_here, "data/scRNA_drugXA.nc"))
         celltypeXA.to_netcdf(join(path_here, "data/scRNA_celltypeXA.nc"))
-        df.groupby(by=["Drug"]).size().to_csv(join(path_here, "data/scRNA_CellCount.csv"))
         
     else:
         if offset == 1.0:
@@ -186,9 +184,8 @@ def ThompsonXA_SCGenes(saveXA=False, offset=1.0):
     
     ### I *believe* that padding with zeros does not affect PARAFAC2 results.
     ### We should check this though.
-    cellCount = pd.read_csv("sccp/data/scRNA_CellCount.csv").reset_index()
-    cellCount = np.reshape(cellCount.iloc[:, -1].values, (-1, 1, 1))
-    XA.values /= cellCount
+    cellCount = np.count_nonzero(~np.isnan(XA[:, :, 0].to_numpy()), axis=1)
+    XA.values /= np.reshape(cellCount, (-1, 1, 1))
    
     XA.values -= np.nanmean(XA.values, axis=(0,1), keepdims=True)    
     XA.values = np.nan_to_num(XA.values)       
