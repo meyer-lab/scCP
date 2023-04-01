@@ -1,45 +1,52 @@
-from os.path import join, dirname
+from os.path import dirname
 import numpy as np
 import pandas as pd
-import csv
 import xarray as xa
-from scipy.io import mmread
 from scipy.stats import linregress
 from sklearn.pipeline import make_pipeline
 from sklearn.svm import SVC
 from sklearn import preprocessing
 import anndata
+import scanpy as sc
 
 
 path_here = dirname(dirname(__file__))
 
 
-def import_perturb_RPE(limit_cells=100):
-    ds_disk = anndata.read_h5ad("/opt/andrew/rpe1_normalized_singlecell_01.h5ad")
-
-    sgRNAs = ds_disk.obs_vector("sgID_AB")
+def xarrayIfy(annD, obsV, limit_cells=None):
     sgUnique, sgIndex, sgCounts = np.unique(
-        sgRNAs, return_inverse=True, return_counts=True
+        obsV, return_inverse=True, return_counts=True
     )
+    if limit_cells is None:
+        limit_cells = np.max(sgCounts)
 
     X = xa.DataArray(
-        data=np.zeros((len(sgUnique), limit_cells, ds_disk.shape[1]), dtype=np.float32),
+        data=np.zeros((len(sgUnique), limit_cells, annD.shape[1]), dtype=np.float32),
         dims=["sgRNA", "Cells", "Genes"],
         coords=[
             sgUnique,
             np.arange(limit_cells),
-            ds_disk.var_vector("gene_name"),
+            annD.var_vector("gene_name"),
         ],
     )
 
     for sgi in range(len(sgUnique)):
-        x_temp = ds_disk[sgIndex == sgi, :]
+        x_temp = annD[sgIndex == sgi, :]
         assert x_temp.shape[0] == sgCounts[sgi]
 
         if x_temp.shape[0] > limit_cells:
             x_temp = x_temp[:limit_cells, :]
 
         X[sgi, 0 : x_temp.shape[0], :] = x_temp.X.toarray()
+
+    return X
+
+
+def import_perturb_RPE(limit_cells: int=100):
+    ds_disk = anndata.read_h5ad("/opt/andrew/rpe1_normalized_singlecell_01.h5ad")
+
+    sgRNAs = ds_disk.obs_vector("sgID_AB")
+    X = xarrayIfy(ds_disk, sgRNAs, limit_cells)
 
     # These genes have nans for some reason
     X = xa.concat([X[:, :, 0:773], X[:, :, 774:]], dim="Genes")
@@ -51,40 +58,27 @@ def import_perturb_RPE(limit_cells=100):
 
 
 def import_thompson_drug():
-    """Imports cell readings from scRNA-seq data from PBMCs from PopAlign paper"
-    -Description of each file-
-    drugScreeen : str Path to a sparse matrix
-    barcodes : str Path to a .tsv 10X barcodes file
-    metafile : str Path to a metadata file. Must contains `cell_barcodes` and `sample_id` columns
-    genes : str Path to a .tsv 10X gene file"""
+    """Imports cell readings from scRNA-seq data from PBMCs from PopAlign paper."""
 
     # Cell barcodes, sample id of treatment and sample number (33482, 3)
     metafile = pd.read_csv("sccp/data/meta.csv")
+
     # Cell barcodes (33482)
-    barcodes = pd.read_csv("sccp/data/barcodes.tsv", sep="\t", header=None, names=("cell_barcode", )).reset_index()
+    barcodes = pd.read_csv("sccp/data/barcodes.tsv", sep="\t", header=None, names=("cell_barcode", ))
 
-    genes = pd.read_csv("sccp/data/features.tsv", sep="\t", names=("ENSG", "Name", "Null"))  # Gene Names (32738)
+    # Left merging should put the barcodes in order
+    metafile = pd.merge(barcodes, metafile, on="cell_barcode", how='left', validate="one_to_one")
 
-    metafile = pd.merge(metafile, barcodes, on="cell_barcode", how='left', validate="one_to_one")
-
-    # Sparse matrix of each cell/genes (32738,33482)-(Genes,Cell)
-    drugScreen = mmread("/opt/andrew/drugscreen.mtx").toarray()  
-    drugScreen = drugScreen.astype(np.float64)
-
-    df = pd.DataFrame(drugScreen.T, index=np.arange(drugScreen.shape[1]), columns=genes["Name"]).reset_index()
-
-    df_full = pd.merge(df, metafile, on="index", how='left', validate="one_to_one")
-    df_full = df_full.rename(columns={"sample_id": "Drug"})
-
-    return df_full.drop(columns=["cell_barcode", "sample_number", "index"])
+    data = sc.read_10x_mtx("/opt/andrew/Thompson", var_names='gene_symbols', make_unique=True)
+    data.obs["Drugs"] = pd.Categorical(metafile["sample_id"])
+    return data
 
 
-def mu_sigma_normalize(df, scalingfactor=1000):
+def mu_sigma_normalize(X: anndata.AnnData, scalingfactor: float):
     """Calculates the mu and sigma for every gene and returns
     means, sigmas, and dataframe filtered for genes expressed
     in > 0.1% of cells."""
-    X = df.drop("Drug", axis=1).to_numpy()
-    assert np.all(np.isfinite(X))
+    assert np.all(np.isfinite(X.X))
 
     keepGenes = np.mean(X > 0, axis=0) > 0.001
     normG = X / np.sum(X, axis=0, keepdims=True)
@@ -93,100 +87,52 @@ def mu_sigma_normalize(df, scalingfactor=1000):
     means = np.mean(logG, axis=0)
     cv = np.std(logG, axis=0) / means
 
-    normDF = logG.iloc[:, np.append(keepGenes, True)]
+    normG = normG[:, keepGenes]
     means = means[keepGenes]
     cv = cv[keepGenes]
 
-    return normDF, np.log10(means + 1e-10), np.log10(cv + 1e-10)
+    return normG, np.log10(means + 1e-10), np.log10(cv + 1e-10)
 
 
-def gene_filter(geneDF, mean, std, offset_value=1.0):
-    """Filters genes whos variance are higher than woudl be predicted by a Poisson distribution"""
-    slope, intercept, _, _, _ = linregress(mean, std)
-    inter = intercept + np.log10(offset_value)
-
-    above_idx = np.where(std > mean * slope + inter)
-    finalDF = geneDF.iloc[
-        :, np.append(np.asarray(above_idx).flatten(), geneDF.shape[1] - 1)
-    ]
-
-    return finalDF, above_idx
-
-
-def gene_import(offset=1.0):
-    """Imports gene data from PopAlign and perfroms gene filtering process"""
+def gene_import(offset_value=1.0):
+    """Imports gene data from PopAlign and performs gene filtering process."""
     genesDF = import_thompson_drug()
-    filteredGeneDF, logmean, logstd = mu_sigma_normalize(genesDF, scalingfactor=1000)
-    if offset != 1.0:
-        filteredGeneDF, _ = gene_filter(
-            filteredGeneDF, logmean, logstd, offset_value=offset
-        )
-    return filteredGeneDF
+    df, logmean, logstd = mu_sigma_normalize(genesDF, scalingfactor=1000)
+
+    if offset_value != 1.0:
+        slope, intercept, _, _, _ = linregress(logmean, logstd)
+
+        above_idx = logstd > logmean * slope + intercept + np.log10(offset_value)
+        df = df.iloc[:, np.append(above_idx, True)]
+
+    return df
 
 
-def ThompsonXA_SCGenes(saveXA=False, offset=1.0):
+def ThompsonXA_SCGenes(offset=1.0):
     """Turns filtered and normalized cells into an Xarray."""
-    if saveXA is True:
-        if offset == 1.0:
-            df = pd.read_csv("/opt/andrew/scRNA_drugDF_NoOffset.csv")
-            df = df.drop(columns=["Unnamed: 0"], axis=1)
-        else:
-            df = gene_import(offset=offset)
+    anndta = gene_import(offset_value=offset)
+    # anndta = assign_celltype(anndta)
 
-        df = df.sort_values(by=["Drug"])
-        df = assign_celltype(df)
+    # Assign cells a count per-experiment so we can reindex
+    X = xarrayIfy(anndta, anndta.obs_vector("Drugs"))
+    X.name = "data"
 
-        # Assign cells a count per-experiment so we can reindex
-        cellCount = df.groupby(by=["Drug"]).size().values
-        df["Cell"] = np.concatenate([np.arange(int(cnt)) for cnt in cellCount])
-
-        XA = df.set_index(["Cell", "Drug"]).to_xarray()
-        celltypeXA = XA["Cell Type"]
-        XA = XA.drop_vars(["Cell Type"])
-        XA = XA.to_array(dim="Gene")
-
-        XA = XA.transpose()
-        celltypeXA = celltypeXA.transpose()
-
-        XA.to_netcdf(join(path_here, "data/scRNA_drugXA.nc"))
-        celltypeXA.to_netcdf(join(path_here, "data/scRNA_celltypeXA.nc"))
-
-    else:
-        if offset == 1.0:
-            XA = xa.open_dataarray("/opt/andrew/scRNA_drugXA_NoOffset.nc")
-            celltypeXA = xa.open_dataarray("/opt/andrew/scRNA_celltypeXA_NoOffset.nc")
-        else:
-            XA = xa.open_dataarray("/opt/andrew/scRNA_drugXA.nc")
-    
-    ### I *believe* that padding with zeros does not affect PARAFAC2 results.
-    ### We should check this though.
-    XA.values -= np.nanmean(XA.values, axis=(0,1), keepdims=True)       
-    XA.values = np.nan_to_num(XA.values)       
-    XA.name = "data"
-    celltypeXA.name = "Cell Type"
-    return xa.merge([XA, celltypeXA], compat="no_conflicts")
+    return X # xa.merge([data, assign], compat="no_conflicts")
 
 
-def assign_celltype(df):
-    """Assignign cell types via scanpy and SVM"""
-    import scanpy as sc
-
-    celltypeDF = df.drop(columns=["Drug"], axis=1)
-    genes_list = celltypeDF.columns
-    adata = sc.AnnData(celltypeDF)
-    sc.pp.pca(adata, svd_solver="arpack")
+def assign_celltype(adata):
+    """Assigning cell types via scanpy and SVM."""
+    sc.pp.pca(adata)
     sc.pp.neighbors(adata)
     sc.tl.leiden(adata, resolution=0.75)
     sc.tl.rank_genes_groups(adata, groupby="leiden")
-    marker_matches = sc.tl.marker_gene_overlap(adata, marker_genes)
     sc.tl.umap(adata)
-    adata.obs = adata.obs.replace(clust_names)
-    adata.obs.columns = ["Cell Type"]
-    adata = drug_SVM(adata, genes_list)
-
-    df["Cell Type"] = adata.obs.values
-
-    return df.reset_index(drop=True)
+    print(adata.obs)
+    #adata.obs = adata.obs.replace(clust_names)
+    #adata.obs.columns = ["Cell Type"]
+    #adata = drug_SVM(adata, genes_list)
+    assert False
+    return adata
 
 
 def drug_SVM(save_data, genes):
