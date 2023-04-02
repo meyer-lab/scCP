@@ -26,7 +26,7 @@ def xarrayIfy(annD, obsV, limit_cells=None):
         coords=[
             sgUnique,
             np.arange(limit_cells),
-            annD.var_vector("gene_name"),
+            annD.var_names,
         ],
     )
 
@@ -69,7 +69,11 @@ def import_thompson_drug():
     # Left merging should put the barcodes in order
     metafile = pd.merge(barcodes, metafile, on="cell_barcode", how='left', validate="one_to_one")
 
-    data = sc.read_10x_mtx("/opt/andrew/Thompson", var_names='gene_symbols', make_unique=True)
+    # h5ad is simplified version of mtx format
+    # data = sc.read_10x_mtx("/opt/andrew/Thompson", var_names='gene_symbols', make_unique=True)
+    # data.write('thompson.h5ad', compression="gzip")
+    data = anndata.read_h5ad("/opt/andrew/thompson.h5ad")
+
     data.obs["Drugs"] = pd.Categorical(metafile["sample_id"])
     return data
 
@@ -78,20 +82,15 @@ def mu_sigma_normalize(X: anndata.AnnData, scalingfactor: float):
     """Calculates the mu and sigma for every gene and returns
     means, sigmas, and dataframe filtered for genes expressed
     in > 0.1% of cells."""
-    X.X = X.X.todense()
-    assert np.all(np.isfinite(X))
+    assert np.all(np.isfinite(X.X.data))
 
-    keepGenes = np.mean(X.X > 0, axis=0) > 0.001
-    normG = X.X / np.sum(X.X, axis=0)
+    X = X[:, np.mean(X.X > 0, axis=0) > 0.001]
+    X.X /= np.sum(X.X, axis=0)
 
-    logG = np.log10((scalingfactor * normG) + 1)
-    means = np.mean(logG, axis=0)
-    cv = np.std(logG, axis=0) / means
-
-    X.X = normG
-    X = X[:, keepGenes]
-    means = means[keepGenes]
-    cv = cv[keepGenes]
+    # Only operating on the data works because 0 ends up as 0 here
+    X.X.data = np.log10((scalingfactor * X.X.data) + 1)
+    means = np.mean(X.X, axis=0)
+    cv = np.std(X.X.todense(), axis=0) / means
 
     return X, np.log10(means + 1e-10), np.log10(cv + 1e-10)
 
@@ -119,7 +118,7 @@ def ThompsonXA_SCGenes(offset=1.0):
     X = xarrayIfy(anndta, anndta.obs_vector("Drugs"))
     X.name = "data"
 
-    return X # xa.merge([data, assign], compat="no_conflicts")
+    return xa.merge([X], compat="no_conflicts")
 
 
 def assign_celltype(adata):
