@@ -83,14 +83,15 @@ def mu_sigma_normalize(X: anndata.AnnData, scalingfactor: float):
     means, sigmas, and dataframe filtered for genes expressed
     in > 0.1% of cells."""
     assert np.all(np.isfinite(X.X.data))
+    X.X = X.X.todense()
 
     X = X[:, np.mean(X.X > 0, axis=0) > 0.001]
     X.X /= np.sum(X.X, axis=0)
 
     # Only operating on the data works because 0 ends up as 0 here
-    X.X.data = np.log10((scalingfactor * X.X.data) + 1)
+    X.X = np.log10((scalingfactor * X.X) + 1)
     means = np.mean(X.X, axis=0)
-    cv = np.std(X.X.todense(), axis=0) / means
+    cv = np.std(X.X, axis=0) / means
 
     return X, np.log10(means + 1e-10), np.log10(cv + 1e-10)
 
