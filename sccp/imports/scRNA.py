@@ -78,34 +78,36 @@ def mu_sigma_normalize(X: anndata.AnnData, scalingfactor: float):
     """Calculates the mu and sigma for every gene and returns
     means, sigmas, and dataframe filtered for genes expressed
     in > 0.1% of cells."""
-    assert np.all(np.isfinite(X.X))
+    X.X = X.X.todense()
+    assert np.all(np.isfinite(X))
 
-    keepGenes = np.mean(X > 0, axis=0) > 0.001
-    normG = X / np.sum(X, axis=0, keepdims=True)
+    keepGenes = np.mean(X.X > 0, axis=0) > 0.001
+    normG = X.X / np.sum(X.X, axis=0)
 
     logG = np.log10((scalingfactor * normG) + 1)
     means = np.mean(logG, axis=0)
     cv = np.std(logG, axis=0) / means
 
-    normG = normG[:, keepGenes]
+    X.X = normG
+    X = X[:, keepGenes]
     means = means[keepGenes]
     cv = cv[keepGenes]
 
-    return normG, np.log10(means + 1e-10), np.log10(cv + 1e-10)
+    return X, np.log10(means + 1e-10), np.log10(cv + 1e-10)
 
 
 def gene_import(offset_value=1.0):
     """Imports gene data from PopAlign and performs gene filtering process."""
     genesDF = import_thompson_drug()
-    df, logmean, logstd = mu_sigma_normalize(genesDF, scalingfactor=1000)
+    X, logmean, logstd = mu_sigma_normalize(genesDF, scalingfactor=1000)
 
     if offset_value != 1.0:
         slope, intercept, _, _, _ = linregress(logmean, logstd)
 
         above_idx = logstd > logmean * slope + intercept + np.log10(offset_value)
-        df = df.iloc[:, np.append(above_idx, True)]
+        X = X[:, above_idx]
 
-    return df
+    return X
 
 
 def ThompsonXA_SCGenes(offset=1.0):
