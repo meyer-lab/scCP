@@ -193,45 +193,6 @@ clust_names = {
 }
 
 
-clust_list = [
-    "NK",
-    "Monocytes ",
-    "Monocytes  ",
-    "Monocytes   ",
-    "None",
-    "T Cells",
-    "CD8 T Cells",
-    "NK ",
-    "T Cells ",
-    "T helpers",
-    "Dendritic Cells",
-    "B Cells",
-    " Monocytes",
-    "  Monocytes",
-    "   Monocytes",
-]
-
-
-marker_genes = {
-    "Monocytes": ["CD14", "CD33", "LYZ", "LGALS3", "CSF1R", "ITGAX", "HLA-DRB1"],
-    "Dendritic Cells": ["LAD1", "LAMP3", "TSPAN13", "CLIC2", "FLT3"],
-    "B-cells": ["MS4A1", "CD19", "CD79A"],
-    "T-helpers": ["TNF", "TNFRSF18", "IFNG", "IL2RA", "BATF"],
-    "T cells": [
-        "CD27",
-        "CD69",
-        "CD2",
-        "CD3D",
-        "CXCR3",
-        "CCL5",
-        "IL7R",
-        "CXCL8",
-        "GZMK",
-    ],
-    "Natural Killers": ["NKG7", "GNLY", "PRF1", "FCGR3A", "NCAM1", "TYROBP"],
-    "CD8": ["CD8A", "CD8B"],
-}
-
 training_markers = {
     "Monocytes": ["CD14"],
     "Dendritic Cells": ["LAD1"],
