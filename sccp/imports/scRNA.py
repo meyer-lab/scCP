@@ -184,9 +184,6 @@ def ThompsonXA_SCGenes(saveXA=False, offset=1.0):
     
     ### I *believe* that padding with zeros does not affect PARAFAC2 results.
     ### We should check this though.
-    cellCount = np.count_nonzero(~np.isnan(XA[:, :, 0].to_numpy()), axis=1)
-    XA.values /= np.reshape(cellCount, (-1, 1, 1))
-   
     XA.values -= np.nanmean(XA.values, axis=(0,1), keepdims=True)    
     XA.values = np.nan_to_num(XA.values)       
     XA.name = "data"
