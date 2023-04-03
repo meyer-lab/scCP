@@ -15,11 +15,16 @@ from ..parafac2 import parafac2_nd
 from ..decomposition import plotR2X
 from ..crossVal import plotCrossVal
 
+import anndata
+import scanpy as sc
+import umap 
+
+
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((18, 25), (2, 4))
+    ax, f = getSetup((8, 10), (2, 2))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -46,23 +51,48 @@ def makeFigure():
     projs = xa.merge([projs, data["Cell Type"]], compat="no_conflicts")
 
     flattened_projs = projs.stack(AllCells=("Drug", "Cell"))
-
-    # Remove empty slots
+    flat_data = data["data"].stack(AllCells=(("Drug", "Cell")))
+  
+    # # Remove empty slots
     nonzero_index = np.any(flattened_projs["projections"].to_numpy() != 0, axis=0)
     flattened_projs = flattened_projs.isel(AllCells=nonzero_index) 
+    flat_data = flat_data.isel(AllCells=nonzero_index) 
 
     idxx = np.random.choice(
-        len(flattened_projs.coords["AllCells"]), size=200, replace=False
+        len(flattened_projs.coords["AllCells"]), size=10, replace=False
     )
     
-    plotFactors(factors, data["data"], ax[0:2], reorder=(0, 2), trim=(2,))
     
-    plotSS(flattened_projs, ax[2])
+    flatProjs = flattened_projs.isel(AllCells=idxx)
+    flatData = flat_data.isel(AllCells=idxx)
     
-    plotProj(flattened_projs.isel(AllCells=idxx), ax[3:5])
+    
+    # flatData.sel(Gene="NKG7").to_numpy()
+    # aData = sc.AnnData(flatProjs["projections"].to_numpy().T) 
+    # aData.var_names = projs["projections"].coords["Cmp"].values
+    # aData.obs_names = [f"Cell {i}" for i in np.arange(1, aData.shape[0] + 1)]
+    
+    umap_reduc = umap.UMAP()
+    embed = umap_reduc.fit_transform(flatProjs["projections"].to_numpy().T)
+    
+    ax[0].scatter(embed[:,0], embed[:, 1], c=flatData.sel(Gene="NKG7").to_numpy(), cmap = "plasma")
+    # ax[0].legend(loc="Weight")
+    # ax[0].xlabel('UMAP1')
+    # ax[0].ylabel('UMAP2');
+    
+    
+    # print(aData.to_df())
 
-    plotR2X(data["data"].to_numpy(), 13, ax[5])
     
-    plotCrossVal(data["data"].to_numpy(), 13, ax[6], trainPerc=0.75)
+    
+    # plotFactors(factors, data["data"], ax[0:2], reorder=(0, 2), trim=(2,))
+    
+    # plotSS(flattened_projs, ax[2])
+    
+    # plotProj(flattened_projs.isel(AllCells=idxx), ax[3:5])
+
+    # plotR2X(data["data"].to_numpy(), 13, ax[5])
+    
+    # plotCrossVal(data["data"].to_numpy(), 13, ax[6], trainPerc=0.75)
 
     return f
