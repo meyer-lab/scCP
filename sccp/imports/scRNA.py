@@ -3,50 +3,41 @@ import numpy as np
 import pandas as pd
 import xarray as xa
 from scipy.stats import linregress
-from sklearn.pipeline import make_pipeline
-from sklearn.svm import SVC
-from sklearn import preprocessing
 import anndata
-import scanpy as sc
 
 
 path_here = dirname(dirname(__file__))
 
 
-def xarrayIfy(annD, obsV, limit_cells=None):
+def xarrayIfy(annD, obsV):
     sgUnique, sgIndex, sgCounts = np.unique(
         obsV, return_inverse=True, return_counts=True
     )
-    if limit_cells is None:
-        limit_cells = np.max(sgCounts)
 
-    X = xa.DataArray(
-        data=np.zeros((len(sgUnique), limit_cells, annD.shape[1]), dtype=np.float32),
-        dims=["sgRNA", "Cells", "Genes"],
-        coords=[
-            sgUnique,
-            np.arange(limit_cells),
-            annD.var_names,
-        ],
-    )
+    data = list()
 
     for sgi in range(len(sgUnique)):
         x_temp = annD[sgIndex == sgi, :]
         assert x_temp.shape[0] == sgCounts[sgi]
 
-        if x_temp.shape[0] > limit_cells:
-            x_temp = x_temp[:limit_cells, :]
+        data.append(xa.DataArray(
+            name=sgUnique[sgi],
+            data=x_temp.X.toarray(),
+            dims=[f"cells_{sgUnique[sgi]}", "genes"],
+            coords=[
+                np.arange(x_temp.shape[0]),
+                annD.var_names,
+            ],
+        ))
 
-        X[sgi, 0 : x_temp.shape[0], :] = x_temp.X.toarray()
-
-    return X
+    return xa.merge(data)
 
 
-def import_perturb_RPE(limit_cells: int=100):
+def import_perturb_RPE():
     ds_disk = anndata.read_h5ad("/opt/andrew/rpe1_normalized_singlecell_01.h5ad")
 
     sgRNAs = ds_disk.obs_vector("sgID_AB")
-    X = xarrayIfy(ds_disk, sgRNAs, limit_cells)
+    X = xarrayIfy(ds_disk, sgRNAs)
 
     # These genes have nans for some reason
     X = xa.concat([X[:, :, 0:773], X[:, :, 774:]], dim="Genes")
@@ -113,90 +104,7 @@ def gene_import(offset_value=1.0):
 def ThompsonXA_SCGenes(offset=1.0):
     """Turns filtered and normalized cells into an Xarray."""
     anndta = gene_import(offset_value=offset)
-    assign_celltype(anndta)
-    # anndta.obs["Drugs"] = 
 
     # Assign cells a count per-experiment so we can reindex
-    X = xarrayIfy(anndta, anndta.obs_vector("Drugs"))
-    X.name = "data"
-
-    return xa.merge([X], compat="no_conflicts")
-
-
-def assign_celltype(adata):
-    """Assigning cell types via scanpy and SVM."""
-    sc.pp.pca(adata, n_comps=10)
-    sc.pp.neighbors(adata)
-    sc.tl.leiden(adata, resolution=0.75)
-    sc.tl.umap(adata)
-    print(adata)
-    #adata.obs = adata.obs.replace(clust_names)
-    #adata.obs.columns = ["Cell Type"]
-    #adata = drug_SVM(adata, genes_list)
-    return adata
-
-
-def drug_SVM(save_data, genes):
-    """Retrieves cell types from perturbed data"""
-    completeDF = pd.DataFrame(data=save_data.X)
-    completeDF.columns = genes
-    completeDF["Cell Type"] = save_data.obs.values
-    drugDF = completeDF.loc[
-        (completeDF["Cell Type"] == "T Helpers") | (completeDF["Cell Type"] == "None")
-    ]
-    trainingDF = pd.DataFrame()
-    for key in training_markers:
-        cell_weight = (
-            completeDF.loc[completeDF["Cell Type"] == key].shape[0]
-            / completeDF.shape[0]
-        )
-        concatDF = drugDF.sort_values(by=training_markers[key]).tail(
-            n=int(np.ceil(50 * cell_weight) + 5)
-        )
-        concatDF["Cell Type"] = key
-        trainingDF = pd.concat([trainingDF, concatDF])
-
-    le = preprocessing.LabelEncoder()
-    le.fit(trainingDF["Cell Type"].values)
-    svm = make_pipeline(preprocessing.StandardScaler(), SVC(gamma="auto"))
-    svm.fit(
-        trainingDF.drop("Cell Type", axis=1),
-        le.transform(trainingDF["Cell Type"].values),
-    )
-    drugDF = drugDF.drop("Cell Type", axis=1)
-    drugDF["Cell Type"] = le.inverse_transform(svm.predict(drugDF.values))
-    save_data.obs.loc[
-        (save_data.obs["Cell Type"] == "T Helpers")
-        | (save_data.obs["Cell Type"] == "None"),
-        "Cell Type",
-    ] = drugDF["Cell Type"].values
-    return save_data
-
-
-clust_names = {
-    "0": "NK",
-    "1": "Monocytes",
-    "2": "Monocytes",
-    "3": "Monocytes",
-    "4": "None",
-    "5": "T Cells",
-    "6": "CD8 T Cells",
-    "7": "NK",
-    "8": "T Cells",
-    "9": "T Helpers",
-    "10": "Dendritic Cells",
-    "11": "B Cells",
-    "12": "Monocytes",
-    "13": "Monocytes",
-    "14": "Monocytes",
-}
-
-
-training_markers = {
-    "Monocytes": ["CD14"],
-    "Dendritic Cells": ["LAD1"],
-    "B Cells": ["MS4A1"],
-    "T Cells": ["CD3D"],
-    "NK": ["NKG7"],
-    "CD8 T Cells": ["CD8A"],
-}
+    data = xarrayIfy(anndta, anndta.obs_vector("Drugs"))
+    return data

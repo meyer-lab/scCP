@@ -1,4 +1,5 @@
 import torch
+import xarray as xa
 from tqdm import tqdm
 import tensorly as tl
 from tensorly.cp_tensor import cp_flip_sign, cp_normalize
@@ -32,10 +33,9 @@ def parafac2_nd(
     verbose=False,
 ):
     r"""The same interface as regular PARAFAC2."""
-    # *** THIS IMPLEMENTATION REQUIRES A SINGLE ZERO-PADDED TENSOR. ***
     tl.set_backend("pytorch")
-    if isinstance(X, list):
-        X = [tl.tensor(xx).cuda() for xx in X]
+    if isinstance(X, xa.Dataset):
+        X = [tl.tensor(X[ii].to_numpy()).cuda() for ii in X.data_vars]
     else:
         X = tl.tensor(X).cuda()
 
@@ -43,11 +43,11 @@ def parafac2_nd(
     unfolded = tl.concatenate(list(X), axis=0).T
     assert tl.shape(unfolded)[0] > rank
     C = randomized_svd(unfolded, rank)[0]
-    CP = tl.cp_tensor.CPTensor((None, [tl.ones((X.shape[0], rank)).cuda(), tl.eye(rank).cuda(), C]))
+    CP = tl.cp_tensor.CPTensor((None, [tl.ones((len(X), rank)).cuda(), tl.eye(rank).cuda(), C]))
     projections = _compute_projections(X, CP.factors, "truncated_svd")
 
     errs = []
-    norm_tensor = tl.norm(X) ** 2
+    norm_tensor = tl.sum(tl.tensor([tl.norm(xx) ** 2 for xx in X]))
 
     err = _cmf_reconstruction_error(X, (CP.factors, projections), norm_tensor)
     errs.append(tl.to_numpy((err / norm_tensor).cpu()))
@@ -82,12 +82,11 @@ def parafac2_nd(
 
     CP = cp_normalize(CP)
     CP = cp_flip_sign(CP, mode=1)
-    projections = tl.stack(projections, axis=0)
 
     R2X = 1 - errs[-1]
     tl.set_backend("numpy")
 
     weights = tl.to_numpy(CP[0].cpu())
     factors = [tl.to_numpy(f.cpu()) for f in CP[1]]
-    projections = tl.to_numpy(projections.cpu())
+    projections = [tl.to_numpy(p.cpu()) for p in projections]
     return weights, factors, projections, R2X
