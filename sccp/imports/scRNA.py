@@ -113,7 +113,8 @@ def gene_import(offset_value=1.0):
 def ThompsonXA_SCGenes(offset=1.0):
     """Turns filtered and normalized cells into an Xarray."""
     anndta = gene_import(offset_value=offset)
-    # anndta = assign_celltype(anndta)
+    assign_celltype(anndta)
+    # anndta.obs["Drugs"] = 
 
     # Assign cells a count per-experiment so we can reindex
     X = xarrayIfy(anndta, anndta.obs_vector("Drugs"))
@@ -124,16 +125,14 @@ def ThompsonXA_SCGenes(offset=1.0):
 
 def assign_celltype(adata):
     """Assigning cell types via scanpy and SVM."""
-    sc.pp.pca(adata)
+    sc.pp.pca(adata, n_comps=10)
     sc.pp.neighbors(adata)
     sc.tl.leiden(adata, resolution=0.75)
-    sc.tl.rank_genes_groups(adata, groupby="leiden")
     sc.tl.umap(adata)
-    print(adata.obs)
+    print(adata)
     #adata.obs = adata.obs.replace(clust_names)
     #adata.obs.columns = ["Cell Type"]
     #adata = drug_SVM(adata, genes_list)
-    assert False
     return adata
 
 
