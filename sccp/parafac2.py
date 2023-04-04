@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 from tqdm import tqdm
 import tensorly as tl
 from tensorly.cp_tensor import cp_flip_sign, cp_normalize
@@ -8,10 +9,10 @@ from tensorly.decomposition._parafac2 import _project_tensor_slices, _compute_pr
 
 
 class Pf2X:
-    def __init__(self, X_list: list, condition_labels: list, variable_labels: list):
-        self.X_list = X_list
-        self.condition_labels = condition_labels
-        self.variable_labels = variable_labels
+    def __init__(self, X_list, condition_labels, variable_labels):
+        self.X_list = np.array(X_list, dtype=object)
+        self.condition_labels = np.array(condition_labels, dtype=object)
+        self.variable_labels = np.array(variable_labels, dtype=object)
         assert len(X_list) == len(condition_labels)
         for X in X_list:
             assert X.shape[1] == len(variable_labels)

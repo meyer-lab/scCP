@@ -28,7 +28,7 @@ def import_perturb_RPE():
     ds_disk = anndata.read_h5ad("/opt/andrew/rpe1_normalized_singlecell_01.h5ad")
 
     # Remove NaNs
-    ds_disk = ds_disk[:, np.all(np.isfinite(ds_disk), axis=1)]
+    ds_disk = ds_disk[:, np.all(np.isfinite(ds_disk.X), axis=0)]
 
     sgRNAs = ds_disk.obs_vector("sgID_AB")
     return xarrayIfy(ds_disk, sgRNAs)
