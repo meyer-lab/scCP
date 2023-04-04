@@ -2,7 +2,9 @@
 Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs
 """
 import numpy as np
+import seaborn as sns
 import xarray as xa
+import pandas as pd
 from .common import (
     subplotLabel,
     getSetup,
@@ -15,12 +17,16 @@ from ..parafac2 import parafac2_nd
 from ..decomposition import plotR2X
 from ..crossVal import plotCrossVal
 
+import anndata
+import scanpy as sc
+import umap 
+import matplotlib.pyplot as plt
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((18, 25), (2, 4))
+    ax, f = getSetup((8, 10), (2, 2))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -57,15 +63,53 @@ def makeFigure():
     idxx = np.random.choice(
         len(flattened_projs.coords["AllCells"]), size=100, replace=False
     )
-     
-    plotFactors(factors, data["data"], ax[0:2], reorder=(0, 2), trim=(2,))
     
-    plotSS(flattened_projs, ax[2])
-    
-    plotProj(flattened_projs.isel(AllCells=idxx), ax[3:5])
+    flatProjs = flattened_projs.isel(AllCells=idxx)
+    flatData = flat_data.isel(AllCells=idxx)
+ 
+    drug = "Tazarotene"
+    da = flat_data.where(flat_data.Drug == drug).to_numpy()
+    print(da)
+    # print(np.count_nonzero(~np.isnan(da)))
+    da = np.nan_to_num(da[0, :], nan=-1)
+    da[da != -1 ] = 1
+    print(da)
 
-    plotR2X(data["data"].to_numpy(), 13, ax[5])
+    # da[da == np.nan] = 0
+    # print(np.count_nonzero(~np.isnan(da)))
+    # da[da != 0] = 1
+    # da = da != np.nan
+    # da = da[0, :]
     
-    plotCrossVal(data["data"].to_numpy(), 13, ax[6], trainPerc=0.75)
+    # np.count_nonzero(np.isnan(data))
+
+    
+    # print(np.count_nonzero(~np.isnan(da)))
+     
+    # plotFactors(factors, data["data"], ax[0:2], reorder=(0, 2), trim=(2,))
+    
+    # plotSS(flattened_projs, ax[2])
+    
+    # plotProj(flattened_projs.isel(AllCells=idxx), ax[3:5])
+
+    # plotR2X(data["data"].to_numpy(), 13, ax[5])
+    
+    # plotCrossVal(data["data"].to_numpy(), 13, ax[6], trainPerc=0.75)
+    
+    umap_reduc = umap.UMAP()
+    embed = umap_reduc.fit_transform(flattened_projs["projections"].to_numpy().T)
+    
+        
+    dataa = pd.DataFrame({"UMAP1": embed[:,0],
+                "UMAP2": embed[:,1],
+                drug: da,
+            })
+    
+    sns.scatterplot(data=dataa, x="UMAP1", y="UMAP2",hue=drug, s=0.5, ax=ax[0])
+    # tl = ax[7].scatter(embed[:,0], embed[:, 1], c=da, cmap ="cool", s=0.5)
+    # f.colorbar(tl, ax=ax[7])
+    # ax[7].set_xlabel("UMAP1")
+    # ax[7].set_ylabel("UMAP2")
+    
 
     return f
