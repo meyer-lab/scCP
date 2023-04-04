@@ -59,28 +59,46 @@ def makeFigure():
     flat_data = flat_data.isel(AllCells=nonzero_index) 
 
     idxx = np.random.choice(
-        len(flattened_projs.coords["AllCells"]), size=300, replace=False
+        len(flattened_projs.coords["AllCells"]), size=100, replace=False
     )
     
     flatProjs = flattened_projs.isel(AllCells=idxx)
     flatData = flat_data.isel(AllCells=idxx)
+ 
+    da = flatData.where(flatData.Drug == "Tazarotene").to_numpy()
+    print(da)
+    # print(np.count_nonzero(~np.isnan(da)))
+    da = np.nan_to_num(da[0, :], nan=-1)
+    da[da != -1 ] = 1
+    print(da)
     
-    plotFactors(factors, data["data"], ax[0:2], reorder=(0, 2), trim=(2,))
+    # da[da == np.nan] = 0
+    # print(np.count_nonzero(~np.isnan(da)))
+    # da[da != 0] = 1
+    # da = da != np.nan
+    # da = da[0, :]
     
-    plotSS(flattened_projs, ax[2])
-    
-    plotProj(flattened_projs.isel(AllCells=idxx), ax[3:5])
+    # np.count_nonzero(np.isnan(data))
 
-    plotR2X(data["data"].to_numpy(), 13, ax[5])
     
-    plotCrossVal(data["data"].to_numpy(), 13, ax[6], trainPerc=0.75)
+    # print(np.count_nonzero(~np.isnan(da)))
+     
+    # plotFactors(factors, data["data"], ax[0:2], reorder=(0, 2), trim=(2,))
+    
+    # plotSS(flattened_projs, ax[2])
+    
+    # plotProj(flattened_projs.isel(AllCells=idxx), ax[3:5])
+
+    # plotR2X(data["data"].to_numpy(), 13, ax[5])
+    
+    # plotCrossVal(data["data"].to_numpy(), 13, ax[6], trainPerc=0.75)
     
     umap_reduc = umap.UMAP()
-    embed = umap_reduc.fit_transform(flattened_projs["projections"].to_numpy().T)
-    tl = ax[7].scatter(embed[:,0], embed[:, 1], c=flat_data.sel(Gene="NKG7").to_numpy(), cmap ="cool", s=0.5)
+    embed = umap_reduc.fit_transform(flatProjs["projections"].to_numpy().T)
+    tl = ax[7].scatter(embed[:,0], embed[:, 1], c=da, cmap ="cool", s=0.5)
     f.colorbar(tl, ax=ax[7])
-    ax[7].set_xlabel("UMAP1")
-    ax[7].set_ylabel("UMAP2")
+    # ax[7].set_xlabel("UMAP1")
+    # ax[7].set_ylabel("UMAP2")
     
 
     return f
