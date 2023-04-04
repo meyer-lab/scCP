@@ -13,6 +13,7 @@ from matplotlib import gridspec, pyplot as plt
 import numpy as np
 import scipy.cluster.hierarchy as sch
 from sklearn.metrics import silhouette_samples
+from ..parafac2 import Pf2X
 
 matplotlib.use("AGG")
 
@@ -126,49 +127,52 @@ def plotFactorsSynthetic(factors, data_xarray, ax):
             iter += 1
 
 
-def plotFactors(factors, data_xarray, axs, reorder=tuple(), trim=tuple()):
+def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
     """Plots parafac2 factors for synthetic data"""
     rank = factors[0].shape[1]
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
     iter = 0
-    for i in range(0, len(factors)):
+    for i in (0, 2):
         # The single cell mode has a square factors matrix
-        if i != len(factors) - 2:
-            yt = data_xarray.coords[data_xarray.dims[i]].values
-            X = factors[i]
+        if i == 0:
+            yt = data.condition_labels
+        else:
+            yt = data.variable_labels
 
-            if i in trim:
-                max_weight = np.max(np.abs(X), axis=1)
-                kept_idxs = max_weight > 0.08
-                X = X[kept_idxs]
-                yt = yt[kept_idxs]
+        X = factors[i]
 
-            if i in reorder:
-                X, ind = reorder_table(X)
-                yt = yt[ind]
+        if i in trim:
+            max_weight = np.max(np.abs(X), axis=1)
+            kept_idxs = max_weight > 0.08
+            X = X[kept_idxs]
+            yt = yt[kept_idxs]
 
-            sns.heatmap(
-                data=X,
-                xticklabels=xticks,
-                yticklabels=yt,
-                ax=axs[iter],
-                center=0,
-                cmap=cmap,
-            )
+        if i in reorder:
+            X, ind = reorder_table(X)
+            yt = yt[ind]
 
-            axs[iter].set_title("Factors")
-            axs[iter].tick_params(axis="y", rotation=0)
-            iter += 1
+        sns.heatmap(
+            data=X,
+            xticklabels=xticks,
+            yticklabels=yt,
+            ax=axs[iter],
+            center=0,
+            cmap=cmap,
+        )
 
-            if i == 2 and len(yt) > 50:
-                sort_idx = np.argsort(X, axis=0)
-                for j in range(rank):
-                    sort_data = yt[sort_idx[:, j]]
-                    print("Bottom 10 Genes Cmp." + str(j + 1) + ":", sort_data[:10])
-                    print(
-                        "Top 10 Genes Cmp." + str(j + 1) + ":", np.flip(sort_data[-10:])
-                    )
+        axs[iter].set_title("Factors")
+        axs[iter].tick_params(axis="y", rotation=0)
+        iter += 1
+
+        if i == 2 and len(yt) > 50:
+            sort_idx = np.argsort(X, axis=0)
+            for j in range(rank):
+                sort_data = yt[sort_idx[:, j]]
+                print("Bottom 10 Genes Cmp." + str(j + 1) + ":", sort_data[:10])
+                print(
+                    "Top 10 Genes Cmp." + str(j + 1) + ":", np.flip(sort_data[-10:])
+                )
 
 
 def reorder_table(projs):

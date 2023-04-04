@@ -1,10 +1,9 @@
 import numpy as np
 from sklearn.decomposition import PCA
-import tensorly as tl
-from .parafac2 import parafac2_nd
+from .parafac2 import parafac2_nd, Pf2X
 
 
-def plotR2X(tensor, rank, ax1):
+def plotR2X(tensor: Pf2X, rank: int, ax1):
     """Creates R2X plot for parafac2 tensor decomposition"""
     rank_vec = np.arange(1, rank + 1)
 
@@ -18,7 +17,7 @@ def plotR2X(tensor, rank, ax1):
 
     # Collect the PCA results
     pc = PCA(n_components=rank)
-    pc.fit(tl.unfold(tensor, tensor.ndim - 1))
+    pc.fit(tensor.unfold())
     pca_error = np.cumsum(pc.explained_variance_ratio_)
 
     ax1.scatter(

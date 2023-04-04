@@ -1,11 +1,23 @@
 import torch
-import xarray as xa
 from tqdm import tqdm
 import tensorly as tl
 from tensorly.cp_tensor import cp_flip_sign, cp_normalize
 from tensorly.tenalg.svd import randomized_svd
 from tensorly.decomposition import parafac
 from tensorly.decomposition._parafac2 import _project_tensor_slices, _compute_projections
+
+
+class Pf2X:
+    def __init__(self, X_list: list, condition_labels: list, variable_labels: list):
+        self.X_list = X_list
+        self.condition_labels = condition_labels
+        self.variable_labels = variable_labels
+        assert len(X_list) == len(condition_labels)
+        for X in X_list:
+            assert X.shape[1] == len(variable_labels)
+
+    def unfold(self):
+        return tl.concatenate(self.X_list, axis=0)
 
 
 def _cmf_reconstruction_error(matrices, decomposition, norm_X_sq):
@@ -34,8 +46,8 @@ def parafac2_nd(
 ):
     r"""The same interface as regular PARAFAC2."""
     tl.set_backend("pytorch")
-    if isinstance(X, xa.Dataset):
-        X = [tl.tensor(X[ii].to_numpy()).cuda() for ii in X.data_vars]
+    if isinstance(X, Pf2X):
+        X = [tl.tensor(xx).cuda() for xx in X.X_list]
     else:
         X = tl.tensor(X).cuda()
 

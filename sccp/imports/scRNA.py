@@ -1,9 +1,9 @@
 from os.path import dirname
 import numpy as np
 import pandas as pd
-import xarray as xa
 from scipy.stats import linregress
 import anndata
+from ..parafac2 import Pf2X
 
 
 path_here = dirname(dirname(__file__))
@@ -19,33 +19,19 @@ def xarrayIfy(annD, obsV):
     for sgi in range(len(sgUnique)):
         x_temp = annD[sgIndex == sgi, :]
         assert x_temp.shape[0] == sgCounts[sgi]
+        data.append(x_temp.X.toarray())
 
-        data.append(xa.DataArray(
-            name=sgUnique[sgi],
-            data=x_temp.X.toarray(),
-            dims=[f"cells_{sgUnique[sgi]}", "genes"],
-            coords=[
-                np.arange(x_temp.shape[0]),
-                annD.var_names,
-            ],
-        ))
-
-    return xa.merge(data)
+    return Pf2X(data, sgUnique, annD.var_names)
 
 
 def import_perturb_RPE():
     ds_disk = anndata.read_h5ad("/opt/andrew/rpe1_normalized_singlecell_01.h5ad")
 
+    # Remove NaNs
+    ds_disk = ds_disk[:, np.all(np.isfinite(ds_disk), axis=1)]
+
     sgRNAs = ds_disk.obs_vector("sgID_AB")
-    X = xarrayIfy(ds_disk, sgRNAs)
-
-    # These genes have nans for some reason
-    X = xa.concat([X[:, :, 0:773], X[:, :, 774:]], dim="Genes")
-    X = xa.concat([X[:, :, 0:7002], X[:, :, 7003:]], dim="Genes")
-
-    # Do not allow problematic values
-    assert np.all(np.isfinite(X))
-    return X
+    return xarrayIfy(ds_disk, sgRNAs)
 
 
 def import_thompson_drug():
@@ -87,24 +73,17 @@ def mu_sigma_normalize(X: anndata.AnnData, scalingfactor: float):
     return X, np.log10(means + 1e-10), np.log10(cv + 1e-10)
 
 
-def gene_import(offset_value=1.0):
-    """Imports gene data from PopAlign and performs gene filtering process."""
+def ThompsonXA_SCGenes(offset=1.0):
+    """Turns filtered and normalized cells into an Xarray."""
     genesDF = import_thompson_drug()
     X, logmean, logstd = mu_sigma_normalize(genesDF, scalingfactor=1000)
 
-    if offset_value != 1.0:
+    if offset != 1.0:
         slope, intercept, _, _, _ = linregress(logmean, logstd)
 
-        above_idx = logstd > logmean * slope + intercept + np.log10(offset_value)
+        above_idx = logstd > logmean * slope + intercept + np.log10(offset)
         X = X[:, above_idx]
 
-    return X
-
-
-def ThompsonXA_SCGenes(offset=1.0):
-    """Turns filtered and normalized cells into an Xarray."""
-    anndta = gene_import(offset_value=offset)
-
     # Assign cells a count per-experiment so we can reindex
-    data = xarrayIfy(anndta, anndta.obs_vector("Drugs"))
+    data = xarrayIfy(X, X.obs_vector("Drugs"))
     return data
