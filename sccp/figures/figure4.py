@@ -65,15 +65,15 @@ def makeFigure():
     flatProjs = flattened_projs.isel(AllCells=idxx)
     flatData = flat_data.isel(AllCells=idxx)
     
-    # plotFactors(factors, data["data"], ax[0:2], reorder=(0, 2), trim=(2,))
+    plotFactors(factors, data["data"], ax[0:2], reorder=(0, 2), trim=(2,))
     
-    # plotSS(flattened_projs, ax[2])
+    plotSS(flattened_projs, ax[2])
     
-    # plotProj(flattened_projs.isel(AllCells=idxx), ax[3:5])
+    plotProj(flattened_projs.isel(AllCells=idxx), ax[3:5])
 
-    # plotR2X(data["data"].to_numpy(), 13, ax[5])
+    plotR2X(data["data"].to_numpy(), 13, ax[5])
     
-    # plotCrossVal(data["data"].to_numpy(), 13, ax[6], trainPerc=0.75)
+    plotCrossVal(data["data"].to_numpy(), 13, ax[6], trainPerc=0.75)
     
     umap_reduc = umap.UMAP()
     embed = umap_reduc.fit_transform(flatProjs["projections"].to_numpy().T)
