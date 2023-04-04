@@ -76,8 +76,8 @@ def makeFigure():
     plotCrossVal(data["data"].to_numpy(), 13, ax[6], trainPerc=0.75)
     
     umap_reduc = umap.UMAP()
-    embed = umap_reduc.fit_transform(flatProjs["projections"].to_numpy().T)
-    tl = ax[7].scatter(embed[:,0], embed[:, 1], c=flatData.sel(Gene="NKG7").to_numpy(), cmap ="summer")
+    embed = umap_reduc.fit_transform(flattened_projs["projections"].to_numpy().T)
+    tl = ax[7].scatter(embed[:,0], embed[:, 1], c=flat_data.sel(Gene="NKG7").to_numpy(), cmap ="cool", s=0.5)
     f.colorbar(tl, ax=ax[7])
     ax[7].set_xlabel("UMAP1")
     ax[7].set_ylabel("UMAP2")
