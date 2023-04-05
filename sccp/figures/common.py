@@ -89,7 +89,7 @@ def genFigure():
     print(f"Figure {sys.argv[1]} is done after {time.time() - start} seconds.\n")
 
 
-def plotFactorsSynthetic(factors, data_xarray, ax):
+def plotFactorsSynthetic(factors, data_xarray: Pf2X, ax):
     """Plots parafac2 factors for synthetic data"""
     rank = factors[0].shape[1]
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
@@ -99,16 +99,16 @@ def plotFactorsSynthetic(factors, data_xarray, ax):
         if i != len(factors) - 2:
             if i == 0:
                 timeDF = pd.DataFrame(factors[i], columns=xticks)
-                timeDF["Time"] = np.arange(1, data_xarray.shape[i] + 1)
+                timeDF["Time"] = np.arange(1, factors[0].shape[0] + 1)
                 sns.lineplot(data=timeDF[xticks], ax=ax[iter])
                 ax[iter].set(
                     ylabel="Cmp. Weight",
                     xlabel="Time",
-                    xticks=np.arange(0, data_xarray.shape[i]),
+                    xticks=np.arange(0, factors[0].shape[0]),
                 )
 
             else:
-                yt = data_xarray.coords[data_xarray.dims[i]].values
+                yt = data_xarray.variable_labels
                 X = factors[i]
                 sns.heatmap(
                     data=X,

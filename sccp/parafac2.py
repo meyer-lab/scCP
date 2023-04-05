@@ -10,7 +10,8 @@ from tensorly.decomposition._parafac2 import _project_tensor_slices, _compute_pr
 
 class Pf2X:
     def __init__(self, X_list, condition_labels, variable_labels):
-        self.X_list = np.array(X_list, dtype=object)
+        assert isinstance(X_list, list)
+        self.X_list = X_list
         self.condition_labels = np.array(condition_labels, dtype=object)
         self.variable_labels = np.array(variable_labels, dtype=object)
         assert len(X_list) == len(condition_labels)
