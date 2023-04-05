@@ -211,40 +211,14 @@ def plotSS(projs: xa.Dataset, ax: matplotlib.axes._axes.Axes):
 
 def plotProj(projs, axs):
     """Plot a projection matrix along with cell type annotations."""
-    celltypeDF = projs["Cell Type"].to_dataframe()
-    pjArr = projs["projections"].to_numpy().T
-
-    le = preprocessing.LabelEncoder()
-    celltypes = le.fit_transform(celltypeDF["Cell Type"])
-    celltypesName = np.unique(celltypeDF["Cell Type"])
-
-    idxx = np.argsort(celltypes)
-    gini_index = giniIndex(pjArr)
-    
-    pjArr = pjArr[idxx, :]
-    xticks = projs["projections"].coords["Cmp"].values
-    
     sns.heatmap(
-        data=np.flip(pjArr[:, gini_index],axis=0),
-        xticklabels=xticks[gini_index],
+        data=projs,
+        xticklabels=[f"Cmp. {i}" for i in np.arange(1, projs.shape[1] + 1)],
         yticklabels=False,
         center=0,
         ax=axs[0],
         cmap=sns.diverging_palette(240, 10, as_cmap=True),
     )
-
-    sns.heatmap(
-        data=np.flip(celltypes[idxx].reshape((-1, 1))),
-        xticklabels=False,
-        yticklabels=False,
-        ax=axs[1],
-        cmap=sns.color_palette("tab10", len(celltypesName)),
-    )
-
-    colorbar_numbers = np.arange(0, len(celltypesName))
-    cbar = axs[1].collections[0].colorbar
-    cbar.set_ticks(colorbar_numbers)
-    cbar.set_ticklabels(celltypesName)
     
     
 def giniIndex(proj_data):

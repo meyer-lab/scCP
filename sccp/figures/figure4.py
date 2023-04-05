@@ -29,13 +29,16 @@ def makeFigure():
         data,
         rank=13,
     )
-    
+
+    flattened_projs = np.concatenate(projs, axis=0)
+    idxx = np.random.choice(flattened_projs.shape[0], size=200, replace=False)
+
     plotFactors(factors, data, ax[0:2], reorder=(0, 2), trim=(2,))
-    
-    plotProj(flattened_projs.isel(AllCells=idxx), ax[3:5])
+
+    plotProj(flattened_projs[idxx, :], ax[3:5])
 
     plotR2X(data, 13, ax[5])
-    
-    # plotCrossVal(data, 13, ax[6], trainPerc=0.75)
+
+    plotCrossVal(data.X_list, 13, ax[6], trainPerc=0.75)
 
     return f
