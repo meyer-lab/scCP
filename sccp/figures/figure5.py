@@ -1,5 +1,5 @@
 """
-Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs
+Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs: investigating UMAP
 """
 import numpy as np
 import seaborn as sns
@@ -8,25 +8,16 @@ import pandas as pd
 from .common import (
     subplotLabel,
     getSetup,
-    plotFactors,
-    plotProj,
-    plotSS,
 )
 from ..imports.scRNA import ThompsonXA_SCGenes
 from ..parafac2 import parafac2_nd
-from ..decomposition import plotR2X
-from ..crossVal import plotCrossVal
-
-import anndata
-import scanpy as sc
 import umap 
-import matplotlib.pyplot as plt
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8, 10), (2, 2))
+    ax, f = getSetup((12, 12), (3, 3))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -55,61 +46,39 @@ def makeFigure():
     flattened_projs = projs.stack(AllCells=("Drug", "Cell"))
     flat_data = data["data"].stack(AllCells=(("Drug", "Cell")))
   
-    # # Remove empty slots
+    # Remove empty slots
     nonzero_index = np.any(flattened_projs["projections"].to_numpy() != 0, axis=0)
     flattened_projs = flattened_projs.isel(AllCells=nonzero_index) 
     flat_data = flat_data.isel(AllCells=nonzero_index) 
+    
+    # UMAP dimension reduction
+    umapReduc = umap.UMAP()
+    umapPoints = umapReduc.fit_transform(flattened_projs["projections"].to_numpy().T)
+    
+    # Find cells associated with drugs
+    drugs = ["Triamcinolone Acetonide", "Budesonide", "Betamethosone Valerate", "Dexrazoxane HCl (ICRF-187, ADR-529)"]
+    
+    for i, drugz in enumerate(drugs):
+        flatData = flat_data.where(flat_data.Drug == drugz).to_numpy()
+        flatData = np.nan_to_num(flatData[0, :], nan=-1)
+        flatData[flatData != -1] = 1
 
-    idxx = np.random.choice(
-        len(flattened_projs.coords["AllCells"]), size=100, replace=False
-    )
-    
-    flatProjs = flattened_projs.isel(AllCells=idxx)
-    flatData = flat_data.isel(AllCells=idxx)
- 
-    drug = "Tazarotene"
-    da = flat_data.where(flat_data.Drug == drug).to_numpy()
-    print(da)
-    # print(np.count_nonzero(~np.isnan(da)))
-    da = np.nan_to_num(da[0, :], nan=-1)
-    da[da != -1 ] = 1
-    print(da)
-
-    # da[da == np.nan] = 0
-    # print(np.count_nonzero(~np.isnan(da)))
-    # da[da != 0] = 1
-    # da = da != np.nan
-    # da = da[0, :]
-    
-    # np.count_nonzero(np.isnan(data))
-
-    
-    # print(np.count_nonzero(~np.isnan(da)))
-     
-    # plotFactors(factors, data["data"], ax[0:2], reorder=(0, 2), trim=(2,))
-    
-    # plotSS(flattened_projs, ax[2])
-    
-    # plotProj(flattened_projs.isel(AllCells=idxx), ax[3:5])
-
-    # plotR2X(data["data"].to_numpy(), 13, ax[5])
-    
-    # plotCrossVal(data["data"].to_numpy(), 13, ax[6], trainPerc=0.75)
-    
-    umap_reduc = umap.UMAP()
-    embed = umap_reduc.fit_transform(flattened_projs["projections"].to_numpy().T)
-    
-        
-    dataa = pd.DataFrame({"UMAP1": embed[:,0],
-                "UMAP2": embed[:,1],
-                drug: da,
+        # Creating DF for figure
+        umapDF = pd.DataFrame({"UMAP1": umapPoints[:, 0],
+                "UMAP2": umapPoints[:, 1],
+                drugz: flatData,
             })
+        sns.scatterplot(data=umapDF, x="UMAP1", y="UMAP2",hue=drugz, s=0.5, ax=ax[i])
+        
     
-    sns.scatterplot(data=dataa, x="UMAP1", y="UMAP2",hue=drug, s=0.5, ax=ax[0])
-    # tl = ax[7].scatter(embed[:,0], embed[:, 1], c=da, cmap ="cool", s=0.5)
-    # f.colorbar(tl, ax=ax[7])
-    # ax[7].set_xlabel("UMAP1")
-    # ax[7].set_ylabel("UMAP2")
-    
+    genes = ["LAD1", "NKG7", "CD8A", "CD33", "CCR7"]
+    # DC, NK, CD8, Mono, CD4]
+    for i, genez in enumerate(genes):
+        gene_values = flat_data.sel(Gene=genez).to_numpy()
+        tl = ax[i+4].scatter(umapPoints[::25, 0], umapPoints[::25, 1], c=gene_values[::25], cmap ="cool", s=0.5)
+        f.colorbar(tl, ax=ax[i+4])
+        ax[i+4].set_xlabel("UMAP1")
+        ax[i+4].set_ylabel("UMAP2")
+        ax[i+4].set_title(genez)
 
     return f
