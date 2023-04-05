@@ -5,7 +5,7 @@ import tensorly as tl
 from tensorly.cp_tensor import cp_flip_sign, cp_normalize
 from tensorly.tenalg.svd import randomized_svd
 from tensorly.decomposition import parafac
-from tensorly.decomposition._parafac2 import _project_tensor_slices, _compute_projections
+from tensorly.decomposition._parafac2 import _compute_projections
 
 
 class Pf2X:
@@ -43,8 +43,8 @@ def parafac2_nd(
     X,
     rank: int,
     n_iter_max: int = 200,
-    tol=1e-9,
-    verbose=False,
+    tol: float=1e-9,
+    verbose: bool=False,
 ):
     r"""The same interface as regular PARAFAC2."""
     tl.set_backend("pytorch")
@@ -66,7 +66,7 @@ def parafac2_nd(
     err = _cmf_reconstruction_error(X, (CP.factors, projections), norm_tensor)
     errs.append(tl.to_numpy(err.cpu()) / norm_tensor)
 
-    tq = tqdm(range(n_iter_max), disable=(not verbose), delay=1)
+    tq = tqdm(range(n_iter_max), disable=(not verbose), delay=1, mininterval=1)
     for _ in tq:
         # Push the genes factors to be orthogonal
         CP.factors[2] = tl.qr(CP.factors[2])[0]
@@ -74,12 +74,12 @@ def parafac2_nd(
         projections = _compute_projections(X, CP.factors, "truncated_svd")
 
         # Project tensor slices
-        projected_X = _project_tensor_slices(X, projections)
+        projected_X = tl.stack([p.T @ t for t, p in zip(X, projections)])
 
         CP = parafac(
             projected_X,
             rank,
-            n_iter_max=10,
+            n_iter_max=5,
             init=CP,
             tol=1e-100,
             normalize_factors=False,
