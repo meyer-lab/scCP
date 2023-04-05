@@ -3,7 +3,7 @@ from sklearn.decomposition import PCA
 from .parafac2 import parafac2_nd, Pf2X
 
 
-def plotR2X(tensor, rank: int, ax1):
+def plotR2X(tensor: Pf2X, rank: int, ax1):
     """Creates R2X plot for parafac2 tensor decomposition"""
     rank_vec = np.arange(1, rank + 1)
 
@@ -15,12 +15,7 @@ def plotR2X(tensor, rank: int, ax1):
     # Collect the PCA results
     pc = PCA(n_components=rank)
 
-    if isinstance(tensor, Pf2X):
-        unf = tensor.unfold()
-    else:
-        unf = np.concatenate(tensor, axis=0)
-
-    pc.fit(unf)
+    pc.fit(tensor.unfold())
     pca_error = np.cumsum(pc.explained_variance_ratio_)
 
     ax1.scatter(
@@ -35,6 +30,6 @@ def plotR2X(tensor, rank: int, ax1):
         ylabel="Variance Explained",
         xlabel="Number of Components",
         xticks=np.arange(0, rank + 1),
-        ylim=(-0.05, np.max(np.append(pf2_error, pca_error) + 0.05))
+        ylim=(-0.05, np.max(np.append(pf2_error, pca_error) + 0.05)),
     )
     ax1.legend()
