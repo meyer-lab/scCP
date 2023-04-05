@@ -27,7 +27,7 @@ def makeFigure():
 
     # Filter out sgRNAs with few cells
     delidx = np.array([xx.shape[0] > 200 for xx in X.X_list], dtype=bool)
-    X.X_list = X.X_list[delidx]
+    X.X_list = [X.X_list[ii] for ii in range(delidx.size) if delidx[ii]]
     X.condition_labels = X.condition_labels[delidx]
 
     # Performing parafac2 on single-cell Xarray
