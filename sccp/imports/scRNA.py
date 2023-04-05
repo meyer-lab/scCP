@@ -49,7 +49,7 @@ def import_thompson_drug():
     # h5ad is simplified version of mtx format
     # data = sc.read_10x_mtx("/opt/andrew/Thompson", var_names='gene_symbols', make_unique=True)
     # data.write('thompson.h5ad', compression="gzip")
-    data = anndata.read_h5ad("/opt/andrew/thompson.h5ad")
+    data = anndata.read_h5ad("/opt/andrew/thompson.h5ad", chunk_size=12000)
 
     data.obs["Drugs"] = pd.Categorical(metafile["sample_id"])
     return data

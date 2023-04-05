@@ -29,7 +29,7 @@ def _cmf_reconstruction_error(matrices, decomposition, norm_X_sq):
     CtC = C.T @ C
 
     for i, proj in enumerate(projections):
-        B_i = tl.dot(proj, B) * A[i]
+        B_i = (proj @ B) * A[i]
         # trace of the multiplication products
         inner_product += tl.einsum("ji,jk,ki", B_i, matrices[i], C)
         norm_cmf_sq += tl.sum((B_i.T @ B_i) * CtC)
@@ -48,9 +48,10 @@ def parafac2_nd(
     r"""The same interface as regular PARAFAC2."""
     tl.set_backend("pytorch")
     if isinstance(X, Pf2X):
-        X = [tl.tensor(xx).cuda() for xx in X.X_list]
-    else:
-        X = tl.tensor(X).cuda()
+        X = X.X_list
+
+    norm_tensor = np.sum([np.linalg.norm(xx) ** 2 for xx in X])
+    X = [tl.tensor(xx).cuda() for xx in X]
 
     # Initialization
     unfolded = tl.concatenate(list(X), axis=0).T
@@ -60,12 +61,11 @@ def parafac2_nd(
     projections = _compute_projections(X, CP.factors, "truncated_svd")
 
     errs = []
-    norm_tensor = tl.sum(tl.tensor([tl.norm(xx) ** 2 for xx in X]))
 
     err = _cmf_reconstruction_error(X, (CP.factors, projections), norm_tensor)
-    errs.append(tl.to_numpy((err / norm_tensor).cpu()))
+    errs.append(tl.to_numpy(err.cpu()) / norm_tensor)
 
-    tq = tqdm(range(n_iter_max), disable=(not verbose))
+    tq = tqdm(range(n_iter_max), disable=(not verbose), delay=1)
     for _ in tq:
         # Push the genes factors to be orthogonal
         CP.factors[2] = tl.qr(CP.factors[2])[0]
@@ -85,7 +85,7 @@ def parafac2_nd(
         )
 
         err = _cmf_reconstruction_error(X, (CP[1], projections), norm_tensor)
-        errs.append(tl.to_numpy((err / norm_tensor).cpu()))
+        errs.append(tl.to_numpy(err.cpu()) / norm_tensor)
 
         delta = errs[-2] - errs[-1]
         tq.set_postfix(R2X=1.0 - errs[-1], Δ=delta, refresh=False)

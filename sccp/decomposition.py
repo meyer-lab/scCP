@@ -7,11 +7,8 @@ def plotR2X(tensor: Pf2X, rank: int, ax1):
     """Creates R2X plot for parafac2 tensor decomposition"""
     rank_vec = np.arange(1, rank + 1)
 
-    pf2_error = np.empty(len(rank_vec))
-
     # Collect Pf2 results
-    for i in range(len(rank_vec)):
-        _, _, _, pf2_error[i] = parafac2_nd(tensor, rank=i + 1, verbose=True)
+    pf2_error = [parafac2_nd(tensor, rank=r, verbose=True)[3] for r in rank_vec]
 
     ax1.scatter(rank_vec, pf2_error, label="Pf2", marker="x", s=20.0)
 

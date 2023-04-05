@@ -4,7 +4,7 @@ from .parafac2 import parafac2_nd
 from tensorly.parafac2_tensor import parafac2_to_slices
 
 
-def permute_sign_proc(X, Y):
+def permute_sign_proc(X: np.ndarray, Y: np.ndarray) -> np.ndarray:
     # Apply the procrustes algorithm to find the best match
     S, _, Vh = np.linalg.svd(X.T @ Y)
     procM = (S @ Vh).T
@@ -15,7 +15,7 @@ def permute_sign_proc(X, Y):
     return procM
 
 
-def crossvalidate_PCA(X, rank, trainPerc=0.75):
+def crossvalidate_PCA(X: np.ndarray, rank: int, trainPerc: float=0.75):
     X = X.copy()
     pc = PCA(n_components=rank)
 
@@ -66,7 +66,7 @@ def crossvalidate(X, rank: int, trainPerc: float=0.75, verbose=True):
     procM = permute_sign_proc(proj_B_flat, proj_C_flat)
 
     # Project projections into B space
-    X_recon = parafac2_to_slices((w_B, fac_B, [cc @ procM for cc in proj_C]), validate=True)
+    X_recon = parafac2_to_slices((w_B, fac_B, [cc @ procM for cc in proj_C]), validate=False)
 
     recon_error = 0.0
     total_var = 0.0
@@ -80,14 +80,12 @@ def crossvalidate(X, rank: int, trainPerc: float=0.75, verbose=True):
     return 1.0 - recon_error / total_var
 
 
-def plotCrossVal(tensor, rank, ax1, trainPerc=0.75):
+def plotCrossVal(X, rank, ax1, trainPerc=0.75):
     """Creates cross validation accuracy plot for parafac2"""
     rank_vec = np.arange(1, rank + 1)
-    cv_error = np.empty(len(rank_vec))
 
     # Collect Pf2 results
-    for i in range(len(rank_vec)):
-        cv_error[i] = crossvalidate(tensor, rank=i + 1, trainPerc=trainPerc)
+    cv_error = [crossvalidate(X, rank=r, trainPerc=trainPerc) for r in rank_vec]
 
     ax1.scatter(rank_vec, cv_error, marker="x", s=20.0)
 
