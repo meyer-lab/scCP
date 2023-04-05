@@ -12,6 +12,7 @@ import numpy as np
 import scipy.cluster.hierarchy as sch
 from ..parafac2 import Pf2X
 
+
 matplotlib.use("AGG")
 
 matplotlib.rcParams["legend.labelspacing"] = 0.2
