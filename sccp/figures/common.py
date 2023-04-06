@@ -213,26 +213,25 @@ def flattenData(data, factors, projs):
     
     return dataDF, projDF
 
-def plotGeneUMAP(genes, umapPoints, dataDF, axs):
+def plotGeneDimReduc(genes, decomp, points, dataDF, axs):
     for i, genez in enumerate(genes):
         geneList = dataDF[genez].to_numpy()
-        umapDF = pd.DataFrame({"UMAP1": umapPoints[::20, 0],
-                "UMAP2": umapPoints[::20, 1],
+        DF = pd.DataFrame({decomp[0]: points[::20, 0],
+                decomp[1]: points[::20, 1],
                 genez: geneList[::20],
             })
-        sns.scatterplot(data=umapDF, x="UMAP1", y="UMAP2", hue=genez, s=5, ax=axs[i])
-        axs[i].set(xlim=(-10, 20), ylim=(-15, 20))
+        sns.scatterplot(data=DF, x=decomp[0], y=decomp[1], hue=genez, s=5, ax=axs[i])
         
     return 
 
-def plotDrugUMAP(drugs, totaldrugs, umapPoints, axs):
+def plotDrugDimReduc(drugs, decomp, totaldrugs, points, axs):
     for i, drugz in enumerate(drugs):
         drugList = np.asarray(totaldrugs == drugz).astype(int)
-        umapDF = pd.DataFrame({"UMAP1": umapPoints[::20, 0],
-                "UMAP2": umapPoints[::20, 1],
+        DF = pd.DataFrame({decomp[0]: points[::20, 0],
+                decomp[1]: points[::20, 1],
                 drugz: drugList[::20],
             })
-        sns.scatterplot(data=umapDF, x="UMAP1", y="UMAP2", hue=drugz, s=5,  palette="muted", ax=axs[i])
+        sns.scatterplot(data=DF, x=decomp[0], y=decomp[1], hue=drugz, s=5,  palette="muted", ax=axs[i])
         
     return
     
