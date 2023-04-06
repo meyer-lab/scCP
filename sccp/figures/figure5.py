@@ -27,7 +27,7 @@ def makeFigure():
 
     _, factors, projs, _ = parafac2_nd(
         data,
-        rank=3,
+        rank=13,
     )
 
     dataDF, projDF = flattenData(data, factors, projs)
@@ -37,13 +37,13 @@ def makeFigure():
     umapReduc = umap.UMAP()
     umapPoints = umapReduc.fit_transform(projDF[cmpNames].to_numpy())
      
-    # DC, NK, CD8, Mono, CD4] Want b cells and t helprs    
-    genes = ["LAD1", "NKG7", "CD8A", "CD33", "CCR7"]
-    plotGeneUMAP(genes, umapPoints, dataDF, ax[0:5])
+    # Mono1, Mono2, NK, DC, CD8, CD4, B
+    genes = ["CD14", "FCGR3A", "NKG7", "FCER1A", "CD8A", "IL7R", "MS4A1"]
+    plotGeneUMAP(genes, umapPoints, dataDF, ax[0:7])
 
     # Find cells associated with drugs
     drugs = ["Triamcinolone Acetonide", "Budesonide", "Betamethasone Valerate", "Dexrazoxane HCl (ICRF-187, ADR-529)"]
-    plotDrugUMAP(drugs, dataDF["Drug"].values, umapPoints, ax[5:9])
+    plotDrugUMAP(drugs, dataDF["Drug"].values, umapPoints, ax[7:11])
 
     return f
 
