@@ -30,8 +30,6 @@ def makeFigure():
         rank=30,
     )
 
-    print(giniIndex(factors[0]))
-
     flattened_projs = np.concatenate(projs, axis=0)
     idxx = np.random.choice(flattened_projs.shape[0], size=200, replace=False)
 
