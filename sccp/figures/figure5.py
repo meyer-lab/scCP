@@ -78,16 +78,16 @@ def plotGeneUMAP(genes, umapPoints, dataDF, axs):
                 genez: geneList[::20],
             })
         sns.scatterplot(data=umapDF, x="UMAP1", y="UMAP2", hue=genez, s=5, ax=axs[i])
-        axs[i].set(xlim=(-10, 20), ylim=(-15, 15))
+        axs[i].set(xlim=(-10, 20), ylim=(-15, 20))
         
     return 
 
 def plotDrugUMAP(drugs, totaldrugs, umapPoints, axs):
     for i, drugz in enumerate(drugs):
         drugList = np.asarray(totaldrugs == drugz).astype(int)
-        umapDF = pd.DataFrame({"UMAP1": umapPoints[::100, 0],
-                "UMAP2": umapPoints[::100, 1],
-                drugz: drugList[::100],
+        umapDF = pd.DataFrame({"UMAP1": umapPoints[::20, 0],
+                "UMAP2": umapPoints[::20, 1],
+                drugz: drugList[::20],
             })
         sns.scatterplot(data=umapDF, x="UMAP1", y="UMAP2", hue=drugz, s=5, ax=axs[i])
         
