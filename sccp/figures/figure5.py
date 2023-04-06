@@ -3,7 +3,6 @@ Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs: investiga
 """
 import numpy as np
 import seaborn as sns
-import xarray as xa
 import pandas as pd
 from .common import (
     subplotLabel,
