@@ -17,7 +17,7 @@ import umap
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((12, 12), (4, 4))
+    ax, f = getSetup((12, 12), (4, 3))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -38,12 +38,12 @@ def makeFigure():
     umapPoints = umapReduc.fit_transform(projDF[cmpNames].to_numpy())
      
     # Mono1, Mono2, NK, DC, CD8, CD4, B
-    genes = ["CD14", "FCGR3A", "NKG7", "FCER1A", "CD8A", "IL7R", "MS4A1"]
+    genes = ["CD14", "FCGR3A", "NKG7", "CST3", "CD8B", "IL7R", "MS4A1"]
     plotGeneUMAP(genes, umapPoints, dataDF, ax[0:7])
 
     # Find cells associated with drugs
-    drugs = ["Triamcinolone Acetonide", "Budesonide", "Betamethasone Valerate", "Dexrazoxane HCl (ICRF-187, ADR-529)"]
-    plotDrugUMAP(drugs, dataDF["Drug"].values, umapPoints, ax[7:11])
+    drugs = ["CTRL2", "Triamcinolone Acetonide", "Budesonide", "Betamethasone Valerate", "Dexrazoxane HCl (ICRF-187, ADR-529)"]
+    plotDrugUMAP(drugs, dataDF["Drug"].values, umapPoints, ax[7:12])
 
     return f
 
@@ -89,7 +89,7 @@ def plotDrugUMAP(drugs, totaldrugs, umapPoints, axs):
                 "UMAP2": umapPoints[::20, 1],
                 drugz: drugList[::20],
             })
-        sns.scatterplot(data=umapDF, x="UMAP1", y="UMAP2", hue=drugz, s=5, ax=axs[i])
+        sns.scatterplot(data=umapDF, x="UMAP1", y="UMAP2", hue=drugz, s=5,  palette="muted", ax=axs[i])
         
     return
     
