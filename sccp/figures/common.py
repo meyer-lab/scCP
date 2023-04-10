@@ -216,7 +216,7 @@ def flattenData(data, factors, projs):
 def plotGeneDimReduc(genes, decomp, points, dataDF, f, axs):
     for i, genez in enumerate(genes):
         geneList = dataDF[genez].to_numpy()
-        tl = axs[i].scatter(points[::20, 0], points[::20, 1], c=geneList[::20], cmap ="plasma", s=5)
+        tl = axs[i].scatter(points[::20, 0], points[::20, 1], c=geneList[::20], cmap ="viridis", s=.2)
         f.colorbar(tl, ax=axs[i])
         axs[i].set_xlabel("UMAP1")
         axs[i].set_ylabel("UMAP2")
@@ -226,13 +226,17 @@ def plotGeneDimReduc(genes, decomp, points, dataDF, f, axs):
 
 def plotDrugDimReduc(drugs, decomp, totaldrugs, points, axs):
     for i, drugz in enumerate(drugs):
-        drugList = np.asarray(totaldrugs == drugz).astype(int)
+        drugList = np.where(np.asarray(totaldrugs == drugz), drugz, "Other Drugs")
         DF = pd.DataFrame({"UMAP1": points[::20, 0],
                 "UMAP2": points[::20, 1],
-                drugz: drugList[::20],
+                "Drug": drugList[::20],
             })
-        sns.scatterplot(data=DF, x="UMAP1", y="UMAP2", hue=drugz, s=10,  palette="muted", ax=axs[i])
+        sns.scatterplot(data=DF, x="UMAP1", y="UMAP2", hue="Drug", s=2,  palette="muted", ax=axs[i])
+        handles, labels = axs[i].get_legend_handles_labels()
+        axs[i].legend(handles=handles, labels=labels)
         axs[i].set_title(decomp+"-Based Decomposition")
+        
+        
         
     return
     

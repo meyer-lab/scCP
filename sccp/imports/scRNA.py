@@ -79,6 +79,8 @@ def ThompsonXA_SCGenes(offset: float = 1.0) -> anndata.AnnData:
 
     # Center the genes
     X.X -= np.mean(X.X, axis=0)
+    X.X += np.abs(np.min(X.X, axis=0))
+    # print(np.min(X.X, axis=0))
 
     # Assign cells a count per-experiment so we can reindex
     return tensorFy(X, "Drugs")
