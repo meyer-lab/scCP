@@ -167,8 +167,8 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
             sort_idx = np.argsort(X, axis=0)
             for j in range(rank):
                 sort_data = yt[sort_idx[:, j]]
-                print("Bottom 10 Genes Cmp." + str(j + 1) + ":", sort_data[:10])
-                print("Top 10 Genes Cmp." + str(j + 1) + ":", np.flip(sort_data[-10:]))
+                #print("Bottom 10 Genes Cmp." + str(j + 1) + ":", sort_data[:10])
+                #print("Top 10 Genes Cmp." + str(j + 1) + ":", np.flip(sort_data[-10:]))
 
 
 def reorder_table(projs):
@@ -204,7 +204,7 @@ def flattenData(data, factors, projs):
         flatProjs[int(cellStart[i]): int(cellStart[i+1])] = projs[i]
         flatData[int(cellStart[i]): int(cellStart[i+1])] = data.X_list[i]
         drugNames = np.append(drugNames, np.repeat(data.condition_labels[i], cellCount[i]))
-    
+
     cmpNames = [f"Cmp. {i}" for i in np.arange(1, factors[0].shape[1] + 1)]
     projDF = pd.DataFrame(data=flatProjs, columns = cmpNames)
     dataDF = pd.DataFrame(data=flatData, columns = data.variable_labels)
