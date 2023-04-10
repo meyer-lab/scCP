@@ -48,7 +48,7 @@ def makeFigure():
     # Mono1, Mono2, DC, NK, CD4, B, CD8]
     genes = ["CD14", "FCGR3A", "ITGAM", "NKG7", "IL7R", "MS4A1", "CD8A"]
     plotGeneDimReduc(genes, "Pf2", pf2Points, dataDF, f, ax[0:7])
-    plotGeneDimReduc(genes, "PCA", pcaPoints, dataDF, f, ax[0:7])
+    # plotGeneDimReduc(genes, "PCA", pcaPoints, dataDF, f, ax[0:7])
 
     # Find cells associated with drugs
     drugs = ["Triamcinolone Acetonide"]
@@ -56,7 +56,7 @@ def makeFigure():
     # Find cells associated with drugs
     drugs = ["Triamcinolone Acetonide", "Meprednisone", "Alprostadil", "Budesonide", "Betamethasone Valerate", ]
     plotDrugDimReduc(drugs, "Pf2", dataDF["Drug"].values, pf2Points, ax[7:12])
-    plotDrugDimReduc(drugs, "PCA", dataDF["Drug"].values, pcaPoints, ax[7:12])
+    # plotDrugDimReduc(drugs, "PCA", dataDF["Drug"].values, pcaPoints, ax[7:12])
 
 
     return f
