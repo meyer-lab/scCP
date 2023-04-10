@@ -220,6 +220,8 @@ def plotGeneDimReduc(genes, decomp, points, dataDF, axs):
                 decomp[1]: points[::20, 1],
                 genez: geneList[::20],
             })
+        print(DF)
+        print(DF.shape)
         sns.scatterplot(data=DF, x=decomp[0], y=decomp[1], hue=genez, s=5, ax=axs[i])
 
     return 
