@@ -58,4 +58,5 @@ def makeFigure():
     plotDrugDimReduc(drugs, "Pf2", dataDF["Drug"].values, pf2Points, ax[7:12])
     plotDrugDimReduc(drugs, "PCA", dataDF["Drug"].values, pcaPoints, ax[7:12])
 
+
     return f
