@@ -213,25 +213,26 @@ def flattenData(data, factors, projs):
     
     return dataDF, projDF
 
-def plotGeneDimReduc(genes, decomp, points, dataDF, axs):
+def plotGeneDimReduc(genes, decomp, points, dataDF, f, axs):
     for i, genez in enumerate(genes):
         geneList = dataDF[genez].to_numpy()
-        DF = pd.DataFrame({decomp[0]: points[::20, 0],
-                decomp[1]: points[::20, 1],
-                genez: geneList[::20],
-            })
-        sns.scatterplot(data=DF, x=decomp[0], y=decomp[1], hue=genez, s=5, ax=axs[i])
+        tl = axs[i].scatter(points[::20, 0], points[::20, 1], c=geneList[::20], cmap ="plasma", s=5)
+        f.colorbar(tl, ax=axs[i])
+        axs[i].set_xlabel("UMAP1")
+        axs[i].set_ylabel("UMAP2")
+        axs[i].set_title(genez+"-"+decomp+"-Based Decomposition")
         
     return 
 
 def plotDrugDimReduc(drugs, decomp, totaldrugs, points, axs):
     for i, drugz in enumerate(drugs):
         drugList = np.asarray(totaldrugs == drugz).astype(int)
-        DF = pd.DataFrame({decomp[0]: points[::20, 0],
-                decomp[1]: points[::20, 1],
+        DF = pd.DataFrame({"UMAP1": points[::20, 0],
+                "UMAP2": points[::20, 1],
                 drugz: drugList[::20],
             })
-        sns.scatterplot(data=DF, x=decomp[0], y=decomp[1], hue=drugz, s=5,  palette="muted", ax=axs[i])
+        sns.scatterplot(data=DF, x="UMAP1", y="UMAP2", hue=drugz, s=10,  palette="muted", ax=axs[i])
+        axs[i].set_title(decomp+"-Based Decomposition")
         
     return
     

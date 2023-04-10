@@ -18,7 +18,7 @@ from sklearn.decomposition import PCA
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((12, 12), (4, 4))
+    ax, f = getSetup((8, 10), (2, 2))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -44,17 +44,16 @@ def makeFigure():
     pcaPoints = pc.fit_transform(dataDF[data.variable_labels].to_numpy())
     pcaPoints = umapReduc.fit_transform(pcaPoints)
      
-    # Mono1, Mono2, NK, CD4, B
-    genes = ["CD14", "FCGR3A", "NKG7", "IL7R", "MS4A1"]
-    plotGeneDimReduc(genes, ["UMAP1", "UMAP2"], pf2Points, dataDF, ax[0:5])
-    plotGeneDimReduc(genes, ["PCA1", "PCA2"], pcaPoints, dataDF, ax[5:10])
+    # NK
+    genes = ["NKG7"]
+    plotGeneDimReduc(genes, "Pf2", pf2Points, dataDF, f, ax[0:1])
+    plotGeneDimReduc(genes, "PCA", pcaPoints, dataDF, f, ax[1:2])
 
     # Find cells associated with drugs
-    drugs = ["Triamcinolone Acetonide", "Budesonide", "Betamethasone Valerate"]
-    plotDrugDimReduc(drugs, ["UMAP1", "UMAP2"], dataDF["Drug"].values, pf2Points, ax[10:13])
-    plotDrugDimReduc(drugs, ["PCA1", "PCA2"], dataDF["Drug"].values, pcaPoints, ax[13:16])
-    
-    
+    drugs = ["Triamcinolone Acetonide"]
+    plotDrugDimReduc(drugs, "Pf2", dataDF["Drug"].values, pf2Points, ax[2:3])
+    plotDrugDimReduc(drugs, "PCA", dataDF["Drug"].values, pcaPoints, ax[3:4])
+
     return f
 
  
