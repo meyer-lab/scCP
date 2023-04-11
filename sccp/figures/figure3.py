@@ -18,7 +18,7 @@ from sklearn.decomposition import PCA
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((6, 6), (2, 2))
+    ax, f = getSetup((8, 10), (4, 3))
 
     # Add subplot labels
     subplotLabel(ax)
