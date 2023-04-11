@@ -65,7 +65,7 @@ def makeFigure():
     pcaPoints = umapReduc.fit_transform(pcaPoints)
 
     # Mono1, Mono2, NK, CD4, B
-    genes = ["TFAM", "GFM1", "TRAPPC11", "SPC25", "SMG5"]
+    drugs = ["Triamcinolone Acetonide", "Meprednisone", "Alprostadil", "Budesonide", "Betamethasone Valerate", ]
     plotDrugDimReduc(drugs, "Pf2", dataDF["Drug"].values, pf2Points, ax[0:5])
     plotDrugDimReduc(drugs, "PCA", dataDF["Drug"].values, pcaPoints, ax[5:10])
 
