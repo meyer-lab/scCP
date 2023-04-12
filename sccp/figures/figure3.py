@@ -44,8 +44,8 @@ def makeFigure():
      
     # NK, CD4, B, CD8
     genes = ["NKG7", "IL7R", "MS4A1", "CD8A"]
-    plotGeneDimReduc(genes, "Pf2", pf2Points, dataDF, f, ax[0:4])
-    plotGeneDimReduc(genes, "PCA", pcaPoints, dataDF, f, ax[4:8])
+    plotGeneUMAP(genes, "Pf2", pf2Points, dataDF, f, ax[0:4])
+    plotGeneUMAP(genes, "PCA", pcaPoints, dataDF, f, ax[4:8])
 
     # Find cells associated with drugs
     drugs = [
