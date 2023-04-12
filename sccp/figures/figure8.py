@@ -6,7 +6,7 @@ from .common import (
     getSetup,
     reorder_table,
     flattenData,
-    plotGeneUMAP,
+    plotDrugUMAP,
 )
 import numpy as np
 from ..imports.scRNA import import_perturb_RPE
