@@ -2,20 +2,18 @@
 Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs: investigating UMAP
 """
 import numpy as np
-import pandas as pd 
-import seaborn as sns
 from .common import (
     subplotLabel,
     getSetup,
     flattenData,
-    plotDrugDimReduc,
-    plotGeneDimReduc,
+    plotDrugUMAP,
+    plotGeneUMAP,
+    plotCmpUMAP
 )
 from ..imports.scRNA import ThompsonXA_SCGenes
 from ..parafac2 import parafac2_nd
 import umap
 from sklearn.decomposition import PCA
-from matplotlib import gridspec, pyplot as plt
 
 
 def makeFigure():
@@ -53,11 +51,13 @@ def makeFigure():
     drugs = [
         "Triamcinolone Acetonide",
         "Alprostadil",
-        "Budesonide",
-        "Betamethasone Valerate",
     ]
+    plotDrugUMAP(drugs, "Pf2", dataDF["Drug"].values, pf2Points, ax[8:10])
+    plotDrugUMAP(drugs, "PCA", dataDF["Drug"].values, pcaPoints, ax[10:12])
     
-    plotDrugDimReduc(drugs, "Pf2", dataDF["Drug"].values, pf2Points, ax[8:12])
-    plotDrugDimReduc(drugs, "PCA", dataDF["Drug"].values, pcaPoints, ax[12:16])
+    cmp = ["Cmp. 23", "Cmp. 25", "Cmp. 29", "Cmp. 30"]
+    plotCmpUMAP(projDF, cmp, pf2Points, f, ax[12:16])
     
-    return
+    return f
+
+
