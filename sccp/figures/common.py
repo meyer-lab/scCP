@@ -291,7 +291,7 @@ def plotCmpUMAP(projDF, projName, points, f, axs):
         )
         f.colorbar(tl, ax=axs[i])
         axs[i].set(
-            title=proj + "-" + decomp + "-Based Decomposition",
+            title=proj + "-Pf2-Based Decomposition",
             ylabel="UMAP2",
             xlabel="UMAP1",
             xticks=np.linspace(np.min(umap1), 
