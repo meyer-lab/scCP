@@ -4,6 +4,9 @@ import pandas as pd
 from scipy.stats import linregress
 import anndata
 from ..parafac2 import Pf2X
+import multiprocessing as mp
+import os
+import pickle
 
 
 path_here = dirname(dirname(__file__))
@@ -52,7 +55,7 @@ def import_thompson_drug() -> anndata.AnnData:
     return data
 
 
-def ThompsonXA_SCGenes(offset: float = 1.0) -> anndata.AnnData:
+def ThompsonXA_SCGenes(shuffle = "Off", offset: float = 1.0) -> anndata.AnnData:
     """Import Thompson lab PBMC dataset."""
     X = import_thompson_drug()
     scalingfactor = 1000
@@ -79,6 +82,10 @@ def ThompsonXA_SCGenes(offset: float = 1.0) -> anndata.AnnData:
 
     # Center the genes
     X.X -= np.mean(X.X, axis=0)
-
+    
+    if shuffle == "On":
+        rng = np.random.default_rng(seed=0)
+        X.X = rng.permutation(X.X, axis=1)
+ 
     # Assign cells a count per-experiment so we can reindex
     return tensorFy(X, "Drugs")
