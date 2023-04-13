@@ -14,6 +14,7 @@ from ..imports.scRNA import ThompsonXA_SCGenes
 from ..parafac2 import parafac2_nd
 import umap
 from sklearn.decomposition import PCA
+from sklearn.decomposition import NMF
 
 
 def makeFigure():
@@ -29,6 +30,7 @@ def makeFigure():
     _, factors, projs, _ = parafac2_nd(
         data,
         rank=rank,
+        random_state=0
     )
     dataDF, projDF = flattenData(data, factors, projs)
 
@@ -37,7 +39,12 @@ def makeFigure():
     umapReduc = umap.UMAP()
     pf2Points = umapReduc.fit_transform(projDF[cmpNames].to_numpy())
 
-    # PCA dimension reduction
+    # NMF dimension reduction
+    # nmf = NMF(n_components=rank)
+    # nmfPoints = nmf.fit_transform(dataDF[data.variable_labels].to_numpy())
+    # nmfPoints = umapReduc.fit_transform(nmfPoints)
+    
+    # # PCA dimension reduction
     pc = PCA(n_components=rank)
     pcaPoints = pc.fit_transform(dataDF[data.variable_labels].to_numpy())
     pcaPoints = umapReduc.fit_transform(pcaPoints)
@@ -46,6 +53,7 @@ def makeFigure():
     genes = ["NKG7", "IL7R", "MS4A1", "CD8A"]
     plotGeneUMAP(genes, "Pf2", pf2Points, dataDF, f, ax[0:4])
     plotGeneUMAP(genes, "PCA", pcaPoints, dataDF, f, ax[4:8])
+    # plotGeneUMAP(genes, "NMF", nmfPoints, dataDF, f, ax[4:8])
 
     # Find cells associated with drugs
     drugs = [
@@ -54,6 +62,7 @@ def makeFigure():
     ]
     plotDrugUMAP(drugs, "Pf2", dataDF["Drug"].values, pf2Points, ax[8:10])
     plotDrugUMAP(drugs, "PCA", dataDF["Drug"].values, pcaPoints, ax[10:12])
+    # plotDrugUMAP(drugs, "NMF", dataDF["Drug"].values, nmfPoints, ax[10:12])
     
     cmp = ["Cmp. 23", "Cmp. 25", "Cmp. 29", "Cmp. 30"]
     plotCmpUMAP(projDF, cmp, pf2Points, f, ax[12:16])
