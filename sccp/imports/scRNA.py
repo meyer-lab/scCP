@@ -52,14 +52,22 @@ def import_thompson_drug() -> anndata.AnnData:
     return data
 
 
-def ThompsonXA_SCGenes(offset: float = 1.0) -> anndata.AnnData:
+def ThompsonXA_SCGenes(sliceData = False, offset: float = 1.0) -> anndata.AnnData:
     """Import Thompson lab PBMC dataset."""
     X = import_thompson_drug()
     scalingfactor = 1000
-
-    assert np.all(np.isfinite(X.X.data))
+    
     X.X = X.X.todense()
+    
+    # print(np.shape(X.X))
+    
+    if sliceData is True:
+        X = X[X.obs["Drugs"].isin(["Betamethasone Valerate", "Loteprednol etabonate",
+                                   "Triamcinolone Acetonide", "Budesonide", "Meprednisone", 
+                                   "CTRL1", "CTRL2", "CTRL3", "CTRL4", "CTRL5", "CTRL6"])]
+    assert np.all(np.isfinite(X.X.data))
 
+    
     X = X[:, np.mean(X.X > 0, axis=0) > 0.001]
     X.X /= np.sum(X.X, axis=0)
 
