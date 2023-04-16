@@ -51,6 +51,7 @@ def makeFigure():
         X,
         rank=24,
         verbose=True,
+        random_state=1,
     )
 
     dataDF, projDF = flattenData(data, factors, projs)
