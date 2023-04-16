@@ -35,7 +35,7 @@ def makeFigure():
     dataDF, projDF = flattenData(data, factors, projs)
 
     # UMAP dimension reduction
-    umapReduc = umap.UMAP()
+    umapReduc = umap.UMAP(random_state=1)
     pf2Points = umapReduc.fit_transform(np.concatenate(projs, axis=0))
 
     # PCA dimension reduction
