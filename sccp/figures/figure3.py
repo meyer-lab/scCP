@@ -36,7 +36,7 @@ def makeFigure():
 
     # UMAP dimension reduction
     umapReduc = umap.UMAP()
-    pf2Points = umapReduc.fit_transform(projs)
+    pf2Points = umapReduc.fit_transform(np.concatenate(projs, axis=0))
 
     # PCA dimension reduction
     pc = PCA(n_components=rank)

@@ -231,7 +231,7 @@ def plotGeneUMAP(genes, decomp, points, dataDF, f, axs):
             umap2,
             c=geneList[::10],
             cmap=cmap.reversed(),
-            s=0.2,
+            s=0.1,
         )
         f.colorbar(tl, ax=axs[i])
         axs[i].set(
