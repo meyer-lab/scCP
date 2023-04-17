@@ -8,10 +8,10 @@ all: $(patsubst sccp/figures/figure%.py, output/figure%.svg, $(flist))
 
 output/figure%.svg: sccp/figures/figure%.py
 	@ mkdir -p ./output
-	poetry run fbuild $*
+	PYTORCH_ENABLE_MPS_FALLBACK=1 poetry run fbuild $*
 
 test:
-	poetry run pytest -s -x -v --full-trace
+	PYTORCH_ENABLE_MPS_FALLBACK=1 poetry run pytest -s -x -v --full-trace
 
 coverage.xml:
 	poetry run pytest --cov=sccp --cov-report=xml
