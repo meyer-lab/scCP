@@ -30,19 +30,19 @@ def makeFigure():
     
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes(sliceData=True, offset=1.0)
-    rank = 15
+    rank = 25
     _, factors, projs, _ = parafac2_nd(
         data,
         rank=rank,
         random_state=0
     )
-
     
+
     plotFactors(factors, data, ax[0:2], reorder=(0, 2), trim=(2,))
     
-    # plotR2X(data, rank, ax[3])
+    plotR2X(data, rank+5, ax[2])
 
-    # plotCrossVal(data.X_list, 10, ax[4], trainPerc=0.75)
+    plotCrossVal(data.X_list, rank+5, ax[3], trainPerc=0.75)
     dataDF, projDF = flattenData(data, factors, projs)
 
     # UMAP dimension reduction
@@ -62,9 +62,10 @@ def makeFigure():
 
     # Find cells associated with drugs
     drugs = ["Triamcinolone Acetonide","Loteprednol etabonate", "Betamethasone Valerate", 
-                                    "Budesonide", "Meprednisone", "CTRL6", ]
+                                    "Budesonide", "CTRL2"]
     
-    plotDrugUMAP(drugs, "Pf2", dataDF["Drug"].values, pf2Points, ax[3:10])
+    plotDrugUMAP(drugs, "Pf2", dataDF["Drug"].values, pf2Points, ax[4:9])
+    
     # plotDrugUMAP(drugs, "PCA", dataDF["Drug"].values, pcaPoints, ax[6:9])
     
     # cmp = ["Cmp. 23", "Cmp. 25", "Cmp. 29", "Cmp. 30"]
