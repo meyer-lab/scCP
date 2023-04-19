@@ -27,8 +27,8 @@ def crossvalidate_PCA(X: np.ndarray, rank: int, trainPerc: float = 0.75) -> floa
     # Reconstruct and get error
     X_err = X - (scores @ loadings + mean_)
 
-    recon_error = np.linalg.norm(X_err[X_B_idx:, X_C_idx:]) ** 2
-    total_var = np.linalg.norm(X[X_B_idx:, X_C_idx:]) ** 2
+    recon_error = float(np.linalg.norm(X_err[X_B_idx:, X_C_idx:]) ** 2)
+    total_var = float(np.linalg.norm(X[X_B_idx:, X_C_idx:]) ** 2)
 
     return 1.0 - recon_error / total_var
 
@@ -54,9 +54,7 @@ def crossvalidate(X, rank: int, trainPerc: float = 0.75, verbose: bool = True) -
     _, proj = _cmf_reconstruction_error(C_train, fac_C, 1.0)
 
     # Project projections into B space
-    X_recon = parafac2_to_slices(
-        (w_B, fac_B, proj), validate=False
-    )
+    X_recon = parafac2_to_slices((w_B, fac_B, proj), validate=False)
 
     recon_error = 0.0
     total_var = 0.0
@@ -64,8 +62,8 @@ def crossvalidate(X, rank: int, trainPerc: float = 0.75, verbose: bool = True) -
         xr = X_recon[ii][X_B_idx[ii] :, X_C_idx:]
         xx = X[ii][X_B_idx[ii] :, X_C_idx:]
 
-        recon_error += np.linalg.norm(xx - xr) ** 2
-        total_var += np.linalg.norm(xx) ** 2
+        recon_error += float(np.linalg.norm(xx - xr) ** 2)
+        total_var += float(np.linalg.norm(xx) ** 2)
 
     return 1.0 - recon_error / total_var
 

@@ -65,6 +65,7 @@ def ThompsonXA_SCGenes(sliceData = False, offset: float = 1.0) -> anndata.AnnDat
         X = X[X.obs["Drugs"].isin(["Betamethasone Valerate", "Loteprednol etabonate",
                                    "Triamcinolone Acetonide", "Budesonide", "Meprednisone", 
                                    "CTRL1", "CTRL2", "CTRL3", "CTRL4", "CTRL5"])]
+
     assert np.all(np.isfinite(X.X.data))
 
     
