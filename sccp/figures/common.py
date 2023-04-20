@@ -212,10 +212,12 @@ def flattenData(data, factors, projs):
     cmpNames = [f"Cmp. {i}" for i in np.arange(1, factors[0].shape[1] + 1)]
     projDF = pd.DataFrame(data=flatProjs, columns=cmpNames)
     dataDF = pd.DataFrame(data=flatData, columns=data.variable_labels)
+    weightedDF = pd.DataFrame(data=flatProjs @ factors[1], columns=cmpNames)
     projDF["Drug"] = drugNames
     dataDF["Drug"] = drugNames
+    weightedDF["Drug"] = drugNames
 
-    return dataDF, projDF
+    return dataDF, projDF, weightedDF
 
 
 def plotGeneUMAP(genes, decomp, points, dataDF, f, axs):
