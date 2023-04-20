@@ -197,11 +197,9 @@ def flattenData(data, factors, projs):
     for i in range(factors[0].shape[0]):
         cellCount = np.append(cellCount, projs[i].shape[0])
 
-    cellStart = [0]
     drugNames = []
 
     for i in range(factors[0].shape[0]):
-        cellStart = np.append(cellStart, cellStart[i] + cellCount[i])
         drugNames = np.append(
             drugNames, np.repeat(data.condition_labels[i], cellCount[i])
         )
