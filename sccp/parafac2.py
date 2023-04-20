@@ -59,14 +59,14 @@ def parafac2_nd(
         X = X.X_list
 
     norm_tensor = np.sum([np.linalg.norm(xx) ** 2 for xx in X])
-    X = [tl.tensor(xx).to("mps") for xx in X]
+    X = [tl.tensor(xx).cuda() for xx in X]
 
     # Initialization
     unfolded = tl.concatenate(list(X), axis=0).T
     assert tl.shape(unfolded)[0] > rank
     C = randomized_svd(unfolded, rank, random_state=rng)[0]
     CP = tl.cp_tensor.CPTensor(
-        (None, [tl.ones((len(X), rank)).to("mps"), tl.eye(rank).to("mps"), C])
+        (None, [tl.ones((len(X), rank)).cuda(), tl.eye(rank).cuda(), C])
     )
 
     errs = []

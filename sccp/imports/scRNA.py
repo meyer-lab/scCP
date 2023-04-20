@@ -4,7 +4,6 @@ import pandas as pd
 from scipy.stats import linregress
 import anndata
 from ..parafac2 import Pf2X
-import scanpy as sc
 
 
 path_here = dirname(dirname(__file__))
@@ -45,6 +44,7 @@ def import_thompson_drug() -> anndata.AnnData:
     )
 
     # h5ad is simplified version of mtx format
+    # import scanpy as sc
     # data = sc.read_10x_mtx("./sccp/data/", var_names='gene_symbols', make_unique=True)
     # data.X = data.X.todense()
     # data = data[:, np.mean(data.X > 0, axis=0) > 0.001]
