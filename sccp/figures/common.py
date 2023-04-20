@@ -244,12 +244,12 @@ def plotGeneUMAP(genes, decomp, points, dataDF, f, axs):
 
 def plotDrugUMAP(drugs, decomp, totaldrugs, points, axs):
     """Scatterplot of UMAP visualization weighted by condition"""
-    umap1 = points[::10, 0]
-    umap2 = points[::10, 1]
+    umap1 = points[::5, 0]
+    umap2 = points[::5, 1]
     for i, drugz in enumerate(drugs):
         drugList = np.where(np.asarray(totaldrugs == drugz), drugz, "Other Drugs")
         sns.scatterplot(
-            x=umap1, y=umap2, hue=drugList[::10], s=1, palette="muted", ax=axs[i]
+            x=umap1, y=umap2, hue=drugList[::5], s=1, palette="muted", ax=axs[i]
         )
         handles, labels = axs[i].get_legend_handles_labels()
         axs[i].legend(handles=handles, labels=labels)

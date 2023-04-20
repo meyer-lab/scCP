@@ -57,10 +57,6 @@ def ThompsonXA_SCGenes(sliceData = False, offset: float = 1.0) -> anndata.AnnDat
     X = import_thompson_drug()
     scalingfactor = 1000
     
-    X.X = X.X.todense()
-    
-    # print(np.shape(X.X))
-    
     if sliceData is True:
         X = X[X.obs["Drugs"].isin(["Betamethasone Valerate", "Loteprednol etabonate",
                                    "Triamcinolone Acetonide", "Budesonide", "Meprednisone", 
