@@ -131,10 +131,13 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
     iter = 0
-    for i in (0, 2):
+    for i in range(3):
+        print(i)
         # The single cell mode has a square factors matrix
         if i == 0:
             yt = data.condition_labels
+        elif i == 1:
+            yt = xticks
         else:
             yt = data.variable_labels
 
@@ -150,23 +153,46 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
             X, ind = reorder_table(X)
             yt = yt[ind]
 
-        sns.heatmap(
-            data=X,
-            xticklabels=xticks,
-            yticklabels=yt,
-            ax=axs[iter],
-            center=0,
-            cmap=cmap,
-        )
-
-        axs[iter].set_title("Factors")
+        if i == 0:
+            sns.heatmap(
+                data=X,
+                xticklabels=xticks,
+                yticklabels=yt,
+                ax=axs[iter],
+                center=0,
+                cmap=cmap,
+                vmin=0
+            )
+        elif i == 2:
+            sns.heatmap(
+                data=X,
+                xticklabels=xticks,
+                yticklabels=yt,
+                ax=axs[iter],
+                center=0,
+                cmap=cmap,
+                vmin=-np.max(max_weight),
+                vmax=np.max(max_weight)
+            )
+            
+        else:
+            sns.heatmap(
+                data=X,
+                xticklabels=xticks,
+                yticklabels=yt,
+                ax=axs[iter],
+                center=0,
+                cmap=cmap,
+                
+            )
+            
         axs[iter].tick_params(axis="y", rotation=0)
         iter += 1
 
-        if i == 2 and len(yt) > 50:
-            sort_idx = np.argsort(X, axis=0)
-            for j in range(rank):
-                sort_data = yt[sort_idx[:, j]]
+        # if i == 2 and len(yt) > 50:
+        #     sort_idx = np.argsort(X, axis=0)
+        #     for j in range(rank):
+        #         sort_data = yt[sort_idx[:, j]]
                 # print("Bottom 10 Genes Cmp." + str(j + 1) + ":", sort_data[:10])
                 # print("Top 10 Genes Cmp." + str(j + 1) + ":", np.flip(sort_data[-10:]))
 
@@ -197,9 +223,11 @@ def flattenData(data, factors, projs):
     for i in range(factors[0].shape[0]):
         cellCount = np.append(cellCount, projs[i].shape[0])
 
+    cellStart = [0]
     drugNames = []
 
     for i in range(factors[0].shape[0]):
+        cellStart = np.append(cellStart, cellStart[i] + cellCount[i])
         drugNames = np.append(
             drugNames, np.repeat(data.condition_labels[i], cellCount[i])
         )
