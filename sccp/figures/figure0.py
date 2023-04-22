@@ -10,8 +10,6 @@ from .common import (
 )
 from ..synthetic import synthXA
 from ..parafac2 import parafac2_nd
-from ..decomposition import plotR2X
-from ..crossVal import plotCrossVal
 
 
 def makeFigure():
@@ -37,10 +35,7 @@ def makeFigure():
     plotProj(projs[7], ax[2:4])
 
     plotProj(flattened_projs, ax[4:6])
-
-    plotR2X(X, 3, ax[7])
-    plotCrossVal(X.X_list, 3, ax[8], trainPerc=0.75)
-
+    
     ax[2].set_title("Projections: Time=6")
     ax[4].set_title("Projections: All Conditions")
     ax[6].set_title("All Conditions")
