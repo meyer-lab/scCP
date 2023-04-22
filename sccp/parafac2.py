@@ -48,7 +48,7 @@ def parafac2_nd(
     X,
     rank: int,
     n_iter_max: int = 200,
-    tol: float = 1e-7,
+    tol: float = 1e-6,
     verbose: bool = False,
     random_state=None,
 ):
@@ -84,7 +84,7 @@ def parafac2_nd(
         CP = parafac(
             projected_X,
             rank,
-            n_iter_max=2,
+            n_iter_max=10,
             init=CP,
             tol=False,
             normalize_factors=False,

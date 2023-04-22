@@ -18,8 +18,13 @@ h5netcdf = "^1.1.0"
 anndata = "^0.8.0"
 torch = "2.0.0"
 numba = "0.57.0rc1"
-umap-learn = "^0.5.3"
 mygene = "^3.2.2"
+colorcet = "^3.0.1"
+scikit-image = "^0.20.0"
+holoviews = "^1.10"
+bokeh = "2.4.0"
+datashader = "^0.14.4"
+umap-learn = {version = "0.5.3", extras = ["plot"]}
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.3"

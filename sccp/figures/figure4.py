@@ -17,7 +17,7 @@ from ..crossVal import plotCrossVal
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((18, 25), (2, 4))
+    ax, f = getSetup((18, 25), (1, 4))
 
     # Add subplot labels
     subplotLabel(ax)
