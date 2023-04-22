@@ -137,7 +137,7 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
         if i == 0:
             yt = data.condition_labels
         elif i == 1:
-            yt = xticks
+            yt = [f"Cell State {i}" for i in np.arange(1, rank + 1)]
         else:
             yt = data.variable_labels
 
