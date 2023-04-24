@@ -305,7 +305,7 @@ def plotR2X_CV(data, rank, trainPerc, ax):
     
     rank_vec = np.arange(1, rank + 1)
     labelNames = ["Fit: Pf2", "Fit: PCA", "CV: Pf2", "CV: PCA"]
-    markerShape = ["*", "+" , "*", "+"]
+    markerShape = [".", "+" , ".", "+"]
     colorDecomp = ["r", "r", "b", "b"]
     
     for i in range(4):
@@ -322,6 +322,60 @@ def plotR2X_CV(data, rank, trainPerc, ax):
         xlabel="Number of Components",
         xticks=np.arange(0, rank + 1),
         ylim=(0, np.max(totalError)+0.01),
+    )
+    
+    ax.legend()
+    
+def plotR2X(data, rank, ax):
+    """Creates R2X plot for parafac2 tensor decomposition"""
+    r2xError = R2X(data, rank) 
+    
+    rank_vec = np.arange(1, rank + 1)
+    labelNames = ["Fit: Pf2", "Fit: PCA"]
+    colorDecomp = ["r", "b"]
+    markerShape = ["|", "_"]
+    print(r2xError[0])
+    print(r2xError[1])
+    
+    for i in range(2):
+        ax.scatter(rank_vec, 
+               r2xError[i], 
+               label=labelNames[i], 
+               marker=markerShape[i],
+               c=colorDecomp[i],
+               s=30.0)
+    
+    ax.set(
+        ylabel="Variance Explained",
+        xlabel="Number of Components",
+        xticks=np.linspace(0, rank, num=8, dtype=int),
+        yticks=np.linspace(0, np.max(np.append(r2xError[0], r2xError[1]))+0.01, num=5),
+    )
+    
+    ax.legend()
+    
+def plotCV(data, rank, trainPerc, ax):
+    """Creates R2X plot for parafac2 tensor decomposition"""
+    cvError = CrossVal(data, rank, trainPerc = trainPerc)
+ 
+    rank_vec = np.arange(1, rank + 1)
+    labelNames = ["CV: Pf2", "CV: PCA"]
+    colorDecomp = ["r", "b"]
+    markerShape = ["o", "o"]
+    
+    for i in range(2):
+        ax.scatter(rank_vec, 
+               cvError[i], 
+               label=labelNames[i], 
+               marker=markerShape[i],
+               c=colorDecomp[i],
+               s=30.0)
+    
+    ax.set(
+        ylabel="Variance Explained",
+        xlabel="Number of Components",
+        xticks=np.linspace(0, rank, num=8, dtype=int),
+        yticks=np.linspace(0, np.max(np.append(cvError[0], cvError[1]))+0.01, num=5),
     )
     
     ax.legend()

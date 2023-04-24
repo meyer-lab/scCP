@@ -7,7 +7,9 @@ from .common import (
     getSetup,
     plotFactors,
     plotProj,
-    plotR2X_CV
+    plotR2X_CV,
+    plotR2X,
+    plotCV
 )
 from ..imports.scRNA import ThompsonXA_SCGenes
 from ..parafac2 import parafac2_nd
@@ -25,13 +27,20 @@ def makeFigure():
 
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes()
-    rank = 5
+    rank = 25
 
     _, factors, projs, _ = parafac2_nd(
         data,
         rank=rank,
         random_state=1,
     )
+    
+    plotCV(data, rank+3, trainPerc=0.75, ax=ax[2])
+    plotR2X(data, rank+3, ax=ax[3])
+
+
+
+
 
 
     # flattened_projs = np.concatenate(projs, axis=0)
@@ -39,7 +48,8 @@ def makeFigure():
 
     # plotFactors(factors, data, ax[0:2], reorder=(0, 2), trim=(2,))
     
-    plotR2X_CV(data, rank, trainPerc=0.75, ax=ax[3])
+    # plotR2X_CV(data, rank, trainPerc=0.75, ax=ax[3])
+    
     
     
     
