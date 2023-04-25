@@ -27,16 +27,17 @@ def makeFigure():
 
     _, factors, projs, _ = parafac2_nd(
         data,
-        rank=30,
+        rank=3,
         random_state=1,
     )
 
-    flattened_projs = np.concatenate(projs, axis=0)
-    idxx = np.random.choice(flattened_projs.shape[0], size=200, replace=False)
 
-    plotFactors(factors, data, ax[0:2], reorder=(0, 2), trim=(2,))
+    # flattened_projs = np.concatenate(projs, axis=0)
+    # idxx = np.random.choice(flattened_projs.shape[0], size=200, replace=False)
 
-    plotProj(flattened_projs[idxx, :], ax[3:5])
+    plotFactors(factors, data, ax[0:3], reorder=(0, 2), trim=(2,))
+
+    # plotProj(flattened_projs[idxx, :], ax[3:5])
 
     # plotR2X(data, 30, ax[5])
 

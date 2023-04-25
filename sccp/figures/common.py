@@ -131,10 +131,12 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
     iter = 0
-    for i in (0, 2):
+    for i in range(3):
         # The single cell mode has a square factors matrix
         if i == 0:
             yt = data.condition_labels
+        elif i == 1:
+            yt = [f"Cell State {i}" for i in np.arange(1, rank + 1)]
         else:
             yt = data.variable_labels
 
