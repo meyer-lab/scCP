@@ -295,36 +295,6 @@ def umap_axis(x, y, ax):
     ax.axes.xaxis.set_ticklabels([])
     ax.axes.yaxis.set_ticklabels([])
 
-
-def plotR2X_CV(data, rank, trainPerc, ax):
-    """Creates R2X plot for parafac2 tensor decomposition"""
-    
-    cvError = CrossVal(data, rank, trainPerc = trainPerc)
-    r2xError = R2X(data, rank) 
-    totalError = [r2xError[0], r2xError[1], cvError[0], cvError[1]]
-    
-    rank_vec = np.arange(1, rank + 1)
-    labelNames = ["Fit: Pf2", "Fit: PCA", "CV: Pf2", "CV: PCA"]
-    markerShape = [".", "+" , ".", "+"]
-    colorDecomp = ["r", "r", "b", "b"]
-    
-    for i in range(4):
-        ax.scatter(rank_vec, 
-               totalError[i], 
-               label=labelNames[i], 
-               marker=markerShape[i],
-               c=colorDecomp[i],
-               alpha=0.5,
-               s=20.0)
-    
-    ax.set(
-        ylabel="Variance Explained",
-        xlabel="Number of Components",
-        xticks=np.arange(0, rank + 1),
-        ylim=(0, np.max(totalError)+0.01),
-    )
-    
-    ax.legend()
     
 def plotR2X(data, rank, ax):
     """Creates R2X plot for parafac2 tensor decomposition"""
@@ -334,9 +304,7 @@ def plotR2X(data, rank, ax):
     labelNames = ["Fit: Pf2", "Fit: PCA"]
     colorDecomp = ["r", "b"]
     markerShape = ["|", "_"]
-    print(r2xError[0])
-    print(r2xError[1])
-    
+
     for i in range(2):
         ax.scatter(rank_vec, 
                r2xError[i], 
@@ -355,7 +323,7 @@ def plotR2X(data, rank, ax):
     ax.legend()
     
 def plotCV(data, rank, trainPerc, ax):
-    """Creates R2X plot for parafac2 tensor decomposition"""
+    """Creates variance explained plot for parafac2 tensor decomposition CV"""
     cvError = CrossVal(data, rank, trainPerc = trainPerc)
  
     rank_vec = np.arange(1, rank + 1)
