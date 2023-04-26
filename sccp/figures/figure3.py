@@ -57,7 +57,7 @@ def makeFigure():
     plotDrugUMAP(drugs, "Pf2", dataDF["Drug"].values, pf2Points, ax[8:10])
     plotDrugUMAP(drugs, "PCA", dataDF["Drug"].values, pcaPoints, ax[10:12])
 
-    cmp = ["Cmp. 23", "Cmp. 25", "Cmp. 29", "Cmp. 30"]
+    cmp = ["Cmp. 24", "Cmp. 25", "Cmp. 12", "Cmp. 15"]
     plotCmpUMAP(weightedDF, cmp, pf2Points, f, ax[12:16])
 
     return f
