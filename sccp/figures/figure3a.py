@@ -27,7 +27,7 @@ def makeFigure():
     CompW = allP @ factors[1]
 
     # UMAP dimension reduction
-    ump = umap.UMAP(random_state=1).fit_transform(compW)
+    ump = umap.UMAP(random_state=1).fit_transform(CompW)
     x = ump[::10, 0]
     y = ump[::10, 1]
 
