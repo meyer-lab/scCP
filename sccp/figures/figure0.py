@@ -23,15 +23,25 @@ def makeFigure():
     subplotLabel(ax)
 
     X = synthXA(magnitude=200, type="beach")
+    
+    # print(X.variable_labels)
+    # print(X.unfold())
 
     rank=2
+    
+    
+    
+    
     # Performing parafac2 on single-cell Xarray
     _, factors, projs, _ = parafac2_nd(
         X,
         rank=rank,
         random_state=1,
     )
+    
+    
     flattened_projs = np.concatenate(projs, axis=0)
+
 
     plotFactorsSynthetic(factors, X, ax[0:2])
 
@@ -42,8 +52,9 @@ def makeFigure():
     plotCV(X, rank+3, trainPerc=0.75, ax=ax[7])
     plotR2X(X, rank+3, ax=ax[8])
     
-    ax[2].set_title("Projections: Time=6")
-    ax[4].set_title("Projections: All Conditions")
-    ax[6].set_title("All Conditions")
+    
+    # ax[2].set_title("Projections: Time=6")
+    # ax[4].set_title("Projections: All Conditions")
+    # ax[6].set_title("All Conditions")
 
     return f

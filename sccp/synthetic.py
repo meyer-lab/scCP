@@ -9,7 +9,7 @@ from .parafac2 import Pf2X
 
 def synthXA(magnitude, type):
     """Makes blob of points depicting beach scene with sinusoidally moving sun"""
-    ts = np.arange(10)
+    ts = np.arange(30)
     blob_DF = None
     if type == "beach":
         blob_means = [(5, -8), (0, -5), (8, -5), (0, -2), (8, -2)]
@@ -148,36 +148,28 @@ def synthXA(magnitude, type):
 
     X_list = []
     for _, group in blob_DF.groupby("Time"):
-        X_list.append(group.to_numpy())
+        print(group.iloc[:,:-2])
+        X_list.append(group.iloc[:,:-1].to_numpy())
 
-    return Pf2X(X_list, ts, blob_DF.columns)
+    return Pf2X(X_list, ts, blob_DF.columns[:-1])
 
 
 def make_blob_art(mean, cov, size, time, label):
     """Makes a labeled DF for storing blob art"""
-    total_synth = np.zeros((11, size))
-    for i in range(11):
+    dimensions = 25
+    total_synth = np.zeros((size, dimensions))
+    for i in range(dimensions):
         X = np.random.multivariate_normal(mean=mean, cov=cov, size=size) / 10
-        total_synth[i, :] = X[:, 0].flatten()
+        total_synth[:, i] = X[:, 0].flatten()
+        
+    dimLabels = [f"Dim. {i}" for i in range(dimensions)]
+    df = pd.DataFrame(data=total_synth, columns=dimLabels)
+    df["Dim. "+ str(dimensions)] = X[:, 1]
+    df["Time"] = np.repeat(time, size)
+    df["Cell Type"] = np.repeat(label, size)
 
-    return pd.DataFrame(
-        {
-            "A": total_synth[0, :],
-            "B": total_synth[1, :],
-            "C": total_synth[2, :],
-            "D": total_synth[3, :],
-            "E": total_synth[4, :],
-            "F": total_synth[5, :],
-            "G": total_synth[6, :],
-            "H": total_synth[7, :],
-            "I": total_synth[8, :],
-            "J": total_synth[9, :],
-            "X": total_synth[10, :],
-            "Y": X[:, 1],
-            "Time": time,
-            "Cell Type": label,
-        }
-    )
+
+    return df
 
 
 def plot_synth_pic(blob_DF, t, palette, type, ax):
