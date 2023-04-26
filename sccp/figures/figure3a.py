@@ -16,7 +16,7 @@ def makeFigure():
 
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes()
-    rank = 30
+    rank = 25
     _, factors, projs, _ = parafac2_nd(
         data,
         rank=rank,
@@ -27,7 +27,7 @@ def makeFigure():
     CompW = allP @ factors[1]
 
     # UMAP dimension reduction
-    ump = umap.UMAP(random_state=1).fit_transform(allP)
+    ump = umap.UMAP(random_state=1).fit_transform(compW)
     x = ump[::10, 0]
     y = ump[::10, 1]
 

@@ -26,7 +26,7 @@ def makeFigure():
 
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes(offset=1.0)
-    rank = 30
+    rank = 25
     _, factors, projs, _ = parafac2_nd(
         data,
         rank=rank,
@@ -37,7 +37,7 @@ def makeFigure():
     
     # UMAP dimension reduction
     umapReduc = umap.UMAP(random_state=1)
-    pf2Points = umapReduc.fit_transform(np.concatenate(projs, axis=0))
+    pf2Points = umapReduc.fit_transform(np.concatenate(projs, axis=0) @ factors[1])
 
     # PCA dimension reduction
     pc = PCA(n_components=rank)
