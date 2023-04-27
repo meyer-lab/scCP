@@ -13,6 +13,10 @@ import scipy.cluster.hierarchy as sch
 from ..parafac2 import Pf2X
 from ..crossVal import CrossVal
 from ..decomposition import R2X
+import os
+from os.path import join
+
+path_here = os.path.dirname(os.path.dirname(__file__))
 
 
 matplotlib.use("AGG")
@@ -132,6 +136,7 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
     rank = factors[0].shape[1]
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
+    weight = 0.08
     for i in range(3):
         # The single cell mode has a square factors matrix
         if i == 0:
@@ -145,7 +150,7 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
 
         if i in trim:
             max_weight = np.max(np.abs(X), axis=1)
-            kept_idxs = max_weight > 0.08
+            kept_idxs = max_weight > weight
             X = X[kept_idxs]
             yt = yt[kept_idxs]
 
@@ -164,13 +169,27 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
 
         axs[i].set_title("Factors")
         axs[i].tick_params(axis="y", rotation=0)
+        
 
-        if i == 2 and len(yt) > 50:
+        if i == 2 and len(yt) > 40:
+            genesTop = np.empty((X.shape[0], X.shape[1]), dtype="<U10")
+            genesBottom = np.empty((X.shape[0], X.shape[1]), dtype="<U10")
             sort_idx = np.argsort(X, axis=0)
+            
             for j in range(rank):
-                sort_data = yt[sort_idx[:, j]]
-                # print("Bottom 10 Genes Cmp." + str(j + 1) + ":", sort_data[:10])
-                # print("Top 10 Genes Cmp." + str(j + 1) + ":", np.flip(sort_data[-10:]))
+                sortGenes = yt[sort_idx[:, j]]
+                sortWeight= X[sort_idx[:, j], j] 
+                genesIdxTop =  np.nonzero(sortWeight > 0.11)
+                genesIdxBottom =  np.nonzero(sortWeight < -0.11)
+                genesTop[:len(genesIdxTop[0]), j] = np.flip(sortGenes[genesIdxTop])
+                genesBottom[:len(genesIdxBottom[0]), j] = sortGenes[genesIdxBottom]
+
+
+            genesTop.tofile("TopGenes_Cmp"+str(rank)+".csv", sep = ",")
+            # np.save(join(path_here, "sccp/data/TopGenes_Cmp"+str(rank)+".npy"), genesTop)
+            # np.save(join(path_here, "sccp/data/BottomGenes_Cmp"+str(rank)+".npy"), genesBottom)
+            
+                
 
 
 def reorder_table(projs):
