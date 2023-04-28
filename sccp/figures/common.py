@@ -179,13 +179,20 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
             for j in range(rank):
                 sortGenes = yt[sort_idx[:, j]]
                 sortWeight= X[sort_idx[:, j], j] 
-                genesIdxTop =  np.nonzero(sortWeight > 0.11)
-                genesIdxBottom =  np.nonzero(sortWeight < -0.11)
+                genesIdxTop =  np.nonzero(sortWeight > 0.09)
+                genesIdxBottom =  np.nonzero(sortWeight < -0.09)
                 genesTop[:len(genesIdxTop[0]), j] = np.flip(sortGenes[genesIdxTop])
                 genesBottom[:len(genesIdxBottom[0]), j] = sortGenes[genesIdxBottom]
 
-
-            genesTop.tofile("TopGenes_Cmp"+str(rank)+".csv", sep = ",")
+            print(np.shape(genesTop))
+            print(np.shape(genesBottom))
+            dfTop = pd.DataFrame(data=genesTop, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+            dfBottom = pd.DataFrame(data=genesTop, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+            print(dfTop)
+            print(dfBottom)
+            
+            dfTop.to_csv("TopGenes_Cmp"+str(rank)+".csv")
+            dfBottom.to_csv("BottomGenes_Cmp"+str(rank)+".csv")
             # np.save(join(path_here, "sccp/data/TopGenes_Cmp"+str(rank)+".npy"), genesTop)
             # np.save(join(path_here, "sccp/data/BottomGenes_Cmp"+str(rank)+".npy"), genesBottom)
             
