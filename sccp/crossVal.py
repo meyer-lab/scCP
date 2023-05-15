@@ -5,13 +5,15 @@ from .parafac2 import parafac2_nd, _cmf_reconstruction_error
 from tensorly.parafac2_tensor import parafac2_to_slices
 
 
-def crossvalidate_PCA(X: np.ndarray, rank: int, trainPerc: float = 0.75) -> np.ndarray:
+def crossvalidate_PCA(X: np.ndarray, rank: int, trainPerc: float = 0.75, random_state=None) -> np.ndarray:
     """Bi-cross-validation for PCA. Because PCA is component-by-component, this
     provides R2X for all ranks in one pass."""
+    rng = np.random.default_rng(random_state)
+
     # Shuffle so that we take a different subset each time
     X = X.copy()
-    X = X[np.random.permutation(X.shape[0]), :]
-    X = X[:, np.random.permutation(X.shape[1])]
+    X = X[rng.permutation(X.shape[0]), :]
+    X = X[:, rng.permutation(X.shape[1])]
 
     # Indices where we will split
     X_B_idx = int(X.shape[0] * trainPerc)
@@ -32,18 +34,20 @@ def crossvalidate_PCA(X: np.ndarray, rank: int, trainPerc: float = 0.75) -> np.n
     recon_error = np.zeros(rank)
 
     for i in range(rank):
-        X_err = X - (scores[:, :(i + 1)] @ loadings[:(i + 1), :] + mean_)
+        X_err = X - (scores[:, : (i + 1)] @ loadings[: (i + 1), :] + mean_)
         recon_error[i] = float(np.linalg.norm(X_err[X_B_idx:, X_C_idx:]) ** 2)
 
     return 1.0 - recon_error / total_var
 
 
-def crossvalidate(X, rank: int, trainPerc: float = 0.75, verbose: bool = True) -> float:
+def crossvalidate(X, rank: int, trainPerc: float = 0.75, verbose: bool = False, random_state=None) -> float:
+    rng = np.random.default_rng(random_state)
+
     # Shuffle, rnd.shuffle handles the cell axis
-    var_idx = np.random.permutation(X[0].shape[1])
+    var_idx = rng.permutation(X[0].shape[1])
     X = [xx[:, var_idx] for xx in X]
     for xx in X:
-        np.random.shuffle(xx)
+        rng.shuffle(xx)
 
     X_B_idx = [int(xx.shape[0] * trainPerc) for xx in X]
     B_train = [X[ii][:bi, :] for ii, bi in enumerate(X_B_idx)]
@@ -78,7 +82,9 @@ def CrossVal(X, rank: int, trainPerc: float = 0.75):
     rank_vec = np.arange(1, rank + 1)
 
     # Collect Pf2 results
-    cv_pf2_error = [crossvalidate(X.X_list, rank=rank, trainPerc=trainPerc) for r in rank_vec]
-    cv_pca_error = crossvalidate_PCA(X.unfold(), rank, trainPerc = trainPerc)
+    cv_pf2_error = [
+        crossvalidate(X.X_list, rank=rank, trainPerc=trainPerc) for r in rank_vec
+    ]
+    cv_pca_error = crossvalidate_PCA(X.unfold(), rank, trainPerc=trainPerc)
 
     return cv_pf2_error, cv_pca_error

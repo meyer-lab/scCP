@@ -96,43 +96,8 @@ def genFigure():
     print(f"Figure {sys.argv[1]} is done after {time.time() - start} seconds.\n")
 
 
-def plotFactorsSynthetic(factors, data_xarray: Pf2X, ax):
-    """Plots parafac2 factors for synthetic data"""
-    rank = factors[0].shape[1]
-    xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
-    cmap = sns.diverging_palette(240, 10, as_cmap=True)
-    iter = 0
-    for i in range(0, len(factors)):
-        if i != len(factors) - 2:
-            if i == 0:
-                timeDF = pd.DataFrame(factors[i], columns=xticks)
-                timeDF["Time"] = np.arange(1, factors[0].shape[0] + 1)
-                sns.lineplot(data=timeDF[xticks], ax=ax[iter])
-                ax[iter].set(
-                    ylabel="Cmp. Weight",
-                    xlabel="Time",
-                    xticks=np.arange(0, factors[0].shape[0]),
-                )
-
-            else:
-                yt = data_xarray.variable_labels
-                X = factors[i]
-                sns.heatmap(
-                    data=X,
-                    xticklabels=xticks,
-                    yticklabels=yt,
-                    ax=ax[iter],
-                    center=0,
-                    cmap=cmap,
-                )
-
-            ax[iter].set_title("Factors")
-            ax[iter].tick_params(axis="y", rotation=0)
-            iter += 1
-
-
 def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
-    """Plots parafac2 factors for synthetic data"""
+    """Plots parafac2 factors."""
     rank = factors[0].shape[1]
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
@@ -234,7 +199,7 @@ def flattenData(data, factors, projs):
 
     flatProjs = np.concatenate(projs, axis=0)
     flatData = np.concatenate(data.X_list, axis=0)
-    
+
     cmpNames = [f"Cmp. {i}" for i in np.arange(1, factors[0].shape[1] + 1)]
     projDF = pd.DataFrame(data=flatProjs, columns=cmpNames)
     dataDF = pd.DataFrame(data=flatData, columns=data.variable_labels)
@@ -321,55 +286,62 @@ def umap_axis(x, y, ax):
     ax.axes.xaxis.set_ticklabels([])
     ax.axes.yaxis.set_ticklabels([])
 
-    
+
 def plotR2X(data, rank, ax):
     """Creates R2X plot for parafac2 tensor decomposition"""
-    r2xError = R2X(data, rank) 
-    
+    r2xError = R2X(data, rank)
+
     rank_vec = np.arange(1, rank + 1)
     labelNames = ["Fit: Pf2", "Fit: PCA"]
     colorDecomp = ["r", "b"]
     markerShape = ["|", "_"]
 
     for i in range(2):
-        ax.scatter(rank_vec, 
-               r2xError[i], 
-               label=labelNames[i], 
-               marker=markerShape[i],
-               c=colorDecomp[i],
-               s=30.0)
-    
+        ax.scatter(
+            rank_vec,
+            r2xError[i],
+            label=labelNames[i],
+            marker=markerShape[i],
+            c=colorDecomp[i],
+            s=30.0,
+        )
+
     ax.set(
         ylabel="Variance Explained",
         xlabel="Number of Components",
         xticks=np.linspace(0, rank, num=8, dtype=int),
-        yticks=np.linspace(0, np.max(np.append(r2xError[0], r2xError[1]))+0.01, num=5),
+        yticks=np.linspace(
+            0, np.max(np.append(r2xError[0], r2xError[1])) + 0.01, num=5
+        ),
     )
-    
+
     ax.legend()
-    
+
+
 def plotCV(data, rank, trainPerc, ax):
     """Creates variance explained plot for parafac2 tensor decomposition CV"""
-    cvError = CrossVal(data, rank, trainPerc = trainPerc)
- 
+    cvError = CrossVal(data, rank, trainPerc=trainPerc)
+
     rank_vec = np.arange(1, rank + 1)
     labelNames = ["CV: Pf2", "CV: PCA"]
     colorDecomp = ["r", "b"]
     markerShape = ["o", "o"]
-    
+
     for i in range(2):
-        ax.scatter(rank_vec, 
-               cvError[i], 
-               label=labelNames[i], 
-               marker=markerShape[i],
-               c=colorDecomp[i],
-               s=30.0)
-    
+        ax.scatter(
+            rank_vec,
+            cvError[i],
+            label=labelNames[i],
+            marker=markerShape[i],
+            c=colorDecomp[i],
+            s=30.0,
+        )
+
     ax.set(
         ylabel="Variance Explained",
         xlabel="Number of Components",
         xticks=np.linspace(0, rank, num=8, dtype=int),
-        yticks=np.linspace(0, np.max(np.append(cvError[0], cvError[1]))+0.01, num=5),
+        yticks=np.linspace(0, np.max(np.append(cvError[0], cvError[1])) + 0.01, num=5),
     )
-    
+
     ax.legend()
