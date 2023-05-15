@@ -96,7 +96,7 @@ def genFigure():
     print(f"Figure {sys.argv[1]} is done after {time.time() - start} seconds.\n")
 
 
-def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
+def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGenes=False):
     """Plots parafac2 factors."""
     rank = factors[0].shape[1]
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
@@ -135,32 +135,26 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
         axs[i].set_title("Factors")
         axs[i].tick_params(axis="y", rotation=0)
         
+        if saveGenes == True:
+            if i == 2 and len(yt) > 40:
+                genesTop = np.empty((X.shape[0], X.shape[1]), dtype="<U10")
+                genesBottom = np.empty((X.shape[0], X.shape[1]), dtype="<U10")
+                sort_idx = np.argsort(X, axis=0)
+                
+                for j in range(rank):
+                    sortGenes = yt[sort_idx[:, j]]
+                    sortWeight= X[sort_idx[:, j], j] 
+                    genesIdxTop =  np.nonzero(sortWeight > weight)
+                    genesIdxBottom =  np.nonzero(sortWeight < -weight)
+                    genesTop[:len(genesIdxTop[0]), j] = np.flip(sortGenes[genesIdxTop])
+                    genesBottom[:len(genesIdxBottom[0]), j] = sortGenes[genesIdxBottom]
 
-        if i == 2 and len(yt) > 40:
-            genesTop = np.empty((X.shape[0], X.shape[1]), dtype="<U10")
-            genesBottom = np.empty((X.shape[0], X.shape[1]), dtype="<U10")
-            sort_idx = np.argsort(X, axis=0)
-            
-            for j in range(rank):
-                sortGenes = yt[sort_idx[:, j]]
-                sortWeight= X[sort_idx[:, j], j] 
-                genesIdxTop =  np.nonzero(sortWeight > 0.09)
-                genesIdxBottom =  np.nonzero(sortWeight < -0.09)
-                genesTop[:len(genesIdxTop[0]), j] = np.flip(sortGenes[genesIdxTop])
-                genesBottom[:len(genesIdxBottom[0]), j] = sortGenes[genesIdxBottom]
+                dfTop = pd.DataFrame(data=genesTop, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+                dfBottom = pd.DataFrame(data=genesBottom, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
 
-            print(np.shape(genesTop))
-            print(np.shape(genesBottom))
-            dfTop = pd.DataFrame(data=genesTop, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
-            dfBottom = pd.DataFrame(data=genesTop, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
-            print(dfTop)
-            print(dfBottom)
-            
-            dfTop.to_csv("TopGenes_Cmp"+str(rank)+".csv")
-            dfBottom.to_csv("BottomGenes_Cmp"+str(rank)+".csv")
-            # np.save(join(path_here, "sccp/data/TopGenes_Cmp"+str(rank)+".npy"), genesTop)
-            # np.save(join(path_here, "sccp/data/BottomGenes_Cmp"+str(rank)+".npy"), genesBottom)
-            
+                dfTop.to_csv(join(path_here, "sccp/data/TopGenes_Cmp"+str(rank)+".csv"))
+                dfBottom.to_csv(join(path_here, "sccp/data/BottomGenes_Cmp"+str(rank)+".csv"))
+                
                 
 
 
