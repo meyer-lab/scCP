@@ -101,7 +101,7 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
     rank = factors[0].shape[1]
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
-    weight = 0.08
+    weight = 0.07
     for i in range(3):
         # The single cell mode has a square factors matrix
         if i == 0:
@@ -136,25 +136,23 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
         axs[i].tick_params(axis="y", rotation=0)
         
         if saveGenes == True:
-            if i == 2 and len(yt) > 40:
-                genesTop = np.empty((X.shape[0], X.shape[1]), dtype="<U10")
-                genesBottom = np.empty((X.shape[0], X.shape[1]), dtype="<U10")
+            if i == 2 and len(yt) > 50:
+                geneAmount = 20
+                genesTop = np.empty((geneAmount, X.shape[1]), dtype="<U10")
+                genesBottom = np.empty((geneAmount, X.shape[1]), dtype="<U10")
                 sort_idx = np.argsort(X, axis=0)
                 
                 for j in range(rank):
                     sortGenes = yt[sort_idx[:, j]]
-                    sortWeight= X[sort_idx[:, j], j] 
-                    genesIdxTop =  np.nonzero(sortWeight > weight)
-                    genesIdxBottom =  np.nonzero(sortWeight < -weight)
-                    genesTop[:len(genesIdxTop[0]), j] = np.flip(sortGenes[genesIdxTop])
-                    genesBottom[:len(genesIdxBottom[0]), j] = sortGenes[genesIdxBottom]
+                    genesTop[:, j] = np.flip(sortGenes[-geneAmount:])  
+                    genesBottom[:, j] = sortGenes[:geneAmount]
 
                 dfTop = pd.DataFrame(data=genesTop, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
                 dfBottom = pd.DataFrame(data=genesBottom, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
 
-                dfTop.to_csv(join(path_here, "sccp/data/TopGenes_Cmp"+str(rank)+".csv"))
-                dfBottom.to_csv(join(path_here, "sccp/data/BottomGenes_Cmp"+str(rank)+".csv"))
-                
+                dfTop.to_csv(join(path_here, "data/TopGenes_Cmp"+str(rank)+".csv"))
+                dfBottom.to_csv(join(path_here, "data/BottomGenes_Cmp"+str(rank)+".csv"))
+                    
                 
 
 
