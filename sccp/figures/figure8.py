@@ -6,17 +6,15 @@ from .common import (
     getSetup,
     reorder_table,
     flattenData,
-    plotDrugDimReduc,
-    plotGeneDimReduc
+    plotDrugUMAP,
 )
 import numpy as np
 from ..imports.scRNA import import_perturb_RPE
 from ..parafac2 import parafac2_nd
-from ..decomposition import plotR2X
 import seaborn as sns
 import mygene
 from ..parafac2 import parafac2_nd
-import umap 
+import umap
 from sklearn.decomposition import PCA
 
 
@@ -35,10 +33,12 @@ def makeFigure():
     delidx = np.array([xx.shape[0] > 200 for xx in X.X_list], dtype=bool)
     X.X_list = [X.X_list[ii] for ii in range(delidx.size) if delidx[ii]]
     X.condition_labels = X.condition_labels[delidx]
-    X.condition_labels = np.array([X.condition_labels[ii].split("_")[0] for ii in range(X.condition_labels.size)])
+    X.condition_labels = np.array(
+        [X.condition_labels[ii].split("_")[0] for ii in range(X.condition_labels.size)]
+    )
 
     mg = mygene.MyGeneInfo()
-    ginfo = mg.querymany(X.variable_labels, scopes='ensembl.gene')
+    ginfo = mg.querymany(X.variable_labels, scopes="ensembl.gene")
     for ii in range(X.variable_labels.size):
         if "symbol" in ginfo[ii]:
             X.variable_labels[ii] = ginfo[ii]["symbol"]
@@ -50,24 +50,29 @@ def makeFigure():
         X,
         rank=24,
         verbose=True,
-        random_state=42
+        random_state=1,
     )
 
-
-    dataDF, projDF = flattenData(data, factors, projs)
+    dataDF, projDF, _ = flattenData(data, factors, projs)
 
     # UMAP dimension reduction
     cmpNames = [f"Cmp. {i}" for i in np.arange(1, factors[0].shape[1] + 1)]
-    umapReduc = umap.UMAP()
+    umapReduc = umap.UMAP(random_state=1)
     pf2Points = umapReduc.fit_transform(projDF[cmpNames].to_numpy())
-    
+
     pc = PCA(n_components=rank)
     pcaPoints = pc.fit_transform(dataDF[data.variable_labels].to_numpy())
     pcaPoints = umapReduc.fit_transform(pcaPoints)
 
     # Mono1, Mono2, NK, CD4, B
-    genes = ["TFAM", "GFM1", "TRAPPC11", "SPC25", "SMG5"]
-    plotDrugDimReduc(genes, ["UMAP1", "UMAP2"], dataDF["Drug"].values, pf2Points, ax[0:5])
-    plotDrugDimReduc(genes, ["PCA1", "PCA2"], dataDF["Drug"].values, pcaPoints, ax[5:10])
+    drugs = [
+        "Triamcinolone Acetonide",
+        "Meprednisone",
+        "Alprostadil",
+        "Budesonide",
+        "Betamethasone Valerate",
+    ]
+    plotDrugUMAP(drugs, "Pf2", dataDF["Drug"].values, pf2Points, ax[0:5])
+    plotDrugUMAP(drugs, "PCA", dataDF["Drug"].values, pcaPoints, ax[5:10])
 
     return f
