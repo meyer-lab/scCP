@@ -48,11 +48,7 @@ def makeFigure():
         verbose=True,
         random_state=42
     )
-    print(factors[2].shape)
-    print(factors[2][np.where(X.variable_labels == "CXCL8"), 22])
-    print(factors[2][np.where(X.variable_labels == "NOC2L"), 22])
-    print(factors[2][np.where(X.variable_labels == "PLEKHN1"), 22])
-    print(factors[2][np.where(X.variable_labels == "PUSL1"), 22])
+
     sort_idx = np.argsort(factors[2], axis=0)
     geneDF = pd.DataFrame()
     for j in range(rank):
@@ -66,7 +62,7 @@ def makeFigure():
         sort_data = X.condition_labels[sort_idx[:, j]]
         CRISPR_DF[str(j+1)] = np.flip(sort_data[-10:])
         print(np.abs(factors[0])[sort_idx[:, j]])
-    CRISPR_DF.to_csv("Perturb_Comps_CR.csv")
+    #CRISPR_DF.to_csv("Perturb_Comps_CR.csv")
 
     plotFactors(factors, X, ax[0:2], reorder=(0, 2), trim=(2,))
 
@@ -76,7 +72,5 @@ def makeFigure():
         ax=ax[2],
         cmap=sns.diverging_palette(240, 10, as_cmap=True),
     )
-
-    #plotR2X(X, 24, ax[3])
 
     return f
