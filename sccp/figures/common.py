@@ -167,8 +167,6 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
             sort_idx = np.argsort(X, axis=0)
             for j in range(rank):
                 sort_data = yt[sort_idx[:, j]]
-                #print("Bottom 10 Genes Cmp." + str(j + 1) + ":", sort_data[:10])
-                #print("Top 10 Genes Cmp." + str(j + 1) + ":", np.flip(sort_data[-10:]))
 
 
 def reorder_table(projs):

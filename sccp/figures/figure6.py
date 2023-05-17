@@ -8,6 +8,7 @@ from .common import (
     plotFactors,
 )
 import numpy as np
+import pandas as pd
 from ..imports.scRNA import import_perturb_RPE
 from ..parafac2 import parafac2_nd
 from ..decomposition import plotR2X
@@ -25,6 +26,7 @@ def makeFigure():
 
     # Import of single cells: [Drug, Cell, Gene]
     X = import_perturb_RPE()
+    rank = 24
 
     # Filter out sgRNAs with few cells
     delidx = np.array([xx.shape[0] > 200 for xx in X.X_list], dtype=bool)
@@ -42,10 +44,29 @@ def makeFigure():
     # Performing parafac2 on single-cell Xarray
     _, factors, projs, _ = parafac2_nd(
         X,
-        rank=24,
+        rank=rank,
         verbose=True,
+        random_state=42
     )
+    print(factors[2].shape)
+    print(factors[2][np.where(X.variable_labels == "CXCL8"), 22])
+    print(factors[2][np.where(X.variable_labels == "NOC2L"), 22])
+    print(factors[2][np.where(X.variable_labels == "PLEKHN1"), 22])
+    print(factors[2][np.where(X.variable_labels == "PUSL1"), 22])
+    sort_idx = np.argsort(factors[2], axis=0)
+    geneDF = pd.DataFrame()
+    for j in range(rank):
+        sort_data = X.variable_labels[sort_idx[:, j]]
+        geneDF[str(j+1)] = np.ravel([sort_data[:10], np.flip(sort_data[-10:])])
+    geneDF.to_csv("Perturb_Comps.csv")
 
+    sort_idx = np.argsort(np.abs(factors[0]), axis=0)
+    CRISPR_DF = pd.DataFrame()
+    for j in range(rank):
+        sort_data = X.condition_labels[sort_idx[:, j]]
+        CRISPR_DF[str(j+1)] = np.flip(sort_data[-10:])
+        print(np.abs(factors[0])[sort_idx[:, j]])
+    CRISPR_DF.to_csv("Perturb_Comps_CR.csv")
 
     plotFactors(factors, X, ax[0:2], reorder=(0, 2), trim=(2,))
 

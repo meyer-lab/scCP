@@ -50,6 +50,7 @@ def makeFigure():
         X,
         rank=24,
         verbose=True,
+        random_state=42
     )
 
 
