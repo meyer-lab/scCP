@@ -18,14 +18,11 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((12, 12), (4, 4))
     subplotLabel(ax)  # Add subplot labels
-    a = np.array([[1, 1, 1, 1], [1, 1, 1, 2]])
-    b = np.array([[2, 1, 1, 2], [1, 1, 1, 3]])
-    print(inter_clust_dist(a, b))
 
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes()
     #ranks = np.arange(1, 31, step=10)
-    ranks = [5, 15, 25, 35]
+    ranks = [1, 15, 25, 35]
     #PCA_look(data, ranks, "NKG7", 0.1, ax[0:15])
 
     dim_red_var_drug(data, ranks, "Budesonide", ax[0])
