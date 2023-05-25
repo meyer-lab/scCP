@@ -11,30 +11,19 @@ from ..parafac2 import parafac2_nd
 import gseapy as gp
 import pandas as pd
 import mygene
+import seaborn as sns
 
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8, 10), (2, 2))
+    ax, f = getSetup((8, 10), (6, 1))
 
     # Add subplot labels
     subplotLabel(ax)
-
-    # Import of single cells: [Drug, Cell, Gene]
-    # data = ThompsonXA_SCGenes(offset=1.0)
-    # rank = 3
-    # _, factors, projs, _ = parafac2_nd(
-    #     data,
-    #     rank=rank,
-    #     random_state=1,
-    #     verbose=True,
-    # )
-    
-    
     over_expressed = pd.read_csv('over_expressed.txt', index_col=0)
-    print(over_expressed)
+    # print(over_expressed)
     
     # Specifies enrichment sets to run against
     gene_sets = [
@@ -43,26 +32,23 @@ def makeFigure():
         'GO_Molecular_Function_2021'
     ]
     
+    axnumb = 0
     # Runs for each component independently
-    for column in over_expressed.columns:
-        # Configures subdirectory for component
-        # directory = f'{base_dir}/component_{column}/'
-        # os.makedirs(directory, exist_ok=True)
+    for i, column in enumerate(over_expressed.columns):
 
         # Selects genes with alpha < 0.05 for over- and under-expression
-        print(column)
+        # print(column)
         over = over_expressed.loc[
             over_expressed.loc[:, column] < 0.05,
             column
         ]
-        print(over)
+        # print(over)
         over_ensembl = list(over.index)
 
-        print(over_ensembl)
+        # print(over_ensembl)
         # Converts ensembl to standard gene names
-        # You may not need this if your genes are already in recognizable names!
         over_genes = lookup_genes(over_ensembl)
-        print(over_genes)
+        # print(over_genes)
         # under_genes = lookup_genes(under_ensembl)
 
         # Runs gene names through enrichment analyses
@@ -76,11 +62,69 @@ def makeFigure():
             ).results
             over_result = over_result.set_index('Term', drop=True)
 
-        print(over_result)
-        # if len(under_genes) == 0:
-        #     under_result = None
+        # print(over_result)
+        
+        over_ensembl = list(over.index)
 
+#         # Converts ensembl to standard gene names
+#         # You may not need this if your genes are already in recognizable names!
+        over_genes = lookup_genes(over_ensembl)
 
+        # Runs gene names through enrichment analyses
+        if len(over_genes) == 0:
+            over_result = None
+        else:
+            over_result = gp.enrichr(
+                list(over_genes),
+                gene_sets=gene_sets,
+                organism='Human'
+            ).results
+            over_result = over_result.set_index('Term', drop=True)
+        
+        # print(over_result)
+        
+        
+        for j, gene_set in enumerate(gene_sets):
+        
+            combined = over_result.loc[
+                    over_result['Gene_set'] == gene_set,
+                    'Combined Score'
+                ]
+            combined = combined.sort_values(ascending=False)
+            combined = combined.iloc[:10]
+    
+            # print(combined.index.values)
+            combDF = pd.DataFrame({"Term": combined.index.values, "Combined Score": combined.values})
+            
+            print(combDF)
+
+            p_val = over_result.loc[
+                over_result['Gene_set'] == gene_set,
+                'Adjusted P-value'
+            ]
+            p_val = p_val.sort_values(ascending=True)
+            p_val = p_val.iloc[:10]
+            pvalDF = pd.DataFrame({"Term": p_val.index.values, "Adjusted P-value": p_val.values})
+            
+            print(pvalDF)
+            sns.barplot(
+            data=combDF,
+            x="Combined Score",
+            y="Term",
+            ax=ax[axnumb])
+            pvalPlot = sns.barplot(
+            data=pvalDF,
+            x="Adjusted P-value",
+            y="Term",
+            ax=ax[axnumb+1])
+        
+            pvalPlot.set_xscale("log")
+            
+            axnumb += 2
+            
+        break
+            
+            
     
     return f
 
