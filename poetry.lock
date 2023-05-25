@@ -2,14 +2,14 @@
 
 [[package]]
 name = "anndata"
-version = "0.8.0"
+version = "0.9.1"
 description = "Annotated data."
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "anndata-0.8.0-py3-none-any.whl", hash = "sha256:2a929360c3c893370865e8ee3d3b9d95ee93239da91bafc5bf5f3c306796746e"},
-    {file = "anndata-0.8.0.tar.gz", hash = "sha256:94d2cc6f76c0317c0ac28564e3092b313b7ad19c737d66701961f3e620b9066e"},
+    {file = "anndata-0.9.1-py3-none-any.whl", hash = "sha256:6666a39f9d6c4645a70115f38c17ccc2e2ffd9c0d08a1636c395253d73de26f1"},
+    {file = "anndata-0.9.1.tar.gz", hash = "sha256:1f28f2c427e67b0b99bdd2b281717c92a12660dfd23e0694939b6e733f0eb2c4"},
 ]
 
 [package.dependencies]
@@ -22,8 +22,8 @@ scipy = ">1.4"
 
 [package.extras]
 dev = ["black (>=20.8b1)", "docutils", "setuptools_scm"]
-doc = ["nbsphinx", "scanpydoc (>=0.7.3)", "sphinx (>=4.1,<4.2)", "sphinx-autodoc-typehints (>=1.11.0)", "sphinx-rtd-theme", "sphinx_issues", "typing_extensions", "zarr"]
-test = ["boltons", "dask[array]", "joblib", "loompy (>=3.0.5)", "matplotlib", "openpyxl", "pytest (>=6.0)", "pytest-cov (>=2.10)", "scanpy", "sklearn", "zarr"]
+doc = ["IPython", "awkward (>=2.0.7)", "myst_parser", "nbsphinx", "scanpydoc (>=0.7.7)", "sphinx (>=4.4)", "sphinx-autodoc-typehints (>=1.11.0)", "sphinx-rtd-theme (>=1.1.1)", "sphinx_issues", "sphinxext.opengraph", "zarr"]
+test = ["awkward (>=2.0.6)", "boltons", "dask[array]", "joblib", "loompy (>=3.0.5)", "matplotlib", "openpyxl", "pytest (>=6.0)", "pytest-cov (>=2.10)", "pytest_memray", "scanpy", "scikit-learn", "zarr"]
 
 [[package]]
 name = "biothings-client"
@@ -376,6 +376,62 @@ type1 = ["xattr"]
 ufo = ["fs (>=2.2.0,<3)"]
 unicode = ["unicodedata2 (>=15.0.0)"]
 woff = ["brotli (>=1.0.1)", "brotlicffi (>=0.8.0)", "zopfli (>=0.1.4)"]
+
+[[package]]
+name = "gseapy"
+version = "1.0.4"
+description = "Gene Set Enrichment Analysis in Python"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "gseapy-1.0.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:9c67c7027e776fe5c244ec1daac0bcaad5bcfcf9a429fe1ef713c20219261119"},
+    {file = "gseapy-1.0.4-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:dc8db7f38a51fd75ea7976b2da3568fad41df8bbbd7477601e824c35713be903"},
+    {file = "gseapy-1.0.4-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:f92244a25417c504b711c1719c5919f4c9d46df69da968f2c7e984d509fcd2f4"},
+    {file = "gseapy-1.0.4-cp310-cp310-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:f6c25e7d39b1b7b9e7f88fdf19aa21ffd413d5a3bd24aee84ebb47967c31750a"},
+    {file = "gseapy-1.0.4-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:fb88f7dacdfd9862c14d1fc5ca5ccb0bad8f79ff7116009839d77679b253ed74"},
+    {file = "gseapy-1.0.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2142e439c868311e7b661ea5fee61e098b0baf9dc684efb9e348a574092761b6"},
+    {file = "gseapy-1.0.4-cp310-cp310-win32.whl", hash = "sha256:51fb413721dd89795009d0bf5c7697f428ea05eaa985be181bfbf3099a05cb57"},
+    {file = "gseapy-1.0.4-cp310-cp310-win_amd64.whl", hash = "sha256:ca8c43554933f31009b8cb9ac0452350b382d035422f2b962d73bb082a124fdb"},
+    {file = "gseapy-1.0.4-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:e3707a8659b9de75866ff82d7f8ff49d5bb8c411a73c2e4343919e2827fb50e6"},
+    {file = "gseapy-1.0.4-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:c9a48b7f7eaca4a3a04bee4fddbe427e0ef51aa7726a83fe0a6200fbc35babed"},
+    {file = "gseapy-1.0.4-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:adfc235e455891855e83c534a68af3ef1f9e9e6f519f550cc1f289336757fbc5"},
+    {file = "gseapy-1.0.4-cp311-cp311-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:5320499c8ebfba2d98a6a37abf36cef9ebaa1de36c5cdc9d59c9adafe710a248"},
+    {file = "gseapy-1.0.4-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:af3d5c7f606bbf39937bde97b57ca7980dc2b9e9388f9fdb01cf36d85cf58028"},
+    {file = "gseapy-1.0.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:10f9856883684dc17df6326f8c755276710bc0d17956f44376ca1ac911735849"},
+    {file = "gseapy-1.0.4-cp311-cp311-win32.whl", hash = "sha256:f3e664afd092bf24319eed920f049f2f02e8e4d3b00b23997ba2edd46fe171db"},
+    {file = "gseapy-1.0.4-cp311-cp311-win_amd64.whl", hash = "sha256:6708efa44746b39ad7f5e8e3756e7381df7057595a5bbb9cc4c4fe010b80bc3b"},
+    {file = "gseapy-1.0.4-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:c60cdc6a5b1a1f8d494adb07dc686e98ee2697482608a3572f9d70fa817da418"},
+    {file = "gseapy-1.0.4-cp37-cp37m-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:e1868ff776bc33b8419c0a9e24e8157077a069940c03fb4240460b1bf945934c"},
+    {file = "gseapy-1.0.4-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:32c1dba6ae476344818699ab23107e30a4faf2e0fc0308041a90cca0d53af104"},
+    {file = "gseapy-1.0.4-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c7d2b1d9084965bce7e24b24282104e6453d9c7fffb127533a736f18333ecaa0"},
+    {file = "gseapy-1.0.4-cp37-cp37m-win32.whl", hash = "sha256:a0528d6d2095f9d189d3ac0613f7e2f52680815f49497dd034bb2d3173d8f307"},
+    {file = "gseapy-1.0.4-cp37-cp37m-win_amd64.whl", hash = "sha256:b11669bfb7ecbf9c5f8e39a0e41c34538c98c87b09a003c24965513ff4e01f52"},
+    {file = "gseapy-1.0.4-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:ec63f055bce6f154c9ae2c68a9421258bef313496bd7c90bd990497dad296ea6"},
+    {file = "gseapy-1.0.4-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:50de8d2427f57b70bb3bdb940be45f3585044b27e0e485f75d424cac02a12e6e"},
+    {file = "gseapy-1.0.4-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:16750868bddced04767693620a2df5ef5dea2011d2212b9b42e6c0c996a3dfcd"},
+    {file = "gseapy-1.0.4-cp38-cp38-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:a8780fead6cf072f5e99a6d6d681d02e2ed87a62aacf5750fd37b5c68d8e37f6"},
+    {file = "gseapy-1.0.4-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7fd262d6e22167c73e7863039e70839d6c7477efbf6dd7cb4c66345b9b568846"},
+    {file = "gseapy-1.0.4-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:175e3b134dcec88e756f5588452ecd7097b6181ec99d732ae45fdd32376f5822"},
+    {file = "gseapy-1.0.4-cp38-cp38-win32.whl", hash = "sha256:a81fcc4a586bed9da2e570501a583e4173e7ad90da3ffbfb6f622c0d5c371215"},
+    {file = "gseapy-1.0.4-cp38-cp38-win_amd64.whl", hash = "sha256:d405e4646d8f7d1d0ffef2b172e0eda2b1c50ea6c6e4cdb762cd0258dd1509f1"},
+    {file = "gseapy-1.0.4-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:0d4184dc63392db408a389e80efd224b018b7003c8094f2f501291cf466cffef"},
+    {file = "gseapy-1.0.4-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:29069430036635df3031fd2fade29d4442ddd4244e6299ecf469b8b1daaac821"},
+    {file = "gseapy-1.0.4-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:db0f004bbe5af2a1812ff3703a3e07c5211eeaee724dcaedcaf0a7d93cc7034e"},
+    {file = "gseapy-1.0.4-cp39-cp39-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:94538f1f9f87d25b97bd7a907a3a6bac9106f8876b373516500401999a89aa08"},
+    {file = "gseapy-1.0.4-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0f9bcd87f63cf342717a0ae7af265145402e5d8adba95b3e0584646b7d41ea6b"},
+    {file = "gseapy-1.0.4-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:457b5fd3da0b0bf514a2973d877f1c51fd613b47ec879bc31191accb2d4e6092"},
+    {file = "gseapy-1.0.4-cp39-cp39-win32.whl", hash = "sha256:7e9da99ccc2369c7ea5667c4d5e8bbd3c3218df797b3d598e6fb8808df98c30a"},
+    {file = "gseapy-1.0.4-cp39-cp39-win_amd64.whl", hash = "sha256:2c4c18e6dc6d80bf67fe827680a5698cddb10ac3e21987c239b773ad9f641f92"},
+    {file = "gseapy-1.0.4.tar.gz", hash = "sha256:4e207e69756fe18add78c60e6f1e7b2feec0683942e65f0f74da28943ce2d08b"},
+]
+
+[package.dependencies]
+matplotlib = ">=2.2"
+numpy = ">=1.13.0"
+pandas = "*"
+requests = "*"
+scipy = "*"
 
 [[package]]
 name = "h5netcdf"
@@ -1772,4 +1828,4 @@ test = ["pytest (>=6.0.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "13ca1c55bc7a664b1baa5256d730a999fad71746798a15887c529c1792d40c2b"
+content-hash = "c84d0ee2da756fc562d8bfee363f7adb9ff5feb42cbf28b7432454eb0b466970"
