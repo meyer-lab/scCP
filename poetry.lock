@@ -2,14 +2,14 @@
 
 [[package]]
 name = "anndata"
-version = "0.8.0"
+version = "0.9.1"
 description = "Annotated data."
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "anndata-0.8.0-py3-none-any.whl", hash = "sha256:2a929360c3c893370865e8ee3d3b9d95ee93239da91bafc5bf5f3c306796746e"},
-    {file = "anndata-0.8.0.tar.gz", hash = "sha256:94d2cc6f76c0317c0ac28564e3092b313b7ad19c737d66701961f3e620b9066e"},
+    {file = "anndata-0.9.1-py3-none-any.whl", hash = "sha256:6666a39f9d6c4645a70115f38c17ccc2e2ffd9c0d08a1636c395253d73de26f1"},
+    {file = "anndata-0.9.1.tar.gz", hash = "sha256:1f28f2c427e67b0b99bdd2b281717c92a12660dfd23e0694939b6e733f0eb2c4"},
 ]
 
 [package.dependencies]
@@ -22,8 +22,8 @@ scipy = ">1.4"
 
 [package.extras]
 dev = ["black (>=20.8b1)", "docutils", "setuptools_scm"]
-doc = ["nbsphinx", "scanpydoc (>=0.7.3)", "sphinx (>=4.1,<4.2)", "sphinx-autodoc-typehints (>=1.11.0)", "sphinx-rtd-theme", "sphinx_issues", "typing_extensions", "zarr"]
-test = ["boltons", "dask[array]", "joblib", "loompy (>=3.0.5)", "matplotlib", "openpyxl", "pytest (>=6.0)", "pytest-cov (>=2.10)", "scanpy", "sklearn", "zarr"]
+doc = ["IPython", "awkward (>=2.0.7)", "myst_parser", "nbsphinx", "scanpydoc (>=0.7.7)", "sphinx (>=4.4)", "sphinx-autodoc-typehints (>=1.11.0)", "sphinx-rtd-theme (>=1.1.1)", "sphinx_issues", "sphinxext.opengraph", "zarr"]
+test = ["awkward (>=2.0.6)", "boltons", "dask[array]", "joblib", "loompy (>=3.0.5)", "matplotlib", "openpyxl", "pytest (>=6.0)", "pytest-cov (>=2.10)", "pytest_memray", "scanpy", "scikit-learn", "zarr"]
 
 [[package]]
 name = "biothings-client"
@@ -1772,4 +1772,4 @@ test = ["pytest (>=6.0.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "13ca1c55bc7a664b1baa5256d730a999fad71746798a15887c529c1792d40c2b"
+content-hash = "e7c29153ec28cba3b8093e2e6f0366f4dcd395ba0e28d007cc4f9013bf49370e"
