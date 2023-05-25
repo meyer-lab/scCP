@@ -84,3 +84,15 @@ def ThompsonXA_SCGenes(offset: float = 1.0) -> anndata.AnnData:
 
     # Assign cells a count per-experiment so we can reindex
     return tensorFy(X, "Drugs")
+
+
+def import_pancreas(tensor=True, method=str()):
+    pancreas = anndata.read_h5ad("/home/brianoj/pancreas" + method + ".h5ad")
+
+    # Remove NaNs
+    pancreas = pancreas[:, np.all(np.isfinite(pancreas.X), axis=0)]
+
+    if tensor:
+        return tensorFy(pancreas, "batch")
+    else:
+        return pancreas
