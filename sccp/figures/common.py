@@ -140,18 +140,25 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
                 geneAmount = 20
                 genesTop = np.empty((geneAmount, X.shape[1]), dtype="<U10")
                 genesBottom = np.empty((geneAmount, X.shape[1]), dtype="<U10")
+                print(np.shape(X))
                 sort_idx = np.argsort(X, axis=0)
                 
                 for j in range(rank):
                     sortGenes = yt[sort_idx[:, j]]
-                    genesTop[:, j] = np.flip(sortGenes[-geneAmount:])  
-                    genesBottom[:, j] = sortGenes[:geneAmount]
+                    
+                    print(np.shape(sortGenes))
+                    print(np.shape(X[sort_idx]))
+                    print(np.shape(X[sort_idx[:, j]]))
+                    
+                    a
+                #     genesTop[:, j] = np.flip(sortGenes[-geneAmount:])  
+                #     genesBottom[:, j] = sortGenes[:geneAmount]
 
-                dfTop = pd.DataFrame(data=genesTop, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
-                dfBottom = pd.DataFrame(data=genesBottom, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+                # dfTop = pd.DataFrame(data=genesTop, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+                # dfBottom = pd.DataFrame(data=genesBottom, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
 
-                dfTop.to_csv(join(path_here, "data/TopGenes_Cmp"+str(rank)+".csv"))
-                dfBottom.to_csv(join(path_here, "data/BottomGenes_Cmp"+str(rank)+".csv"))
+                # dfTop.to_csv(join(path_here, "data/TopGenes_Cmp"+str(rank)+".csv"))
+                # dfBottom.to_csv(join(path_here, "data/BottomGenes_Cmp"+str(rank)+".csv"))
                     
                 
 
