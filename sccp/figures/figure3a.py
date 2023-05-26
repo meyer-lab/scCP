@@ -13,11 +13,11 @@ def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
     ax, f = getSetup((8, 10), (3, 3))
-    subplotLabel(ax) # Add subplot labels
+    subplotLabel(ax)  # Add subplot labels
 
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes()
-    rank = 30
+    rank = 25
     _, factors, projs, _ = parafac2_nd(
         data,
         rank=rank,
@@ -26,13 +26,14 @@ def makeFigure():
     )
     allP = np.concatenate(projs, axis=0)
     CompW = allP @ factors[1]
-    print(CompW.shape)
 
     # UMAP dimension reduction
     ump = umap.UMAP(random_state=1).fit(allP)
 
     for i in range(2):
-        plt.points(ump, values=CompW[:, i], theme='fire', ax=ax[i], width=400, height=400)
+        plt.points(
+            ump, values=CompW[:, i], theme="fire", ax=ax[i], width=400, height=400
+        )
 
         ax[i].set(title=f"Component {i + 1}")
         # umap_axis(x, y, ax[i])
