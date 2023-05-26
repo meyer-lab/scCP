@@ -52,7 +52,7 @@ def parafac2_nd(
     X_in,
     rank: int,
     n_iter_max: int = 200,
-    tol: float = 1e-6,
+    tol: float = 1e-7,
     verbose: bool = False,
     random_state=None,
 ) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray], float]:
@@ -91,7 +91,7 @@ def parafac2_nd(
         CP = parafac(
             projected_X,
             rank,
-            n_iter_max=10,
+            n_iter_max=2,
             init=CP,
             tol=False,
             normalize_factors=False,
