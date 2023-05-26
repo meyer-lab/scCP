@@ -24,19 +24,14 @@ def makeFigure():
     subplotLabel(ax)
     
     cmpNumb = 24
-    topGO, bottomGO = genesGO(cmpNumb, geneAmount=40)
+    genesGO(cmpNumb, geneAmount=50, axs=ax[0:6])
     
-    print(topGO[0])
-
-    
-    
-        
-        
+    # plotCombGO(topGO, ax[0:3])
     
     return f
 
 
-def genesGO(cmpNumb: int, geneAmount=35):
+def genesGO(cmpNumb: int, geneAmount, axs):
         """Plots top Gene Ontology terms for molecular function, 
         biological process, cellular component. Uses factors as 
         input for function"""
@@ -62,16 +57,22 @@ def genesGO(cmpNumb: int, geneAmount=35):
         genesTop[:] = np.flip(geneNames[-geneAmount:])  
         genesBottom[:] = geneNames[:geneAmount]
         
+        
         for i in range(len(geneSets)):
+            print(i)
             enrichrTopGO = runGO(genesTop, geneSets)
-            topCombGO[i] = combinedDF(enrichrTopGO, geneSets[i])
-            topPvalGO[i] = pvalueDF(enrichrTopGO, geneSets[i])
+            topCombGO = combinedDF(enrichrTopGO, geneSets[i])
+            topPvalGO = pvalueDF(enrichrTopGO, geneSets[i])
             
             enrichrBotGO = runGO(genesBottom, geneSets)
-            botCombGO[i] = combinedDF(enrichrBotGO, geneSets[i])
-            botPvalGO[i] = pvalueDF(enrichrBotGO, geneSets[i])
-        
-        return  [topCombGO, topPvalGO], [botCombGO, botPvalGO]
+            botCombGO = combinedDF(enrichrBotGO, geneSets[i])
+            botPvalGO = pvalueDF(enrichrBotGO, geneSets[i])
+            
+            plotCombGO(topCombGO, ax=axs[2*i])
+            plotPvalGO(botPvalGO, ax=axs[(2*i)+1])
+            
+   
+            
     
     
     
@@ -79,9 +80,9 @@ def runGO(geneList, geneSets):
     enrichrGO = gp.enrichr(
             list(geneList),
                 gene_sets=geneSets,
-                organism='Human'
+                organism="Human"
                 ).results
-    enrichrGO = enrichrGO.set_index('Term', drop=True)
+    enrichrGO = enrichrGO.set_index("Term", drop=True)
     
     return enrichrGO
     
@@ -95,16 +96,36 @@ def combinedDF(enrichrGO, geneSet):
     combined = combined.iloc[:10]
     combDF = pd.DataFrame({"Term": combined.index.values, "Combined Score": combined.values})
     
-    return combinedDF
+    return combDF
 
 def pvalueDF(enrichrGO, geneSet):
      # Combined Score
     p_val = enrichrGO.loc[
-        enrichrGO['Gene_set'] == geneSet,
-        'Adjusted P-value'
+        enrichrGO["Gene_set"] == geneSet,
+        "Adjusted P-value"
             ]
     p_val = p_val.sort_values(ascending=True)
     p_val = p_val.iloc[:10]
     pvalDF = pd.DataFrame({"Term": p_val.index.values, "Adjusted P-value": p_val.values})
     
     return pvalDF
+
+
+
+def plotCombGO(GO, ax):
+
+    sns.barplot(
+    data=GO,
+    x="Combined Score",
+    y="Term",
+    ax=ax)
+        
+def plotPvalGO(GO, ax):
+
+    pvalPlot = sns.barplot(
+    data=GO,
+    x="Adjusted P-value",
+    y="Term",
+    ax=ax)
+
+    pvalPlot.set_xscale("log")
