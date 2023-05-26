@@ -23,106 +23,106 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
     over_expressed = pd.read_csv('over_expressed.txt', index_col=0)
-    # print(over_expressed)
+    print(over_expressed)
     
     # Specifies enrichment sets to run against
-    gene_sets = [
-        'GO_Biological_Process_2021',
-        'GO_Cellular_Component_2021',
-        'GO_Molecular_Function_2021'
-    ]
+#     gene_sets = [
+#         'GO_Biological_Process_2021',
+#         'GO_Cellular_Component_2021',
+#         'GO_Molecular_Function_2021'
+#     ]
     
-    axnumb = 0
-    # Runs for each component independently
-    for i, column in enumerate(over_expressed.columns):
+#     axnumb = 0
+#     # Runs for each component independently
+#     for i, column in enumerate(over_expressed.columns):
 
-        # Selects genes with alpha < 0.05 for over- and under-expression
-        # print(column)
-        over = over_expressed.loc[
-            over_expressed.loc[:, column] < 0.05,
-            column
-        ]
-        # print(over)
-        over_ensembl = list(over.index)
+#         # Selects genes with alpha < 0.05 for over- and under-expression
+#         # print(column)
+#         over = over_expressed.loc[
+#             over_expressed.loc[:, column] < 0.05,
+#             column
+#         ]
+#         # print(over)
+#         over_ensembl = list(over.index)
 
-        # print(over_ensembl)
-        # Converts ensembl to standard gene names
-        over_genes = lookup_genes(over_ensembl)
-        # print(over_genes)
-        # under_genes = lookup_genes(under_ensembl)
-
-        # Runs gene names through enrichment analyses
-        if len(over_genes) == 0:
-            over_result = None
-        else:
-            over_result = gp.enrichr(
-                list(over_genes),
-                gene_sets=gene_sets,
-                organism='Human'
-            ).results
-            over_result = over_result.set_index('Term', drop=True)
-
-        # print(over_result)
-        
-        over_ensembl = list(over.index)
-
+#         # print(over_ensembl)
 #         # Converts ensembl to standard gene names
-#         # You may not need this if your genes are already in recognizable names!
-        over_genes = lookup_genes(over_ensembl)
+#         over_genes = lookup_genes(over_ensembl)
+#         # print(over_genes)
+#         # under_genes = lookup_genes(under_ensembl)
 
-        # Runs gene names through enrichment analyses
-        if len(over_genes) == 0:
-            over_result = None
-        else:
-            over_result = gp.enrichr(
-                list(over_genes),
-                gene_sets=gene_sets,
-                organism='Human'
-            ).results
-            over_result = over_result.set_index('Term', drop=True)
+#         # Runs gene names through enrichment analyses
+#         if len(over_genes) == 0:
+#             over_result = None
+#         else:
+#             over_result = gp.enrichr(
+#                 list(over_genes),
+#                 gene_sets=gene_sets,
+#                 organism='Human'
+#             ).results
+#             over_result = over_result.set_index('Term', drop=True)
+
+#         # print(over_result)
         
-        # print(over_result)
+#         over_ensembl = list(over.index)
+
+# #         # Converts ensembl to standard gene names
+# #         # You may not need this if your genes are already in recognizable names!
+#         over_genes = lookup_genes(over_ensembl)
+
+#         # Runs gene names through enrichment analyses
+#         if len(over_genes) == 0:
+#             over_result = None
+#         else:
+#             over_result = gp.enrichr(
+#                 list(over_genes),
+#                 gene_sets=gene_sets,
+#                 organism='Human'
+#             ).results
+#             over_result = over_result.set_index('Term', drop=True)
+        
+#         # print(over_result)
         
         
-        for j, gene_set in enumerate(gene_sets):
+#         for j, gene_set in enumerate(gene_sets):
         
-            combined = over_result.loc[
-                    over_result['Gene_set'] == gene_set,
-                    'Combined Score'
-                ]
-            combined = combined.sort_values(ascending=False)
-            combined = combined.iloc[:10]
+#             combined = over_result.loc[
+#                     over_result['Gene_set'] == gene_set,
+#                     'Combined Score'
+#                 ]
+#             combined = combined.sort_values(ascending=False)
+#             combined = combined.iloc[:10]
     
-            # print(combined.index.values)
-            combDF = pd.DataFrame({"Term": combined.index.values, "Combined Score": combined.values})
+#             # print(combined.index.values)
+#             combDF = pd.DataFrame({"Term": combined.index.values, "Combined Score": combined.values})
             
-            print(combDF)
+#             print(combDF)
 
-            p_val = over_result.loc[
-                over_result['Gene_set'] == gene_set,
-                'Adjusted P-value'
-            ]
-            p_val = p_val.sort_values(ascending=True)
-            p_val = p_val.iloc[:10]
-            pvalDF = pd.DataFrame({"Term": p_val.index.values, "Adjusted P-value": p_val.values})
+#             p_val = over_result.loc[
+#                 over_result['Gene_set'] == gene_set,
+#                 'Adjusted P-value'
+#             ]
+#             p_val = p_val.sort_values(ascending=True)
+#             p_val = p_val.iloc[:10]
+#             pvalDF = pd.DataFrame({"Term": p_val.index.values, "Adjusted P-value": p_val.values})
             
-            print(pvalDF)
-            sns.barplot(
-            data=combDF,
-            x="Combined Score",
-            y="Term",
-            ax=ax[axnumb])
-            pvalPlot = sns.barplot(
-            data=pvalDF,
-            x="Adjusted P-value",
-            y="Term",
-            ax=ax[axnumb+1])
+#             print(pvalDF)
+#             sns.barplot(
+#             data=combDF,
+#             x="Combined Score",
+#             y="Term",
+#             ax=ax[axnumb])
+#             pvalPlot = sns.barplot(
+#             data=pvalDF,
+#             x="Adjusted P-value",
+#             y="Term",
+#             ax=ax[axnumb+1])
         
-            pvalPlot.set_xscale("log")
+#             pvalPlot.set_xscale("log")
             
-            axnumb += 2
+#             axnumb += 2
             
-        break
+#         break
             
             
     
