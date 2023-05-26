@@ -1,131 +1,21 @@
 """
-Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs: investigating UMAP
+Gene ontology for gene factors of Pf2
 """
-import numpy as np
 from .common import (
     subplotLabel,
     getSetup,
 )
-from ..imports.scRNA import ThompsonXA_SCGenes
-from ..parafac2 import parafac2_nd
-import gseapy as gp
-import pandas as pd
-import mygene
-import seaborn as sns
-
-
+from ..geneontology import geneOntology
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8, 10), (6, 1))
+    ax, f = getSetup((20, 10), (6, 2))
 
     # Add subplot labels
     subplotLabel(ax)
     
-    cmpNumb = 24
-    genesGO(cmpNumb, geneAmount=50, axs=ax[0:6])
-    
-    # plotCombGO(topGO, ax[0:3])
+    geneOntology(cmpNumb=24, geneAmount=50, geneValue="Overexpressed", axs=ax[0:6])
+    geneOntology(cmpNumb=24, geneAmount=50, geneValue="Underexpressed", axs=ax[6:12])
     
     return f
-
-
-def genesGO(cmpNumb: int, geneAmount, axs):
-        """Plots top Gene Ontology terms for molecular function, 
-        biological process, cellular component. Uses factors as 
-        input for function"""
-        
-        df = pd.read_csv("TopBotGenes_Cmp25.csv").rename(columns={"Unnamed: 0":"Gene"}).set_index("Gene")
-        sort_idx = np.argsort(df.to_numpy(), axis=0)
-        
-        # Specifies enrichment sets to run against
-        geneSets = [
-            "GO_Biological_Process_2021",
-            "GO_Cellular_Component_2021",
-            "GO_Molecular_Function_2021"]
-
-        genesTop = np.empty((geneAmount), dtype="<U10")
-        genesBottom = np.empty((geneAmount), dtype="<U10")
-
-        topCombGO = np.empty((len(geneSets)))
-        topPvalGO = np.empty((len(geneSets)))
-        botCombGO = np.empty((len(geneSets)))
-        botPvalGO = np.empty((len(geneSets)))
-        
-        geneNames = df.index.values[sort_idx[:, cmpNumb-1]]
-        genesTop[:] = np.flip(geneNames[-geneAmount:])  
-        genesBottom[:] = geneNames[:geneAmount]
-        
-        
-        for i in range(len(geneSets)):
-            print(i)
-            enrichrTopGO = runGO(genesTop, geneSets)
-            topCombGO = combinedDF(enrichrTopGO, geneSets[i])
-            topPvalGO = pvalueDF(enrichrTopGO, geneSets[i])
-            
-            enrichrBotGO = runGO(genesBottom, geneSets)
-            botCombGO = combinedDF(enrichrBotGO, geneSets[i])
-            botPvalGO = pvalueDF(enrichrBotGO, geneSets[i])
-            
-            plotCombGO(topCombGO, ax=axs[2*i])
-            plotPvalGO(botPvalGO, ax=axs[(2*i)+1])
-            
-   
-            
-    
-    
-    
-def runGO(geneList, geneSets):
-    enrichrGO = gp.enrichr(
-            list(geneList),
-                gene_sets=geneSets,
-                organism="Human"
-                ).results
-    enrichrGO = enrichrGO.set_index("Term", drop=True)
-    
-    return enrichrGO
-    
-def combinedDF(enrichrGO, geneSet):
-     # Combined Score
-    combined = enrichrGO.loc[
-            enrichrGO["Gene_set"] == geneSet,
-            "Combined Score"
-            ]
-    combined = combined.sort_values(ascending=False)
-    combined = combined.iloc[:10]
-    combDF = pd.DataFrame({"Term": combined.index.values, "Combined Score": combined.values})
-    
-    return combDF
-
-def pvalueDF(enrichrGO, geneSet):
-     # Combined Score
-    p_val = enrichrGO.loc[
-        enrichrGO["Gene_set"] == geneSet,
-        "Adjusted P-value"
-            ]
-    p_val = p_val.sort_values(ascending=True)
-    p_val = p_val.iloc[:10]
-    pvalDF = pd.DataFrame({"Term": p_val.index.values, "Adjusted P-value": p_val.values})
-    
-    return pvalDF
-
-
-
-def plotCombGO(GO, ax):
-
-    sns.barplot(
-    data=GO,
-    x="Combined Score",
-    y="Term",
-    ax=ax)
-        
-def plotPvalGO(GO, ax):
-
-    pvalPlot = sns.barplot(
-    data=GO,
-    x="Adjusted P-value",
-    y="Term",
-    ax=ax)
-
-    pvalPlot.set_xscale("log")
