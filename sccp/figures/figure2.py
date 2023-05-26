@@ -22,34 +22,43 @@ def makeFigure():
 
     # Add subplot labels
     subplotLabel(ax)
-    over_expressed = pd.read_csv('over_expressed.txt', index_col=0)
-    print(over_expressed)
+    # over_expressed = pd.read_csv('over_expressed.txt', index_col=0)
+    df = pd.read_csv('TopBotGenes_Cmp25.csv').rename(columns={"Unnamed: 0":"Gene"}).set_index("Gene")
+    print(df)
+    weight = 0.08
     
     # Specifies enrichment sets to run against
-#     gene_sets = [
-#         'GO_Biological_Process_2021',
-#         'GO_Cellular_Component_2021',
-#         'GO_Molecular_Function_2021'
-#     ]
+    gene_sets = [
+        'GO_Biological_Process_2021',
+        'GO_Cellular_Component_2021',
+        'GO_Molecular_Function_2021'
+    ]
     
-#     axnumb = 0
-#     # Runs for each component independently
-#     for i, column in enumerate(over_expressed.columns):
+    axnumb = 0
+    # Runs for each component independently
+    
+    cmpNames = ["Cmp. 25"]
+    for i, cmp in enumerate(cmpNames):
+        # Selects genes with alpha < 0.05 for over- and under-expression
+        # print(column)
+        
+        print(df[cmp])
+        print(df.loc[df[cmp] > weight])
+        
+        a
+        
+        # over = over_expressed.loc[:, column] > weight
+    
+        # print(over)
 
-#         # Selects genes with alpha < 0.05 for over- and under-expression
-#         # print(column)
-#         over = over_expressed.loc[
-#             over_expressed.loc[:, column] < 0.05,
-#             column
-#         ]
-#         # print(over)
-#         over_ensembl = list(over.index)
+        # print(over)
+        # over_ensembl = list(over.index)
 
-#         # print(over_ensembl)
-#         # Converts ensembl to standard gene names
-#         over_genes = lookup_genes(over_ensembl)
-#         # print(over_genes)
-#         # under_genes = lookup_genes(under_ensembl)
+        # print(over_ensembl)
+        # Converts ensembl to standard gene names
+        # over_genes = lookup_genes(over_ensembl)
+        # print(over_genes)
+        # under_genes = lookup_genes(under_ensembl)
 
 #         # Runs gene names through enrichment analyses
 #         if len(over_genes) == 0:
