@@ -11,6 +11,8 @@ from matplotlib import gridspec, pyplot as plt
 import numpy as np
 import scipy.cluster.hierarchy as sch
 from ..parafac2 import Pf2X
+from ..crossVal import CrossVal
+from ..decomposition import R2X
 
 
 matplotlib.use("AGG")
@@ -86,55 +88,22 @@ def genFigure():
     exec("from sccp.figures." + nameOut + " import makeFigure", globals())
     ff = makeFigure()
     ff.savefig(fdir + nameOut + ".svg", dpi=300, bbox_inches="tight", pad_inches=0)
+    ff.savefig(fdir + nameOut + ".png", dpi=300, bbox_inches="tight", pad_inches=0)
 
     print(f"Figure {sys.argv[1]} is done after {time.time() - start} seconds.\n")
 
 
-def plotFactorsSynthetic(factors, data_xarray: Pf2X, ax):
-    """Plots parafac2 factors for synthetic data"""
-    rank = factors[0].shape[1]
-    xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
-    cmap = sns.diverging_palette(240, 10, as_cmap=True)
-    iter = 0
-    for i in range(0, len(factors)):
-        if i != len(factors) - 2:
-            if i == 0:
-                timeDF = pd.DataFrame(factors[i], columns=xticks)
-                timeDF["Time"] = np.arange(1, factors[0].shape[0] + 1)
-                sns.lineplot(data=timeDF[xticks], ax=ax[iter])
-                ax[iter].set(
-                    ylabel="Cmp. Weight",
-                    xlabel="Time",
-                    xticks=np.arange(0, factors[0].shape[0]),
-                )
-
-            else:
-                yt = data_xarray.variable_labels
-                X = factors[i]
-                sns.heatmap(
-                    data=X,
-                    xticklabels=xticks,
-                    yticklabels=yt,
-                    ax=ax[iter],
-                    center=0,
-                    cmap=cmap,
-                )
-
-            ax[iter].set_title("Factors")
-            ax[iter].tick_params(axis="y", rotation=0)
-            iter += 1
-
-
 def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
-    """Plots parafac2 factors for synthetic data"""
+    """Plots parafac2 factors."""
     rank = factors[0].shape[1]
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
-    iter = 0
-    for i in (0, 2):
+    for i in range(3):
         # The single cell mode has a square factors matrix
         if i == 0:
             yt = data.condition_labels
+        elif i == 1:
+            yt = [f"Cell State {i}" for i in np.arange(1, rank + 1)]
         else:
             yt = data.variable_labels
 
@@ -154,14 +123,13 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
             data=X,
             xticklabels=xticks,
             yticklabels=yt,
-            ax=axs[iter],
+            ax=axs[i],
             center=0,
             cmap=cmap,
         )
 
-        axs[iter].set_title("Factors")
-        axs[iter].tick_params(axis="y", rotation=0)
-        iter += 1
+        axs[i].set_title("Factors")
+        axs[i].tick_params(axis="y", rotation=0)
 
         if i == 2 and len(yt) > 50:
             sort_idx = np.argsort(X, axis=0)
@@ -197,26 +165,25 @@ def flattenData(data, factors, projs):
     for i in range(factors[0].shape[0]):
         cellCount = np.append(cellCount, projs[i].shape[0])
 
-    flatProjs = np.empty([int(np.sum(cellCount)), projs[0].shape[1]])
-    flatData = np.empty([int(np.sum(cellCount)), len(data.variable_labels)])
-    cellStart = [0]
     drugNames = []
 
     for i in range(factors[0].shape[0]):
-        cellStart = np.append(cellStart, cellStart[i] + cellCount[i])
-        flatProjs[int(cellStart[i]) : int(cellStart[i + 1])] = projs[i]
-        flatData[int(cellStart[i]) : int(cellStart[i + 1])] = data.X_list[i]
         drugNames = np.append(
             drugNames, np.repeat(data.condition_labels[i], cellCount[i])
         )
 
+    flatProjs = np.concatenate(projs, axis=0)
+    flatData = np.concatenate(data.X_list, axis=0)
+
     cmpNames = [f"Cmp. {i}" for i in np.arange(1, factors[0].shape[1] + 1)]
     projDF = pd.DataFrame(data=flatProjs, columns=cmpNames)
     dataDF = pd.DataFrame(data=flatData, columns=data.variable_labels)
+    weightedDF = pd.DataFrame(data=flatProjs @ factors[1], columns=cmpNames)
     projDF["Drug"] = drugNames
     dataDF["Drug"] = drugNames
+    weightedDF["Drug"] = drugNames
 
-    return dataDF, projDF
+    return dataDF, projDF, weightedDF
 
 
 def plotGeneUMAP(genes, decomp, points, dataDF, f, axs):
@@ -293,3 +260,63 @@ def umap_axis(x, y, ax):
     )
     ax.axes.xaxis.set_ticklabels([])
     ax.axes.yaxis.set_ticklabels([])
+
+
+def plotR2X(data, rank, ax):
+    """Creates R2X plot for parafac2 tensor decomposition"""
+    r2xError = R2X(data, rank)
+
+    rank_vec = np.arange(1, rank + 1)
+    labelNames = ["Fit: Pf2", "Fit: PCA"]
+    colorDecomp = ["r", "b"]
+    markerShape = ["|", "_"]
+
+    for i in range(2):
+        ax.scatter(
+            rank_vec,
+            r2xError[i],
+            label=labelNames[i],
+            marker=markerShape[i],
+            c=colorDecomp[i],
+            s=30.0,
+        )
+
+    ax.set(
+        ylabel="Variance Explained",
+        xlabel="Number of Components",
+        xticks=np.linspace(0, rank, num=8, dtype=int),
+        yticks=np.linspace(
+            0, np.max(np.append(r2xError[0], r2xError[1])) + 0.01, num=5
+        ),
+    )
+
+    ax.legend()
+
+
+def plotCV(data, rank, trainPerc, ax):
+    """Creates variance explained plot for parafac2 tensor decomposition CV"""
+    cvError = CrossVal(data, rank, trainPerc=trainPerc)
+
+    rank_vec = np.arange(1, rank + 1)
+    labelNames = ["CV: Pf2", "CV: PCA"]
+    colorDecomp = ["r", "b"]
+    markerShape = ["o", "o"]
+
+    for i in range(2):
+        ax.scatter(
+            rank_vec,
+            cvError[i],
+            label=labelNames[i],
+            marker=markerShape[i],
+            c=colorDecomp[i],
+            s=30.0,
+        )
+
+    ax.set(
+        ylabel="Variance Explained",
+        xlabel="Number of Components",
+        xticks=np.linspace(0, rank, num=8, dtype=int),
+        yticks=np.linspace(0, np.max(np.append(cvError[0], cvError[1])) + 0.01, num=5),
+    )
+
+    ax.legend()
