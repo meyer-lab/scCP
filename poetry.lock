@@ -1066,7 +1066,7 @@ dunamai = "*"
 [package.extras]
 test = ["pygments", "pytest (>=6.2.5)", "pytest-black", "pytest-mypy"]
 
-[[package]]
+[[package
 name = "h5netcdf"
 version = "1.1.0"
 description = "netCDF4 via h5py"
@@ -2800,6 +2800,27 @@ snappy = ["python-snappy"]
 zstd = ["zstandard"]
 
 [[package]]
+name = "pyct"
+version = "0.5.0"
+description = "Python package common tasks for users (e.g. copy examples, fetch data, ...)"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pyct-0.5.0-py2.py3-none-any.whl", hash = "sha256:a4038a8885059ab8cac6f946ea30e0b5e6bdbe0b92b6723f06737035f9d65e8c"},
+    {file = "pyct-0.5.0.tar.gz", hash = "sha256:dd9f4ac5cbd8e37c352c04036062d3c5f67efec76d404761ef16b0cbf26aa6a0"},
+]
+
+[package.dependencies]
+param = ">=1.7.0"
+
+[package.extras]
+build = ["param (>=1.7.0)", "setuptools"]
+cmd = ["pyyaml", "requests"]
+doc = ["nbsite", "sphinx-ioam-theme"]
+tests = ["flake8", "pytest"]
+
+[[package]]
 name = "pynndescent"
 version = "0.5.10"
 description = "Nearest Neighbor Descent"
@@ -3852,11 +3873,19 @@ files = [
 ]
 
 [package.dependencies]
+bokeh = {version = "*", optional = true, markers = "extra == \"plot\""}
+colorcet = {version = "*", optional = true, markers = "extra == \"plot\""}
+datashader = {version = "*", optional = true, markers = "extra == \"plot\""}
+holoviews = {version = "*", optional = true, markers = "extra == \"plot\""}
+matplotlib = {version = "*", optional = true, markers = "extra == \"plot\""}
 numba = ">=0.49"
 numpy = ">=1.17"
+pandas = {version = "*", optional = true, markers = "extra == \"plot\""}
 pynndescent = ">=0.5"
+scikit-image = {version = "*", optional = true, markers = "extra == \"plot\""}
 scikit-learn = ">=0.22"
 scipy = ">=1.0"
+seaborn = {version = "*", optional = true, markers = "extra == \"plot\""}
 tqdm = "*"
 
 [package.extras]
@@ -3880,6 +3909,18 @@ brotli = ["brotli (>=1.0.9)", "brotlicffi (>=0.8.0)"]
 secure = ["certifi", "cryptography (>=1.9)", "idna (>=2.0.0)", "pyopenssl (>=17.1.0)", "urllib3-secure-extra"]
 socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
+
+[[package]]
+name = "webencodings"
+version = "0.5.1"
+description = "Character encoding aliases for legacy web content"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "webencodings-0.5.1-py2.py3-none-any.whl", hash = "sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78"},
+    {file = "webencodings-0.5.1.tar.gz", hash = "sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923"},
+]
 
 [[package]]
 name = "wheel"
