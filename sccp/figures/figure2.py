@@ -36,7 +36,6 @@ def makeFigure():
     sc.pl.umap(pancreas, color=['batch'], palette=sc.pl.palettes.vega_20_scanpy, ax=ax[0])
 
     pancreas = import_pancreas(tensor=False, method="_bbknn")
-    print(pancreas)
     sc.pl.umap(pancreas, color=['batch'], palette=sc.pl.palettes.vega_20_scanpy, ax=ax[1])
     #sc.pl.umap(pancreas, color=['celltype'], palette=sc.pl.palettes.vega_20_scanpy, ax=ax[1])
 
