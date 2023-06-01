@@ -252,7 +252,7 @@ def plotCmpUMAP(projDF, projName, points, f, axs):
 
 def plotBatchUMAP(decomp_DF, ax):
     """Scatterplot of UMAP visualization weighted by condition"""
-    sns.scatterplot(data=decomp_DF, x="UMAP 1", y="UMAP 2", hue="Batch", s=1, palette="muted", legend=False, ax=ax)
+    sns.scatterplot(data=decomp_DF, x="UMAP 1", y="UMAP 2", hue="Batch", s=1, palette="muted", ax=ax)
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles=handles, labels=labels)
 
