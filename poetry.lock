@@ -1066,7 +1066,7 @@ dunamai = "*"
 [package.extras]
 test = ["pygments", "pytest (>=6.2.5)", "pytest-black", "pytest-mypy"]
 
-[[package
+[[package]]
 name = "h5netcdf"
 version = "1.1.0"
 description = "netCDF4 via h5py"
