@@ -11,7 +11,7 @@ from ..parafac2 import parafac2_nd
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8, 10), (5, 6))
+    ax, f = getSetup((9, 8), (2, 2))
     subplotLabel(ax)  # Add subplot labels
 
     # Import of single cells: [Drug, Cell, Gene]
@@ -31,20 +31,37 @@ def makeFigure():
     x = ump[::10, 0]
     y = ump[::10, 1]
 
-    for i in range(rank):
-        tl = ax[i].scatter(
-            x,
-            y,
-            marker=".",
-            c=CompW[::10, i],
-            cmap="PRGn",
-            vmin=-0.3,
-            vmax=0.3,
-            linewidths=0,
-            s=2.0,
-        )
-        # f.colorbar(tl, ax=ax[i])
-        ax[i].set(title=f"Component {i + 1}")
-        umap_axis(x, y, ax[i])
+
+    rank=25
+    tl = ax[0].scatter(
+        x,
+        y,
+        marker=".",
+        c=CompW[::10, rank-1],
+        cmap="PRGn",
+        vmin=-0.3,
+        vmax=0.3,
+        linewidths=0,
+        s=15.0,
+    )
+    f.colorbar(tl, ax=ax[0])
+    ax[0].set(title=f"Component {rank}")
+    umap_axis(x, y, ax[0])
+    
+    rank=23
+    tl = ax[1].scatter(
+        x,
+        y,
+        marker=".",
+        c=CompW[::10, rank-1],
+        cmap="PRGn",
+        vmin=-0.3,
+        vmax=0.3,
+        linewidths=0,
+        s=15.0,
+    )
+    f.colorbar(tl, ax=ax[1])
+    ax[1].set(title=f"Component {rank}")
+    umap_axis(x, y, ax[1])
 
     return f

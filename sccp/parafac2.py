@@ -24,6 +24,9 @@ class Pf2X:
 
 def _cmf_reconstruction_error(matrices, factors: list, norm_X_sq, rng=None):
     A, B, C = factors
+    print(np.shape(A))
+    print(np.shape(B))
+    print(np.shape(C))
 
     norm_cmf_sq = 0
     inner_product = 0

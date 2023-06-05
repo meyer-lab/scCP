@@ -10,7 +10,7 @@ from ..parafac2 import parafac2_nd
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((18, 25), (2, 2))
+    ax, f = getSetup((9, 11), (2, 2))
 
     # Add subplot labels
     subplotLabel(ax)

@@ -13,6 +13,10 @@ import scipy.cluster.hierarchy as sch
 from ..parafac2 import Pf2X
 from ..crossVal import CrossVal
 from ..decomposition import R2X
+import os
+from os.path import join
+
+path_here = os.path.dirname(os.path.dirname(__file__))
 
 
 matplotlib.use("AGG")
@@ -132,9 +136,13 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple()):
         axs[i].tick_params(axis="y", rotation=0)
 
         if i == 2 and len(yt) > 50:
-            sort_idx = np.argsort(X, axis=0)
-            for j in range(rank):
-                sort_data = yt[sort_idx[:, j]]
+            
+            df = pd.DataFrame(data=X, index=yt, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+            print(df)
+            df.to_csv(join(path_here, "data/TopBotGenes_Cmp"+str(rank)+".csv"))
+            # sort_idx = np.argsort(X, axis=0)
+            # for j in range(rank):
+            #     sort_data = yt[sort_idx[:, j]]
                 # print("Bottom 10 Genes Cmp." + str(j + 1) + ":", sort_data[:10])
                 # print("Top 10 Genes Cmp." + str(j + 1) + ":", np.flip(sort_data[-10:]))
 
@@ -216,7 +224,7 @@ def plotDrugUMAP(drugs, decomp, totaldrugs, points, axs):
     for i, drugz in enumerate(drugs):
         drugList = np.where(np.asarray(totaldrugs == drugz), drugz, "Other Drugs")
         sns.scatterplot(
-            x=umap1, y=umap2, hue=drugList[::10], s=1, palette="muted", ax=axs[i]
+            x=umap1, y=umap2, hue=drugList[::10], s=5, palette="muted", ax=axs[i]
         )
         handles, labels = axs[i].get_legend_handles_labels()
         axs[i].legend(handles=handles, labels=labels)

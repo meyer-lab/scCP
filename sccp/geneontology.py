@@ -25,6 +25,8 @@ def geneOntology(cmpNumb: int, geneAmount, geneValue, axs):
         genesTop[:] = np.flip(geneNames[-geneAmount:])  
         genesBottom[:] = geneNames[:geneAmount]
         
+        print(genesBottom)
+        
         
         for i in range(len(geneSets)):
             if geneValue == "Overexpressed":
@@ -39,6 +41,8 @@ def geneOntology(cmpNumb: int, geneAmount, geneValue, axs):
             
             plotCombGO(CombGO, geneValue, ax=axs[2*i])
             plotPvalGO(PvalGO, geneValue, ax=axs[(2*i)+1])
+            
+            break
             
     
 def runGO(geneList, geneSets):
@@ -61,7 +65,7 @@ def combinedDF(enrichrGO, geneSet):
             "Combined Score"
             ]
     combined = combined.sort_values(ascending=False)
-    combined = combined.iloc[:10]
+    combined = combined.iloc[:6]
     combDF = pd.DataFrame({"Term": combined.index.values, "Combined Score": combined.values})
     
     return combDF
@@ -73,7 +77,7 @@ def pvalueDF(enrichrGO, geneSet):
         "Adjusted P-value"
             ]
     p_val = p_val.sort_values(ascending=True)
-    p_val = p_val.iloc[:10]
+    p_val = p_val.iloc[:6]
     pvalDF = pd.DataFrame({"Term": p_val.index.values, "Adjusted P-value": p_val.values})
     
     return pvalDF
