@@ -87,6 +87,7 @@ def parafac2_nd(
 
         # Project tensor slices
         projected_X = tl.stack([p.T @ t.double() for p, t in zip(projections, X)])
+        # print(np.shape(projected_X))
 
         CP = parafac(
             projected_X,

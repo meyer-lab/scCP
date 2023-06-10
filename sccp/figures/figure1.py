@@ -36,6 +36,7 @@ def makeFigure():
     compare_int_methods(methods, projDF.values, ax=ax[0:2])
     compare_ranks_methods(ranks, projs, ax=ax[2:4])
 
+
     return f
 
 

@@ -43,6 +43,7 @@ def import_thompson_drug() -> anndata.AnnData:
         barcodes, metafile, on="cell_barcode", how="left", validate="one_to_one"
     )
 
+
     # h5ad is simplified version of mtx format
     # import scanpy as sc
     # data = sc.read_10x_mtx("./sccp/data/", var_names='gene_symbols', make_unique=True)
@@ -52,6 +53,7 @@ def import_thompson_drug() -> anndata.AnnData:
     data = anndata.read_h5ad("/opt/andrew/thompson.h5ad")
 
     data.obs["Drugs"] = pd.Categorical(metafile["sample_id"])
+    print(data)
     return data
 
 
@@ -62,8 +64,10 @@ def ThompsonXA_SCGenes(offset: float = 1.0) -> anndata.AnnData:
 
     assert np.all(np.isfinite(X.X.data))
 
+    print(np.shape(X))
     X = X[:, np.mean(X.X > 0, axis=0) > 0.001]
     X.X /= np.sum(X.X, axis=0)
+    print(np.shape(X))
 
     # Only operating on the data works because 0 ends up as 0 here
     X.X = np.log10((scalingfactor * X.X) + 1)
