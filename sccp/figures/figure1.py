@@ -26,7 +26,7 @@ def makeFigure():
 
     methods=["bbknn", "scanorama", "harmony"]
     ranks = [5, 15, 30, 40, 50, 75]
-    pancreas_pf2 = import_pancreas(tensor=False)
+    pancreas_pf2 = import_pancreas(tensor=True)
     rank = 50
     _, factors, projs, _ = parafac2_nd(pancreas_pf2, rank=rank, random_state=1, verbose=True)
     _, projDF, _ = flattenData(pancreas_pf2, factors, projs)
