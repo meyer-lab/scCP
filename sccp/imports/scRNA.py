@@ -55,7 +55,7 @@ def import_thompson_drug() -> anndata.AnnData:
     return data
 
 
-def ThompsonXA_SCGenes(offset: float = 1.0) -> anndata.AnnData:
+def ThompsonXA_SCGenes(annData = False, offset: float = 1.0) -> anndata.AnnData:
     """Import Thompson lab PBMC dataset."""
     X = import_thompson_drug()
     scalingfactor = 1000
@@ -86,7 +86,10 @@ def ThompsonXA_SCGenes(offset: float = 1.0) -> anndata.AnnData:
         
     
     # Assign cells a count per-experiment so we can reindex
-    return X, tensorFy(X, "Drugs")
+    if annData:
+        return X, tensorFy(X, "Drugs")
+    else:
+        return tensorFy(X, "Drugs")
 
 
 def import_pancreas(tensor=True, method=str()):

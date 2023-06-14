@@ -7,77 +7,32 @@ from .common import (
     getSetup,
     flattenData
 )
-# from ..imports.scRNA import import_pancreas, import_pancreas_all
 from ..parafac2 import parafac2_nd
-# import umap
-# import scib
 import numpy as np
-import pandas as pd
-import seaborn as sns
-import warnings
 from ..imports.scRNA import ThompsonXA_SCGenes
-from sklearn import preprocessing
-
-warnings.filterwarnings("ignore")
+import numpy as np
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8, 4), (2, 4))
+    ax, f = getSetup((8, 4), (2, 2))
 
     # Add subplot labels
     subplotLabel(ax)
     
-    X, data = ThompsonXA_SCGenes(offset=1.0)
-    obsV = X.obs_vector("Drugs")
-    
-    sgUnique, sgIndex = np.unique(obsV, return_inverse=True)
-    
-    # ]
-    # drugs = preprocessing.label_binarize(obsV, classes=sgUnique).flatten()
-    # print(drugs)
-    # print(len(drugs))
-    # drugNames = np.unique(obsV)
-    ata = [len(X[sgIndex == sgi, :]) for sgi in range(len(sgUnique))]
-    
-    toal = []
-    for i, rept in enumerate(ata):
-        toal = np.append(toal, np.tile(i, rept))
-        
-        
-    X.obs["batch"] = toal
-    
+    aData, X = ThompsonXA_SCGenes(annData=True, offset=1.0)
+    obsV = aData.obs_vector("Drugs")
 
-    print(np.shape(X.X))
-    check_adata(X)
-    check_batch("Drugs", X.obs, verbose=True)
+    check_adata(aData)
+    check_batch("Drugs", aData.obs, verbose=True)
+    split, categories = split_batches(aData.copy(), "Drugs", return_categories=True)
     
-    split, categories = split_batches(X.copy(), "Drugs", return_categories=True)
+    rank=25
     
-    rank=3
-    
-    _, factors, projs, _ = parafac2_nd(data, rank=rank, random_state=1, verbose=True)
-    _, projDF, _ = flattenData(data, factors, projs)
-    X.obsm["Proj"] = projDF.values
+    _, factors, projs, _ = parafac2_nd(X, rank=rank, random_state=1, verbose=True)
+    _, projDF, _ = flattenData(X, factors, projs)
+    aData.obsm["Proj"] = projDF.values
    
-
-    
-    
-    
-    
-    
-    
-
-            
-
-    # print(X)
-    # print(ata)
-    # print(toal)
-    # print(len(toal))
-    # # X.obs.rename(columns={"Drugs": "batch"}, inplace=True)
-    # print(X)
-    # print(data)
-
     return f
 
 def check_adata(adata):
