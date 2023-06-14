@@ -20,26 +20,21 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
     
-    aData, X = ThompsonXA_SCGenes(annData=True, offset=1.0)
-    obsV = aData.obs_vector("Drugs")
-
-    check_adata(aData)
-    check_batch("Drugs", aData.obs, verbose=True)
-    split, categories = split_batches(aData.copy(), "Drugs", return_categories=True)
+    aData = aDataCorrected_Pf2(rank=25, annData=True)
     
-    rank=25
+    print(aData)
     
-    _, factors, projs, _ = parafac2_nd(X, rank=rank, random_state=1, verbose=True)
-    _, projDF, _ = flattenData(X, factors, projs)
-    aData.obsm["Proj"] = projDF.values
+    
    
     return f
 
 def check_adata(adata):
+    """Ensures data is AnnData"""
     if type(adata) is not anndata.AnnData:
         raise TypeError("Input is not a valid AnnData object")
 
 def check_batch(batch, obs, verbose=False):
+    """Ensures categorica names for batch (i.e. drugs)"""
     if batch not in obs:
         raise ValueError(f"column {batch} is not in obs")
     elif verbose:
@@ -87,3 +82,18 @@ def merge_adata(*adata_list, **kwargs):
 
     return anndata.AnnData.concatenate(*adata_list, **kwargs)
     
+    
+def aDataCorrected_Pf2(rank, annData=True):
+    """Imports data as both tensor and AnnData. Saves projections in AnnData for SCIB/Theis Lab"""
+    aData, X = ThompsonXA_SCGenes(annData=annData, offset=1.0)
+    obsV = aData.obs_vector("Drugs")
+
+    check_adata(aData)
+    check_batch("Drugs", aData.obs, verbose=True)
+    split, categories = split_batches(aData.copy(), "Drugs", return_categories=True)
+    
+    _, factors, projs, _ = parafac2_nd(X, rank=rank, random_state=1, verbose=True)
+    _, projDF, _ = flattenData(X, factors, projs)
+    aData.obsm["Proj"] = projDF.values
+    
+    return aData
