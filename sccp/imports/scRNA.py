@@ -81,9 +81,12 @@ def ThompsonXA_SCGenes(offset: float = 1.0) -> anndata.AnnData:
 
     # Center the genes
     X.X -= np.mean(X.X, axis=0)
-
+    
     # Assign cells a count per-experiment so we can reindex
-    return tensorFy(X, "Drugs")
+        
+    
+    # Assign cells a count per-experiment so we can reindex
+    return X, tensorFy(X, "Drugs")
 
 
 def import_pancreas(tensor=True, method=str()):
