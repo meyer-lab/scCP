@@ -101,7 +101,6 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
     rank = factors[0].shape[1]
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
-    weight = 0.09
     for i in range(3):
         # The single cell mode has a square factors matrix
         if i == 0:
@@ -115,18 +114,13 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
 
         if i in trim:
             max_weight = np.max(np.abs(X), axis=1)
-            print(max_weight)
-            print(np.shape(max_weight))
-            kept_idxs = max_weight > weight
+            kept_idxs = max_weight > 0.08
             X = X[kept_idxs]
             yt = yt[kept_idxs]
 
         if i in reorder:
             X, ind = reorder_table(X)
             yt = yt[ind]
-            print(X)
-            print(yt)
-
         sns.heatmap(
             data=X,
             xticklabels=xticks,
@@ -141,33 +135,9 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
         
         if saveGenes == True:
             if i == 2 and len(yt) > 50:
-                
                 df = pd.DataFrame(data=X, index=yt, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
-                print(df)
                 df.to_csv(join(path_here, "data/TopBotGenes_Cmp"+str(rank)+".csv"))
-                # geneAmount = 20
-                # genesTop = np.empty((geneAmount, X.shape[1]), dtype="<U10")
-                # genesBottom = np.empty((geneAmount, X.shape[1]), dtype="<U10")
-                # print(np.shape(X))
-                # sort_idx = np.argsort(X, axis=0)
-                
-                # for j in range(rank):
-                #     sortGenes = yt[sort_idx[:, j]]
-                    
-                #     print(np.shape(sortGenes))
-                #     print(np.shape(X[sort_idx]))
-                #     print(np.shape(X[sort_idx[:, j]]))
-                    
-                #     a
-                #     genesTop[:, j] = np.flip(sortGenes[-geneAmount:])  
-                #     genesBottom[:, j] = sortGenes[:geneAmount]
-
-                # dfTop = pd.DataFrame(data=genesTop, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
-                # dfBottom = pd.DataFrame(data=genesBottom, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
-
-                # dfTop.to_csv(join(path_here, "data/TopGenes_Cmp"+str(rank)+".csv"))
-                # dfBottom.to_csv(join(path_here, "data/BottomGenes_Cmp"+str(rank)+".csv"))
-                    
+   
                 
 
 
