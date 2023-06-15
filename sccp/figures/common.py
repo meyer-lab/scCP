@@ -92,6 +92,7 @@ def genFigure():
     exec("from sccp.figures." + nameOut + " import makeFigure", globals())
     ff = makeFigure()
     ff.savefig(fdir + nameOut + ".svg", dpi=300, bbox_inches="tight", pad_inches=0)
+    ff.savefig(fdir + nameOut + ".png", dpi=300, bbox_inches="tight", pad_inches=0)
 
     print(f"Figure {sys.argv[1]} is done after {time.time() - start} seconds.\n")
 
@@ -249,6 +250,23 @@ def plotCmpUMAP(projDF, projName, points, f, axs):
             title=proj + "-Pf2-Based Decomposition",
         )
         umap_axis(umap1, umap2, axs[i])
+
+    return
+
+def plotBatchUMAP(decomp_DF, ax):
+    """Scatterplot of UMAP visualization weighted by condition"""
+    sns.scatterplot(data=decomp_DF, x="UMAP 1", y="UMAP 2", hue="Batch", s=1, palette="muted", ax=ax)
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles=handles, labels=labels)
+
+    return
+
+
+def plotCellUMAP(decomp_DF, ax):
+    """Scatterplot of UMAP visualization weighted by condition"""
+    sns.scatterplot(data=decomp_DF, x="UMAP 1", y="UMAP 2", hue="Cell Type", s=1, palette="muted", legend=False, ax=ax)
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles=handles, labels=labels)
 
     return
 
