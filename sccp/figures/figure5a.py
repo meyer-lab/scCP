@@ -15,26 +15,46 @@ from scipy.spatial.distance import pdist
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8, 6), (2, 3))
+    ax, f = getSetup((6, 6), (1, 2))
     subplotLabel(ax)  # Add subplot labels
 
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes()
 
-    ranks = [5, 10]
+    # ranks = [5, 10]
 
-    Pf2s = [parafac2_nd(data, rank=rank, random_state=1, verbose=True) for rank in ranks]
+    # Pf2s = [parafac2_nd(data, rank=rank, random_state=1, verbose=True) for rank in ranks]
 
-    dim_red_var_drug(data, ranks, Pf2s, ["Dexrazoxane HCl (ICRF-187, ADR-529)"], ax[0:1])
+    # dim_red_var_drug(data, ranks, Pf2s, ["Dexrazoxane HCl (ICRF-187, ADR-529)"], ax[0:1])
     # dim_red_var_cell(data, ranks, Pf2s, ["NKG7", "GNLY"], 0.1, ax[1:3])
 
     rank = 25
     Pf2 = parafac2_nd(data, rank=rank, random_state=1, verbose=True)
+    
+    # factors = Pf2[1]
+    # projs = Pf2[2]
+    _, projDF, _ = flattenData(data, Pf2[1], Pf2[2])
+
+    
+    
     pc = PCA(n_components=rank)
     PC = pc.fit_transform(data.unfold())
     
 
-    all_drug_dist(data, Pf2, PC, ax[3])
+# Rapamycin (Sirolimus)
+# Mianserin HCl
+# Masitinib (AB1010)
+    yupDF = all_drug_dist(data, Pf2, PC, ax[0])
+    
+    yupDF["Cell Count"] = np.repeat(projDF.groupby("Drug").count()["Cmp. 1"].values, 2)
+    
+    print(np.repeat(projDF.groupby("Drug").count()["Cmp. 1"].values, 2))
+    
+    print(yupDF)
+    
+    sns.scatterplot(data=yupDF.loc[yupDF["Method"] == "PARAFAC2"], x="Cell Count", y="% Total Variance", ax=ax[0])
+    sns.scatterplot(data=yupDF.loc[yupDF["Method"] == "PCA"], x="Cell Count", y="% Total Variance", ax=ax[1])
+    
     # all_marker_dist(data, Pf2, PC, 0.03, ax[4])
 
     return f
@@ -59,11 +79,13 @@ def dim_red_var_drug(data, ranks, Pf2s, drugs, ax):
             var_DF = pd.concat([var_DF, pd.DataFrame({"Rank": [rank], "% Total Variance": Pf2_var, "Method": "PARAFAC2", "Drug": drug})])
             var_DF = pd.concat([var_DF, pd.DataFrame({"Rank": [rank], "% Total Variance": PC_var, "Method": "PCA", "Drug": drug})])
     
-    var_DF = var_DF.reset_index(drop=True)
-    for i, drug in enumerate(drugs):
-        plot_DF = var_DF.loc[var_DF.Drug == drug]
-        sns.lineplot(data=plot_DF, x="Rank", y="% Total Variance", hue="Method", ax=ax[i])
-        ax[i].set(title=drug)
+    # var_DF = var_DF.reset_index(drop=True)
+    # for i, drug in enumerate(drugs):
+    #     plot_DF = var_DF.loc[var_DF.Drug == drug]
+    #     sns.lineplot(data=plot_DF, x="Rank", y="% Total Variance", hue="Method", ax=ax[i])
+    #     ax[i].set(title=drug)
+        
+    return var_DF
 
 
 def dim_red_var_cell(data, ranks, Pf2s, markers, cutoff, ax):
@@ -97,6 +119,8 @@ def dim_red_var_cell(data, ranks, Pf2s, markers, cutoff, ax):
             data=plot_DF, x="Rank", y="Norm Centroid Distance", hue="Method", ax=ax[i]
         )
         ax[i].set(title=marker)
+        
+        
 
 
 def PCA_look(data, ranks, marker, cutoff, ax):
@@ -133,10 +157,19 @@ def inter_clust_dist(clustPoints, otherPoints):
 
 def centroid_dist(points):
     """Calculates mean distance between clust points and all others"""
-    centroid = np.mean(points, axis=1)
-    dist_vecs = points - centroid[0]
-    row_norms = np.linalg.norm(np.array(dist_vecs, dtype=np.float64), axis=1)
-    return np.mean(row_norms)
+    centroid = np.mean(points, axis=0)
+    dist_vecs = np.linalg.norm(points - np.reshape(centroid, (1,-1)))
+    
+    # print(dist_vecs)
+    
+    # row_norms = np.linalg.norm(np.array(dist_vecs, dtype=np.float64), axis=0)
+    # print(np.shape(row_norms))
+    # a
+    # lol = np.mean(np.abs(dist_vecs), axis=0)
+    
+    
+    # print(row_norms)
+    return dist_vecs
 
 
 def all_drug_dist(data, Pf2, PC, ax):
@@ -160,17 +193,19 @@ def all_drug_dist(data, Pf2, PC, ax):
         Pf2_var = np.sum(np.std(Pf2_drug.astype(float), axis=0)) / np.sum(np.std(Pf2_all.astype(float), axis=0))
         PC_var = np.sum(np.std(PC_drug, axis=0)) / np.sum(np.std(PC, axis=0))
         
-        print(drug)
-        print(Pf2_var)
-        print(PC_var)
+        # print(drug)
+        # print(Pf2_var)
+        # print(PC_var)
         
         
         var_DF = pd.concat([var_DF, pd.DataFrame({"Drug": [drug], "% Total Variance": Pf2_var, "Method": "PARAFAC2",})])
         var_DF = pd.concat([var_DF, pd.DataFrame({"Drug": [drug], "% Total Variance": PC_var, "Method": "PCA"})])
     
     var_DF = var_DF.reset_index(drop=True)
-    sns.swarmplot(data=var_DF, x="Method", y="% Total Variance", size=2, ax=ax)
-    ax.set(title="All Drugs: Rank = " + str(PC.shape[1]))
+    # sns.swarmplot(data=var_DF, x="Method", y="% Total Variance", size=2, ax=ax)
+    # ax.set(title="All Drugs: Rank = " + str(PC.shape[1]))
+    
+    return var_DF
 
 
 def all_marker_dist(data, Pf2, PC, cutoff, ax):
@@ -196,16 +231,23 @@ def all_marker_dist(data, Pf2, PC, cutoff, ax):
         if marker in dataDF_init.columns:
             Pf2_cell = projDF.loc[dataDF[marker + " status"] == "Marker Positive"].values[:, 0: -1]
             PC_cell = PC[dataDF[marker + " status"] == "Marker Positive"]
+            
 
             Pf2_pwise = centroid_dist(Pf2_cell) / centroid_dist(Pf2_all)
             PC_pwise = centroid_dist(PC_cell) / centroid_dist(PC)
             dist_DF = pd.concat([dist_DF, pd.DataFrame({"Marker": [marker], "Norm Centroid Distance": Pf2_pwise, "Method": "PARAFAC2"})])
             dist_DF = pd.concat([dist_DF, pd.DataFrame({"Marker": [marker], "Norm Centroid Distance": PC_pwise, "Method": "PCA"})])
+            
+            print(marker)
+            print(Pf2_pwise)
+            print(PC_pwise)
+        
 
     dist_DF = dist_DF.reset_index(drop=True)
     print(dist_DF)
     sns.swarmplot(data=dist_DF, x="Method", y="Norm Centroid Distance", size=2, ax=ax)
     ax.set(title="All Canonical Markers: Rank = " + str(PC.shape[1]))
+
 
 
 marker_genes = {
