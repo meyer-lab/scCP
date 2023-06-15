@@ -5,70 +5,23 @@ Fucntions to indicate if format used from Theis Lab
 Tests based on Theis lab to check for AnnData format and output is correct for Pf2 
 """
 import anndata
-import numpy as np
-
-def check_adata(adata):
-    """Ensures data is AnnData"""
-    if type(adata) is not anndata.AnnData:
-        raise TypeError("Input is not a valid AnnData object")
-
-def check_batch(batch, obs, verbose=False):
-    """Ensures categorica names for batch (i.e. drugs)"""
-    if batch not in obs:
-        raise ValueError(f"column {batch} is not in obs")
-    elif verbose:
-        print(f"Object contains {obs[batch].nunique()} batches.")
-            
-def split_batches(adata, batch, hvg=None, return_categories=False):
-    """Split batches and preserve category information
-
-    :param adata:
-    :param batch: name of column in ``adata.obs``. The data type of the column must be of ``Category``.
-    :param hvg: list of highly variable genes
-    :param return_categories: whether to return the categories object of ``batch``
-    """
-    split = []
-    batch_categories = adata.obs[batch].cat.categories
-    if hvg is not None:
-        adata = adata[:, hvg]
-    for i in batch_categories:
-        split.append(adata[adata.obs[batch] == i].copy())
-    if return_categories:
-        return split, batch_categories
-    return split
+from scib import utils
+from ..parafac2 import parafac2_nd
+from tensorly.parafac2_tensor import parafac2_to_slices
 
 
-def merge_adata(*adata_list, **kwargs):
-    """Merge adatas from list while remove duplicated ``obs`` and ``var`` columns
+def pf2Theis(adata, batch, hvg=None, rank=20):
+    """Run Pf2 for adata"""
+    utils.check_sanity(adata, batch, hvg)
+    split = utils.split_batches(adata.copy(), batch)
 
-    :param adata_list: ``anndata`` objects to be concatenated
-    :param kwargs: arguments to be passed to ``anndata.AnnData.concatenate``
-    """
+    XX = [x.X for x in split]
+    weights, factors, projs, _ = parafac2_nd(XX, rank=rank, random_state=1, verbose=True, tol=1e-9)
 
-    if len(adata_list) == 1:
-        return adata_list[0]
+    reconst = parafac2_to_slices((weights, factors, projs))
 
-    # Make sure that adatas do not contain duplicate columns
-    for _adata in adata_list:
-        for attr in ("obs", "var"):
-            df = getattr(_adata, attr)
-            dup_mask = df.columns.duplicated()
-            if dup_mask.any():
-                print(
-                    f"Deleting duplicated keys `{list(df.columns[dup_mask].unique())}` from `adata.{attr}`."
-                )
-                setattr(_adata, attr, df.loc[:, ~dup_mask])
+    for ii, recon in enumerate(reconst):
+        split[ii].X = recon
+        split[ii].obsm['X_emb'] = projs[ii]
 
-    return anndata.AnnData.concatenate(*adata_list, **kwargs)
-    
-    
-def check_Pf2(aData, rank):
-    """Check aData saved results for Pf2 correctly"""
-    proj = aData.obsm["Pf2"] 
-    proj = proj[:, :-1]
-    
-    assert np.shape(proj)[1] == rank
-    assert np.shape(aData.X)[0] == np.shape(proj)[0]
-
-
-
+    return anndata.concat(split)
