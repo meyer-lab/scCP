@@ -358,3 +358,9 @@ def plotDistAllDrug(df, rank, ax):
     sns.swarmplot(data=df, x="Method", y="Normalized Centroid Distance", ax=ax)
     ax.set(title="Rank = " + str(rank))
     
+def plotDistAllGene(df, rank, ax):
+    """Plots all Normalized Centroid Distance for all genes for Pf2 and PCA"""
+    sns.swarmplot(data=df, x="Method", y="Normalized Centroid Distance", ax=ax)
+    ax.set(title="Rank = " + str(rank))
+
+    
