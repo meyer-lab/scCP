@@ -13,7 +13,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
     
-    geneOntology(cmpNumb=24, geneAmount=50, geneValue="Overexpressed", axs=ax[0:6])
-    geneOntology(cmpNumb=24, geneAmount=50, geneValue="Underexpressed", axs=ax[6:12])
+    geneOntology(cmpNumb=24, geneAmount=50, goTerms=5, geneValue="Overexpressed", axs=ax[0:6])
+    geneOntology(cmpNumb=24, geneAmount=50, goTerms=5, geneValue="Underexpressed", axs=ax[6:12])
     
-    return f
+    return 

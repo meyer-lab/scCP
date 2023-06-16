@@ -4,7 +4,7 @@ import pandas as pd
 import seaborn as sns
 
 
-def geneOntology(cmpNumb: int, geneAmount, geneValue, axs):
+def geneOntology(cmpNumb: int, geneAmount, goTerms, geneValue, axs):
         """Plots top Gene Ontology terms for molecular function, 
         biological process, cellular component. Uses factors as 
         input for function"""
@@ -29,13 +29,13 @@ def geneOntology(cmpNumb: int, geneAmount, geneValue, axs):
         for i in range(len(geneSets)):
             if geneValue == "Overexpressed":
                 enrichrTopGO = runGO(genesTop, geneSets)
-                CombGO = combinedDF(enrichrTopGO, geneSets[i])
-                PvalGO = pvalueDF(enrichrTopGO, geneSets[i])
+                CombGO = combinedDF(enrichrTopGO, geneSets[i], goTerms)
+                PvalGO = pvalueDF(enrichrTopGO, geneSets[i], goTerms)
             else:
             
                 enrichrBotGO = runGO(genesBottom, geneSets)
-                CombGO = combinedDF(enrichrBotGO, geneSets[i])
-                PvalGO = pvalueDF(enrichrBotGO, geneSets[i])
+                CombGO = combinedDF(enrichrBotGO, geneSets[i], goTerms)
+                PvalGO = pvalueDF(enrichrBotGO, geneSets[i], goTerms)
             
             plotCombGO(CombGO, geneValue, ax=axs[2*i])
             plotPvalGO(PvalGO, geneValue, ax=axs[(2*i)+1])
@@ -53,7 +53,7 @@ def runGO(geneList, geneSets):
     
     return enrichrGO
     
-def combinedDF(enrichrGO, geneSet):
+def combinedDF(enrichrGO, geneSet, goTerms):
     """Saves combined score for gene terms in DF"""
      # Combined Score
     combined = enrichrGO.loc[
@@ -61,19 +61,19 @@ def combinedDF(enrichrGO, geneSet):
             "Combined Score"
             ]
     combined = combined.sort_values(ascending=False)
-    combined = combined.iloc[:10]
+    combined = combined.iloc[:goTerms]
     combDF = pd.DataFrame({"Term": combined.index.values, "Combined Score": combined.values})
     
     return combDF
 
-def pvalueDF(enrichrGO, geneSet):
+def pvalueDF(enrichrGO, geneSet, goTerms):
     """Saves adjusted p value for gene terms in DF"""
     p_val = enrichrGO.loc[
         enrichrGO["Gene_set"] == geneSet,
         "Adjusted P-value"
             ]
     p_val = p_val.sort_values(ascending=True)
-    p_val = p_val.iloc[:10]
+    p_val = p_val.iloc[:goTerms]
     pvalDF = pd.DataFrame({"Term": p_val.index.values, "Adjusted P-value": p_val.values})
     
     return pvalDF
