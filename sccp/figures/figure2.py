@@ -1,13 +1,4 @@
 """
-<<<<<<< HEAD
-Gene ontology for gene factors of Pf2
-"""
-from .common import (
-    subplotLabel,
-    getSetup,
-)
-from ..geneontology import geneOntology
-=======
 Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs: investigating UMAP
 """
 import numpy as np
@@ -28,22 +19,10 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
->>>>>>> main
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-<<<<<<< HEAD
-    ax, f = getSetup((20, 10), (6, 2))
-
-    # Add subplot labels
-    subplotLabel(ax)
-    
-    geneOntology(cmpNumb=24, geneAmount=50, geneValue="Overexpressed", axs=ax[0:6])
-    geneOntology(cmpNumb=24, geneAmount=50, geneValue="Underexpressed", axs=ax[6:12])
-    
-    return f
-=======
     ax, f = getSetup((8, 4), (2, 4))
 
     # Add subplot labels
@@ -90,4 +69,3 @@ def makeFigure():
 def UMAP_DFify(data, drug, celltypes):
     """Provides dataframe version of UMAP data from anndata source"""
     return pd.DataFrame({"UMAP 1": data.obsm["X_umap"][:, 0], "UMAP 2": data.obsm["X_umap"][:, 1], "Batch": drug, "Cell Type": celltypes})
->>>>>>> main
