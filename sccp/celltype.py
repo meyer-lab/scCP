@@ -15,6 +15,7 @@ canonicalGenes = {
     "Plasmacytoid Dendritic Cells": ["TSPAN13,", "IGJ"]}
 
 
+
 def distAllGeneDF(data, Pf2s, PCs):
     """Plots normalized variance for either a variable or for a group of cells"""
     distDF = pd.DataFrame([])

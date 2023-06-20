@@ -104,6 +104,7 @@ def makeFigure():
     # plotCmpUMAP(CompW, cmp, pf2Points, ax[8:10])
     
     
+    
     return f
 
 
