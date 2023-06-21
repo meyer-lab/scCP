@@ -92,7 +92,9 @@ def makeFigure():
     # plotDrugUMAP(drugs, "Pf2", dataDF["Drug"].values, pf2Points, ax[4:6])
     # plotDrugUMAP(drugs, "PCA", dataDF["Drug"].values, pcaPoints, ax[6:8])
     
-    umap.plot.points(pf2Points, labels=dataDF["Cell Type"].values, ax=ax[0], color_key_cmap="tab20", show_legend=True)
+    subset = np.random.choice(a=[False, True], size=len(dataDF["Cell Type"].values), p=[.93, .07])
+    
+    umap.plot.points(pf2Points, labels=dataDF["Cell Type"].values, ax=ax[0], color_key_cmap="tab20", show_legend=True, subset_points=subset)
         # axs[i].set(
         #     title=decomp + "-Based Decomposition",
         # ylabel="UMAP2",
@@ -122,6 +124,19 @@ canonicalGenes = {
     "Dentritic Cells": ["HLA-DQA1", "GPR183"],
     "Megakaryocyte": ["PPBP", "GNG11"],
     "Plasmacytoid Dendritic Cells": ["TSPAN13", "IGJ"]}
+
+canonicalGenes2 = {
+    # "CD4 Native T ": ["CD3D", "SELL", "GIMAP5"],
+    # "Activated T ": ["CREM", "CACYBP"],
+    "Natural Killer": ["GNLY", "NKG7"],
+    "CD8 T": ["CD8A"],
+    "B": ["MS4A1"],
+    "FCGR3A Monocytes": ["FCGR3A", "MS4A7"],
+    "CD14 Monocytes": ["CD14", "LYZ", "S100A8"],
+    "Dentritic Cells": ["GPR183", "HLA-DQA1"],
+    "Megakaryocyte": ["PPBP"],
+     "CD4 T ": ["CD3D", "CREM"],}
+    # "Plasmacytoid Dendritic Cells": ["TSPAN13", "IGJ"]}
 
 
 # def distAllGeneDF(data, Pf2s, PCs):
