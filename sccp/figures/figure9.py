@@ -12,11 +12,11 @@ def makeFigure():
 
     # Add subplot labels
     subplotLabel(ax)
-   
-    data = import_scib_data(dataname="Stimulation1")
+    
     data = import_scib_data(dataname="ImmuneHuman")
-    data = import_scib_data(dataname="Stimulation2")
     data = import_scib_data(dataname="ImmuneHumanMouse")
+    data = import_scib_data(dataname="Stimulation1")
+    data = import_scib_data(dataname="Stimulation2")
     data = import_scib_data(dataname="Pancreas")
 
     rank = 2
@@ -27,6 +27,6 @@ def makeFigure():
         random_state=1,
     )
 
-    plotFactors(factors, data, ax[0:3], reorder=(0, 2), trim=(2,))
+    plotFactors(factors, data, ax[0:3])
     
     return f
