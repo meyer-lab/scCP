@@ -25,16 +25,17 @@ def makeFigure():
     subplotLabel(ax)
 
     methods=["bbknn", "scanorama", "harmony"]
-    ranks = [5, 15, 30, 40, 50, 75]
-    pancreas_pf2 = import_pancreas(tensor=True)
-    rank = 50
-    _, factors, projs, _ = parafac2_nd(pancreas_pf2, rank=rank, random_state=1, verbose=True)
-    _, projDF, _ = flattenData(pancreas_pf2, factors, projs)
+    # ranks = [5, 15, 30, 40, 50, 75]
+    # pancreas_pf2 = import_pancreas(tensor=True)
+    # rank = 50
+    # _, factors, projs, _ = parafac2_nd(pancreas_pf2, rank=rank, random_state=1, verbose=True)
+    # _, projDF, _ = flattenData(pancreas_pf2, factors, projs)
     pancreas = import_pancreas(tensor=False)
-    pancreas.obsm["Pf2"] = projDF.values
+    print(pancreas)
+    # pancreas.obsm["Pf2"] = projDF.values
 
-    compare_int_methods(methods, projDF.values, ax=ax[0:2])
-    compare_ranks_methods(ranks, projs, ax=ax[2:4])
+    # compare_int_methods(methods, projDF.values, ax=ax[0:2])
+    # compare_ranks_methods(ranks, projs, ax=ax[2:4])
 
     return f
 
