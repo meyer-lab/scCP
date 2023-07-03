@@ -22,7 +22,10 @@ import warnings
 
 
 # load data (need to change filepath once dataset gets uploaded to opt/...)
-lupus_data = anndata.read_h5ad("/home/seanp/scCP/GSE174188_CLUES1_adjusted.h5ad")
+
+# absolute filepath commented out here, need to run to work on sean's computer 
+# lupus_data = anndata.read_h5ad("/home/seanp/scCP/GSE174188_CLUES1_adjusted.h5ad")
+lupus_data = anndata.read_h5ad("/opt/andrew/lupus/lupus.h5ad.gz")
 
 # get rid of warnings <3 (this lowkey doesn't work)
 warnings.filterwarnings("once")
@@ -62,16 +65,24 @@ def makeFigure():
     #lupus_data.var_names = [f"Gene_{i:d}" for i in range(lupus_data.n_vars)]
     #print(lupus_data.obs_names[:10])
 
+    # give me all the columns
+    pd.set_option('display.max_columns', None)
+
 
     print("\n\nOTHER DIMENSIONS: \n\n", lupus_data.obs)
     print("\n\nOTHER DIMENSIONS TYPE: \n\n", type(lupus_data.obs))
+    print("\n\n EXTRA COLS: \n\n", list(lupus_data.obs))
+    print("\n\n DESCRIBE OUTPUT OF OTHER COLS: \n\n",  lupus_data.obs.describe()) # `ind_cov` has 261 unique values; this is our patient ID
+    # running the next line kinda shows why we have to do 
+    print("\n\n CELL COUNTS BY PATIENT\n\n", lupus_data.obs.groupby(['ind_cov'])['ind_cov'].count().sort_values())
 
     print("\n\nGENE IDs: \n\n", lupus_data.var)
     print("\n\nGENE ID TYPE: \n\n", type(lupus_data.var))
 
-    print(lupus_pan.head(8))
+
+    #print(lupus_pan.head(8))
     print(lupus_observations)
-    print("\n\nCOMBO COMBO: \n\n", combo_lupus)
+    #print("\n\nCOMBO COMBO: \n\n", combo_lupus)
     #print(type(lupus_pan["Status_pop"][0]))
 
 
