@@ -24,8 +24,8 @@ import warnings
 # load data (need to change filepath once dataset gets uploaded to opt/...)
 
 # absolute filepath commented out here, need to run to work on sean's computer 
-# lupus_data = anndata.read_h5ad("/home/seanp/scCP/GSE174188_CLUES1_adjusted.h5ad")
-lupus_data = anndata.read_h5ad("/opt/andrew/lupus/lupus.h5ad.gz")
+lupus_data = anndata.read_h5ad("/home/seanp/scCP/GSE174188_CLUES1_adjusted.h5ad")
+#lupus_data = anndata.read_h5ad("/opt/andrew/lupus/lupus.h5ad.gz")
 
 # get rid of warnings <3 (this lowkey doesn't work)
 warnings.filterwarnings("once")
@@ -78,6 +78,9 @@ def makeFigure():
 
     print("\n\nGENE IDs: \n\n", lupus_data.var)
     print("\n\nGENE ID TYPE: \n\n", type(lupus_data.var))
+
+    # no missingness <3
+    print("missing:", combo_lupus.isnull().sum().describe())
 
 
     #print(lupus_pan.head(8))
