@@ -9,8 +9,7 @@ def distDrugDF(data, ranks, Pf2s, PCs, drugs):
     distDF = pd.DataFrame([])
     for ii, rank in enumerate(ranks):
         _, factors, projs, _ = Pf2s[ii]
-        _, projDF, _ = flattenData(data, factors, projs)
-        pf2All = projDF.values[:, 0:-1]
+        pf2All = np.concatenate(projs, axis=0)
         pcaAll = PCs[ii]
         for drug in drugs:
             pf2Drug = projDF.loc[projDF.Drug == drug].values[:, 0:-1]
@@ -32,8 +31,8 @@ def distGeneDF(data, ranks, Pf2s, PCs, markers):
     distDF = pd.DataFrame([])
     for ii, rank in enumerate(ranks):
         _, factors, projs, _ = Pf2s[ii]
-        dataDF, projDF, _ = flattenData(data, factors, projs)
-        pf2All = projDF.values[:, 0:-1]
+        dataDF = flattenData(data)
+        pf2All = np.concatenate(projs, axis=0)
         pcaAll = PCs[ii]
         for marker in markers:
             dataDF[marker + " status"] = "Marker Negative"
@@ -62,8 +61,7 @@ def distAllDrugDF(data, Pf2s, PCs):
     
     factors = Pf2s[1]
     projs = Pf2s[2]
-    _, projDF, _ = flattenData(data, factors, projs)
-    pf2All = projDF.values[:, 0:-1]
+    pf2All = np.concatenate(projs, axis=0)
     pcaAll = PCs
     
     for drug in projDF["Drug"].unique():
@@ -87,8 +85,8 @@ def distAllGeneDF(data, Pf2s, PCs):
     
     factors = Pf2s[1]
     projs = Pf2s[2]
-    dataDF, projDF, _ = flattenData(data, factors, projs)
-    pf2All = projDF.values[:, 0:-1]
+    dataDF = flattenData(data)
+    pf2All = np.concatenate(projs, axis=0)
     pcaAll = PCs
     
     markers = [item for value in marker_genes.values() for item in (value if isinstance(value, list) else [value])]
