@@ -1,7 +1,7 @@
 """Metrics used for Pf2 projections"""
 import numpy as np
 import pandas as pd
-from .figures.common import flattenData
+from .figures.common import flattenData, flattenProjs
 
 
 def distDrugDF(data, ranks, Pf2s, PCs, drugs):
@@ -10,6 +10,7 @@ def distDrugDF(data, ranks, Pf2s, PCs, drugs):
     for ii, rank in enumerate(ranks):
         _, factors, projs, _ = Pf2s[ii]
         pf2All = np.concatenate(projs, axis=0)
+        projDF = flattenProjs(data, projs)
         pcaAll = PCs[ii]
         for drug in drugs:
             pf2Drug = projDF.loc[projDF.Drug == drug].values[:, 0:-1]
@@ -32,6 +33,7 @@ def distGeneDF(data, ranks, Pf2s, PCs, markers):
     for ii, rank in enumerate(ranks):
         _, factors, projs, _ = Pf2s[ii]
         dataDF = flattenData(data)
+        projDF = flattenProjs(data, projs)
         pf2All = np.concatenate(projs, axis=0)
         pcaAll = PCs[ii]
         for marker in markers:
@@ -62,6 +64,7 @@ def distAllDrugDF(data, Pf2s, PCs):
     factors = Pf2s[1]
     projs = Pf2s[2]
     pf2All = np.concatenate(projs, axis=0)
+    projDF = flattenProjs(data, projs)
     pcaAll = PCs
     
     for drug in projDF["Drug"].unique():
@@ -86,6 +89,7 @@ def distAllGeneDF(data, Pf2s, PCs):
     factors = Pf2s[1]
     projs = Pf2s[2]
     dataDF = flattenData(data)
+    projDF = flattenProjs(data, projs)
     pf2All = np.concatenate(projs, axis=0)
     pcaAll = PCs
     
