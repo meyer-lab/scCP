@@ -381,7 +381,7 @@ def plotMetricSCIB(metricsDF, sheetName, axs):
         datasetDF = metricsDF.loc[metricsDF["Dataset"] == sheets]
         datasetDF = datasetDF.drop(columns="Dataset").reset_index(drop=True)
         datasetDF = datasetDF.pivot_table(index="Metric", columns="Method", values="Value").reset_index()
-        pc(datasetDF,"Metric",ax=axs[i])
+        pc(datasetDF, "Metric", colormap=plt.get_cmap("Set1"), ax=axs[i])
         axs[i].tick_params(axis="x", rotation=45)
         axs[i].set(title=sheets)
     
