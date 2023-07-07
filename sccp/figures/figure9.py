@@ -15,13 +15,13 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    data, celltypes = import_scib_data(dataname="ImmuneHuman")
+    # data, celltypes = import_scib_data(dataname="ImmuneHuman")
     # data, celltypes = import_scib_data(dataname="ImmuneHumanMouse")
     # data, celltypes = import_scib_data(dataname="Stimulation1")
-    # data, celltypes = import_scib_data(dataname="Stimulation2")
+    data, celltypes = import_scib_data(dataname="Stimulation2")
     # data, celltypes = import_scib_data(dataname="Pancreas")
     
-    rank = 2
+    rank = 5
     _, factors, projs, _ = parafac2_nd(
         data,
         rank=rank,
@@ -33,7 +33,7 @@ def makeFigure():
      # UMAP dimension reduction
     pf2Points = umap.UMAP(random_state=1).fit(np.concatenate(projs, axis=0))
 
-    plotFactors(factors, data, ax[0:3], trim=(2,))
+    plotFactors(factors, data, ax[0:3])
     
     plotLabelAllUMAP(dataDF["Condition"].values, pf2Points, ax[3])
     plotLabelAllUMAP(celltypes, pf2Points, ax[4])
