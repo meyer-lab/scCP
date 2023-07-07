@@ -48,8 +48,10 @@ def import_scib_metrics():
     df = df.loc[(df["Features"] == "FULL") & (df["Scaling"] == "unscaled")]
     # No specification large and small atac excel sheet; 
     # assumed they are unscaled and full features
+    
+    print(df)
 
     df = pd.melt(df, id_vars=["Dataset", "Method"], value_vars=metrics).rename(
             columns={"variable": "Metric", "value": "Value"})
         
-    return df.dropna(), sheet_name
+    return df.dropna(), sheet_name, metrics
