@@ -1,4 +1,3 @@
-import torch
 import numpy as np
 from tqdm import tqdm
 import tensorly as tl
@@ -31,9 +30,6 @@ def _cmf_reconstruction_error(matrices, factors: list, norm_X_sq, rng=None):
     projections = []
 
     for i, mat in enumerate(matrices):
-        if isinstance(mat, torch.Tensor):
-            mat = mat.double()
-
         lhs = B @ (A[i] * C).T
         U, _, Vh = randomized_svd(lhs @ mat.T, A.shape[1], random_state=rng)
         proj = (U @ Vh).T
@@ -47,32 +43,30 @@ def _cmf_reconstruction_error(matrices, factors: list, norm_X_sq, rng=None):
     return norm_X_sq - 2 * inner_product + norm_cmf_sq, projections
 
 
-@torch.inference_mode()
 def parafac2_nd(
     X_in,
     rank: int,
     n_iter_max: int = 200,
-    tol: float = 1e-7,
-    verbose: bool = False,
+    tol: float = 1e-5,
+    verbose: bool = True,
     random_state=None,
 ) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray], float]:
     r"""The same interface as regular PARAFAC2."""
     rng = np.random.RandomState(random_state)
-    tl.set_backend("pytorch")
     if isinstance(X_in, Pf2X):
         X_in = X_in.X_list
 
     norm_tensor = np.sum([np.linalg.norm(xx) ** 2 for xx in X_in])
-    X = [tl.tensor(xx).cuda() for xx in X_in]
+    X = [tl.tensor(xx) for xx in X_in]
 
     # Initialization
     unfolded = tl.concatenate(list(X), axis=0).T
     assert tl.shape(unfolded)[0] > rank
-    C = randomized_svd(unfolded, rank, random_state=rng)[0].double()
+    C = randomized_svd(unfolded, rank, random_state=rng)[0]
     CP = tl.cp_tensor.CPTensor(
         (
             None,
-            [tl.ones((len(X), rank)).cuda().double(), tl.eye(rank).cuda().double(), C],
+            [tl.ones((len(X), rank)), tl.eye(rank), C],
         )
     )
 
@@ -83,15 +77,15 @@ def parafac2_nd(
         err, projections = _cmf_reconstruction_error(
             X, CP.factors, norm_tensor, rng=rng
         )
-        errs.append(tl.to_numpy((err / norm_tensor).cpu()))
+        errs.append(err / norm_tensor)
 
         # Project tensor slices
-        projected_X = tl.stack([p.T @ t.double() for p, t in zip(projections, X)])
+        projected_X = tl.stack([p.T @ t for p, t in zip(projections, X)])
 
         CP = parafac(
             projected_X,
             rank,
-            n_iter_max=2,
+            n_iter_max=10,
             init=CP,
             tol=False,
             normalize_factors=False,
@@ -105,13 +99,12 @@ def parafac2_nd(
                 break
 
     R2X = 1 - errs[-1]
-    tl.set_backend("numpy")
 
-    gini_idx = giniIndex(tl.to_numpy(CP.factors[0].cpu()))
+    gini_idx = giniIndex(CP.factors[0])
     assert gini_idx.size == rank
 
-    CP.factors = [f.numpy(force=True)[:, gini_idx] for f in CP.factors]
-    CP.weights = CP.weights.numpy(force=True)[gini_idx]
+    CP.factors = [f[:, gini_idx] for f in CP.factors]
+    CP.weights = CP.weights[gini_idx]
 
     CP = cp_normalize(cp_flip_sign(CP, mode=1))
 
@@ -123,7 +116,7 @@ def parafac2_nd(
     # Maximize the diagonal of B
     _, col_ind = linear_sum_assignment(np.abs(CP.factors[1].T), maximize=True)
     CP.factors[1] = CP.factors[1][col_ind, :]
-    projections = [p.numpy(force=True)[:, col_ind] for p in projections]
+    projections = [p[:, col_ind] for p in projections]
 
     # Flip the sign based on B
     signn = np.sign(np.diag(CP.factors[1]))
