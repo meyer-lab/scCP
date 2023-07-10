@@ -56,12 +56,11 @@ def makeFigure():
     dataDF = flattenData(data)
 
     # UMAP dimension reduction
-    cmpNames = [f"Cmp. {i}" for i in np.arange(1, factors[0].shape[1] + 1)]
     umapReduc = umap.UMAP(random_state=1)
-    pf2Points = umapReduc.fit_transform(projDF[cmpNames].to_numpy())
+    pf2Points = umapReduc.fit_transform(np.concatenate(projs, axis=0))
 
     pc = PCA(n_components=rank)
-    pcaPoints = pc.fit_transform(dataDF[data.variable_labels].to_numpy())
+    pcaPoints = pc.fit_transform(data.unfold())
     pcaPoints = umapReduc.fit_transform(pcaPoints)
 
     # Mono1, Mono2, NK, CD4, B
