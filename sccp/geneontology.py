@@ -10,7 +10,9 @@ def geneOntology(cmpNumb: int, geneAmount, goTerms, geneValue):
     input for function"""
     
     df = pd.read_csv("sccp/data/TopBotGenes_Cmp25.csv").rename(columns={"Unnamed: 0":"Gene"}).set_index("Gene")
+    print(df)
     sort_idx = np.argsort(df.to_numpy(), axis=0)
+    
     
     # Specifies enrichment sets to run against
     geneSets = [
@@ -22,6 +24,8 @@ def geneOntology(cmpNumb: int, geneAmount, goTerms, geneValue):
     genesBottom = np.empty((geneAmount), dtype="<U10")
     
     geneNames = df.index.values[sort_idx[:, cmpNumb-1]]
+    
+    print(geneNames)
     genesTop[:] = np.flip(geneNames[-geneAmount:])  
     genesBottom[:] = geneNames[:geneAmount]
     

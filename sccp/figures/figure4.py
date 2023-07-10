@@ -17,7 +17,7 @@ def makeFigure():
 
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes()
-    rank = 25
+    rank = 35
 
     _, factors, projs, _ = parafac2_nd(
         data,
@@ -25,7 +25,7 @@ def makeFigure():
         random_state=1,
     )
 
-    plotFactors(factors, data, ax[0:3], reorder=(0, 2), trim=(2,), saveGenes=True)
+    plotFactors(factors, data, ax[0:3], reorder=(0, 2), trim=(2,), saveGenes=False)
 
     # plotCV(data, rank+3, trainPerc=0.75, ax=ax[2])
     # plotR2X(data, rank+3, ax=ax[3])
