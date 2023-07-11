@@ -413,7 +413,7 @@ def plotLabelAllUMAP(conditions, points, ax):
         xlabel="UMAP1")
 
 
-def plotCellCount(dataDF, celltypes, ax):
+def plotCellType(dataDF, celltypes, ax):
     """Plots a swarmplot for cell type distribution for each condition """
     dataDF["Cell Type"] = celltypes
     celltypeDF = dataDF.groupby(["Cell Type", "Condition"]).size().reset_index(name="Count") 

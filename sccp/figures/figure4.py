@@ -18,7 +18,7 @@ def makeFigure():
 
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes()
-    rank = 25
+    rank = 30
         
     _, factors, projs, _ = parafac2_nd(
         data,
