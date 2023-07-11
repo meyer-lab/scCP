@@ -140,8 +140,39 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
             if i == 2 and len(yt) > 50:
                 df = pd.DataFrame(data=X, index=yt, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
                 df.to_csv(join(path_here, "data/TopBotGenes_Cmp"+str(rank)+".csv"))
-   
                 
+def plotCondFactorsReorder(factors, data: Pf2X, ax):
+    """Plots parafac2 factors."""
+    rank = factors[0].shape[1]
+    xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
+    cmap = sns.diverging_palette(240, 10, as_cmap=True)
+    yt = data.condition_labels
+    X = factors[0]
+    
+    X, ind = reorder_table(X)
+    yt = yt[ind]
+    
+    controls = ["CTRL1", "CTRL2", "CTRL3", "CTRL4", "CTRL5", "CTRL6"]
+    ctrl_idx = []
+    for ctrl in controls:
+        ctrl_idx = np.append(ctrl_idx, np.argwhere(data.condition_labels == ctrl))
+
+    ctrlMean = np.mean(X[ctrl_idx.astype(int), :], axis=0)
+    X = X / ctrlMean
+    
+
+    sns.heatmap(
+        data=X,
+        xticklabels=xticks,
+        yticklabels=yt,
+        ax=ax,
+        center=0,
+        cmap=cmap,
+    )
+
+    ax.set_title("Factors")
+    ax.tick_params(axis="y", rotation=0)
+     
 
 
 def reorder_table(projs):
