@@ -66,12 +66,13 @@ def lupus_data(third_axis= "ind_cov") -> Pf2X:
 
 ####################################################################################
 
-rank = 40
+rank = 5
 
 lupus_tensor = lupus_data()
 
 _, factors, projs, _ = parafac2_nd(lupus_tensor, 
                                    rank = rank, 
+                                   n_iter_max= 20,
                                    random_state = 1, 
                                    verbose=True)
 
@@ -88,6 +89,69 @@ _, factors, projs, _ = parafac2_nd(lupus_tensor,
 
 # genes = ["CCR7"]
 
+def plotLupusFactors(factors, data: Pf2X, og_data, axs, trim=tuple(), saveGenes=False):
+    """Plots parafac2 factors."""
+    pd.set_option('display.max_rows', None)
+    rank = factors[0].shape[1]
+    xticks = [f"Cmp. {i}" for i in np.arange(1, rank + 1)]
+    cmap = sns.diverging_palette(240, 10, as_cmap=True)
+    for i in range(3):
+        # The single cell mode has a square factors matrix
+        if i == 0:
+            yt = data.condition_labels
+            # set rowcolors as SLE status
+            status = og_data.obs[["ind_cov","SLE_status"]].sort_values(by= "ind_cov").drop_duplicates("ind_cov").set_index('SLE_status').index.tolist()
+            rowcolors_1 = []
+            for ii in range(len(status)):
+                if status[ii] == "SLE":
+                    rowcolors_1.append("c")
+                else:
+                    rowcolors_1.append("m")
+            print(status)
+            print(rowcolors_1)
+            print("\n\n DATA COND LABELS: \n", data.condition_labels)
+            print("\n\nOG DATA: \n", og_data.obs[["ind_cov","SLE_status"]].sort_values(by= "ind_cov").drop_duplicates("ind_cov").set_index('ind_cov').index.tolist())
+
+            # test to make sure same
+            print(og_data.obs[["ind_cov","SLE_status"]].sort_values(by= "ind_cov").drop_duplicates("ind_cov").set_index('ind_cov').index.tolist() == data.condition_labels)
+            title = "Components by Patient"
+        elif i == 1:
+            yt = [f"Cell State {i}" for i in np.arange(1, rank + 1)]
+            title = "Components by Cell State"
+        else:
+            yt = data.variable_labels
+            title = "Components by Gene"
+
+        X = factors[i]
+
+        if i in trim:
+            max_weight = np.max(np.abs(X), axis=1)
+            kept_idxs = max_weight > 0.08
+            X = X[kept_idxs]
+            yt = yt[kept_idxs]
+
+        if i == 0:
+            sns.clustermap(
+                data=X,
+                row_colors= rowcolors_1,
+                xticklabels=xticks,
+                yticklabels=yt,
+                ax=axs[i],
+                center=0,
+                cmap=cmap,
+            )
+        else:
+            sns.heatmap(
+                data=X,
+                xticklabels=xticks,
+                yticklabels=yt,
+                ax=axs[i],
+                center=0,
+                cmap=cmap,
+            )
+
+        axs[i].set_title(title)
+        axs[i].tick_params(axis="y", rotation=0)
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
@@ -99,7 +163,8 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    plotFactors(factors, lupus_tensor, ax[0:3], reorder=(0, 2), trim=(2,), saveGenes=False)
+    #plotFactors(factors, lupus_tensor, ax[0:3], reorder=(0, 2), trim=(2,), saveGenes=False)
+    plotLupusFactors(factors, lupus_tensor, anndata.read_h5ad("/opt/andrew/lupus/lupus.h5ad"), ax[0:3])
 
     # print("DataDF: \n\n", dataDF)
     # print("ProjDF: \n\n", projDF)
