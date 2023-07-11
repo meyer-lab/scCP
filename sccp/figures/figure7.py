@@ -1,20 +1,17 @@
 """
-Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs
+Parafac2 
 """
 from .common import (
     subplotLabel,
     getSetup,
-    reorder_table,
     flattenData,
     plotGeneUMAP,
 )
 import numpy as np
 from ..imports.scRNA import import_perturb_RPE
 from ..parafac2 import parafac2_nd
-import seaborn as sns
 import mygene
 from ..parafac2 import parafac2_nd
-import umap
 from sklearn.decomposition import PCA
 
 
@@ -45,10 +42,10 @@ def makeFigure():
 
     data = X
     # Performing parafac2 on single-cell Xarray
-    rank = 30
+    rank = 2
     _, factors, projs, _ = parafac2_nd(
         X,
-        rank=24,
+        rank=rank,
         verbose=True,
         random_state=42
     )
@@ -63,9 +60,8 @@ def makeFigure():
     pcaPoints = pc.fit_transform(data.unfold())
     pcaPoints = umapReduc.fit_transform(pcaPoints)
 
-    # Mono1, Mono2, NK, CD4, B
-    genes = ["CXCL8", "IGFBP5", "EGR1", "GADD45A", "SNAPC1"]
-    plotGeneUMAP(genes, "Pf2", pf2Points, dataDF, f, ax[0:5])
-    plotGeneUMAP(genes, "PCA", pcaPoints, dataDF, f, ax[5:10])
+    genes = ["GADD45A", "SNAPC1"]
+    # plotGeneUMAP(genes, "Pf2", pf2Points, dataDF, ax[0:5])
+    # plotGeneUMAP(genes, "PCA", pcaPoints, dataDF, ax[5:10])
 
     return f
