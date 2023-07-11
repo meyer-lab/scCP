@@ -1,26 +1,26 @@
 """Metrics used for Pf2 projections"""
 import numpy as np
 import pandas as pd
-from .figures.common import flattenData
+from .figures.common import flattenData, flattenProjs
 
 
-def distDrugDF(data, ranks, Pf2s, PCs, drugs):
+def distDrugDF(data, ranks, Pf2s, PCs, conds):
     """Plots normalized variance for either a variable or for a group of cells"""
     distDF = pd.DataFrame([])
     for ii, rank in enumerate(ranks):
         _, factors, projs, _ = Pf2s[ii]
-        _, projDF, _ = flattenData(data, factors, projs)
-        pf2All = projDF.values[:, 0:-1]
+        pf2All = np.concatenate(projs, axis=0)
+        projDF = flattenProjs(data, projs)
         pcaAll = PCs[ii]
-        for drug in drugs:
-            pf2Drug = projDF.loc[projDF.Drug == drug].values[:, 0:-1]
-            pcaDrug = pcaAll[projDF.Drug == drug]
+        for cond in conds:
+            pf2Cond = projDF.loc[projDF["Condition"] == cond].values[:, 0:-1]
+            pcaCond = pcaAll[projDF["Condition"] == cond]
 
-            pf2Dist = len(projDF.Drug.unique()) * centroid_dist(pf2Drug) / centroid_dist(pf2All)
-            pcaDist = len(projDF.Drug.unique()) * centroid_dist(pcaDrug) / centroid_dist(pcaAll)
+            pf2Dist = len(projDF["Condition"].unique()) * centroid_dist(pf2Cond) / centroid_dist(pf2All)
+            pcaDist = len(projDF["Condition"].unique()) * centroid_dist(pcaCond) / centroid_dist(pcaAll)
             
-            distDF = pd.concat([distDF, pd.DataFrame({"Rank": [rank], "Normalized Centroid Distance": pf2Dist, "Method": "PARAFAC2", "Drug": drug})])
-            distDF = pd.concat([distDF, pd.DataFrame({"Rank": [rank], "Normalized Centroid Distance": pcaDist, "Method": "PCA", "Drug": drug})])
+            distDF = pd.concat([distDF, pd.DataFrame({"Rank": [rank], "Normalized Centroid Distance": pf2Dist, "Method": "PARAFAC2", "Condition": cond})])
+            distDF = pd.concat([distDF, pd.DataFrame({"Rank": [rank], "Normalized Centroid Distance": pcaDist, "Method": "PCA", "Condition": cond})])
             
         
     distDF = distDF.reset_index(drop=True)
@@ -32,8 +32,9 @@ def distGeneDF(data, ranks, Pf2s, PCs, markers):
     distDF = pd.DataFrame([])
     for ii, rank in enumerate(ranks):
         _, factors, projs, _ = Pf2s[ii]
-        dataDF, projDF, _ = flattenData(data, factors, projs)
-        pf2All = projDF.values[:, 0:-1]
+        dataDF = flattenData(data)
+        projDF = flattenProjs(data, projs)
+        pf2All = np.concatenate(projs, axis=0)
         pcaAll = PCs[ii]
         for marker in markers:
             dataDF[marker + " status"] = "Marker Negative"
@@ -62,19 +63,19 @@ def distAllDrugDF(data, Pf2s, PCs):
     
     factors = Pf2s[1]
     projs = Pf2s[2]
-    _, projDF, _ = flattenData(data, factors, projs)
-    pf2All = projDF.values[:, 0:-1]
+    pf2All = np.concatenate(projs, axis=0)
+    projDF = flattenProjs(data, projs)
     pcaAll = PCs
     
-    for drug in projDF["Drug"].unique():
-        pf2Drug = projDF.loc[projDF.Drug == drug].values[:, 0:-1]
-        pcaDrug = pcaAll[projDF.Drug == drug]
+    for cond in projDF["Condition"].unique():
+        pf2Cond = projDF.loc[projDF["Condition"] == cond].values[:, 0:-1]
+        pcaCond = pcaAll[projDF["Condition"] == cond]
 
-        pf2Dist = len(projDF.Drug.unique()) * centroid_dist(pf2Drug) / centroid_dist(pf2All)
-        pcaDist = len(projDF.Drug.unique()) * centroid_dist(pcaDrug) / centroid_dist(pcaAll)
+        pf2Dist = len(projDF["Condition"].unique()) * centroid_dist(pf2Cond) / centroid_dist(pf2All)
+        pcaDist = len(projDF["Condition"].unique()) * centroid_dist(pcaCond) / centroid_dist(pcaAll)
         
-        distDF = pd.concat([distDF, pd.DataFrame({"Normalized Centroid Distance": pf2Dist, "Method": "PARAFAC2", "Drug": [drug]})])
-        distDF = pd.concat([distDF, pd.DataFrame({"Normalized Centroid Distance": pcaDist, "Method": "PCA", "Drug": [drug]})])
+        distDF = pd.concat([distDF, pd.DataFrame({"Normalized Centroid Distance": pf2Dist, "Method": "PARAFAC2", "Condition": [cond]})])
+        distDF = pd.concat([distDF, pd.DataFrame({"Normalized Centroid Distance": pcaDist, "Method": "PCA", "Condition": [cond]})])
         
     distDF = distDF.reset_index(drop=True)
             
@@ -87,8 +88,9 @@ def distAllGeneDF(data, Pf2s, PCs):
     
     factors = Pf2s[1]
     projs = Pf2s[2]
-    dataDF, projDF, _ = flattenData(data, factors, projs)
-    pf2All = projDF.values[:, 0:-1]
+    dataDF = flattenData(data)
+    projDF = flattenProjs(data, projs)
+    pf2All = np.concatenate(projs, axis=0)
     pcaAll = PCs
     
     markers = [item for value in marker_genes.values() for item in (value if isinstance(value, list) else [value])]

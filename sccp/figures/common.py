@@ -16,6 +16,7 @@ from ..crossVal import CrossVal
 from ..decomposition import R2X
 import os
 from os.path import join
+from pandas.plotting import parallel_coordinates as pc
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -163,32 +164,43 @@ def plotProj(projs, axs):
     )
 
 
-def flattenData(data, factors, projs):
+def flattenData(data):
     """Flattens tensor into dataframe"""
     cellCount = []
-    for i in range(factors[0].shape[0]):
-        cellCount = np.append(cellCount, projs[i].shape[0])
+    for i in range(len(data.X_list)):
+        cellCount = np.append(cellCount, data.X_list[i].shape[0])
 
-    drugNames = []
+    condNames = []
 
-    for i in range(factors[0].shape[0]):
-        drugNames = np.append(
-            drugNames, np.repeat(data.condition_labels[i], cellCount[i])
+    for i in range(len(data.X_list)):
+        condNames = np.append(
+            condNames, np.repeat(data.condition_labels[i], cellCount[i])
         )
-
-    flatProjs = np.concatenate(projs, axis=0)
     flatData = np.concatenate(data.X_list, axis=0)
-
-    cmpNames = [f"Cmp. {i}" for i in np.arange(1, factors[0].shape[1] + 1)]
-    projDF = pd.DataFrame(data=flatProjs, columns=cmpNames)
     dataDF = pd.DataFrame(data=flatData, columns=data.variable_labels)
-    weightedDF = pd.DataFrame(data=flatProjs @ factors[1], columns=cmpNames)
-    projDF["Drug"] = drugNames
-    dataDF["Drug"] = drugNames
-    weightedDF["Drug"] = drugNames
+    dataDF["Condition"] = condNames
 
-    return dataDF, projDF, weightedDF
+    return dataDF
 
+def flattenProjs(data, projs):
+    """Flattens tensor into dataframe"""
+    cellCount = []
+    for i in range(len(data.X_list)):
+        cellCount = np.append(cellCount, data.X_list[i].shape[0])
+
+    condNames = []
+    
+    for i in range(len(data.X_list)):
+        condNames = np.append(
+            condNames, np.repeat(data.condition_labels[i], cellCount[i])
+        )
+        
+    flatProjs= np.concatenate(projs, axis=0)
+    cmpNames = [f"Cmp. {i}" for i in np.arange(1, flatProjs.shape[1] + 1)]
+    dataDF = pd.DataFrame(data=flatProjs, columns=cmpNames)
+    dataDF["Condition"] = condNames
+
+    return dataDF
 
 def plotGeneUMAP(genes, decomp, points, dataDF, axs):
     """Scatterplot of UMAP visualization weighted by gene"""
@@ -221,22 +233,20 @@ def plotDrugUMAP(drugs, decomp, totaldrugs, points, axs):
     return
 
 
-def plotCmpUMAP(weightedProj, cmp, points, axs):
-    """Scatterplot of UMAP visualization weighted by projections for a component"""
-    subset = np.random.choice(a=[False, True], size=np.shape(weightedProj)[0], p=[.93, .07])
-    for i, proj in enumerate(cmp):
-        weightedProjs = weightedProj[:, proj-1]
-        psm = plt.pcolormesh([weightedProjs, weightedProjs], cmap=matplotlib.cm.get_cmap('viridis'))
-        plot = umap.plot.points(points, values=weightedProjs, theme='viridis', subset_points= subset, ax=axs[i])
-        colorbar= plt.colorbar(psm, ax=plot)
+def plotCmpUMAP(cellState, cmp, factors, pf2Points, projs, ax):
+    """Scatterplot of UMAP visualization weighted by
+    projections for a component and cell state"""
+    allP = np.concatenate(projs, axis=0)
+    weightedProjs = allP[:, cellState-1] * factors[1][cellState-1, cmp-1]
+    subset = np.random.choice(a=[False, True], size= len(weightedProjs), p=[.95, .05])
+    psm = plt.pcolormesh([weightedProjs, weightedProjs], cmap=matplotlib.cm.get_cmap('viridis'))
+    plot = umap.plot.points(pf2Points, values=weightedProjs, theme='viridis', subset_points= subset, ax=ax)
+    colorbar= plt.colorbar(psm, ax=plot)
+    ax.set(
+        ylabel="UMAP2",
+        xlabel="UMAP1",
+        title="Cell State:" + str(cellState)+"-Pf2-Based Decomposition")
 
-        axs[i].set(
-            ylabel="UMAP2",
-            xlabel="UMAP1",
-            title="Cmp. " + str(proj) + "-Pf2-Based Decomposition",
-        )
-
-    return
 
 def plotBatchUMAP(decomp_DF, ax):
     """Scatterplot of UMAP visualization weighted by condition"""
@@ -315,12 +325,12 @@ def plotCV(data, rank, trainPerc, ax):
 
     ax.legend()
 
-def plotDistDrug(df, drugs, ax):
+def plotDistDrug(df, conds, ax):
     """Plots normalized centroid distance across PCA and Pf2 for different ranks"""
-    for i, drug in enumerate(drugs):
-        plotDF = df.loc[df.Drug == drug]
+    for i, cond in enumerate(conds):
+        plotDF = df.loc[df["Condition"] == cond]
         sns.lineplot(data=plotDF, x="Rank", y="Normalized Centroid Distance", hue="Method", ax=ax[i])
-        ax[i].set(title=drug)
+        ax[i].set(title=cond)
         
 def plotDistGene(df, genes, ax):
     """Plots normalized centroid distance across PCA and Pf2 for different ranks"""
@@ -332,7 +342,7 @@ def plotDistGene(df, genes, ax):
 def plotDistAllDrug(df, rank, ax):
     """Plots all Normalized Centroid Distance for all drugs for Pf2 and PCA"""
     sns.swarmplot(data=df, x="Method", y="Normalized Centroid Distance", hue="Method", ax=ax)
-    ax.set(title="All Drugs: Rank = " + str(rank))
+    ax.set(title="All Conditions: Rank = " + str(rank))
     
 def plotDistAllGene(df, rank, ax):
     """Plots all Normalized Centroid Distance for all genes for Pf2 and PCA"""
@@ -359,3 +369,45 @@ def plotPvalGO(GO, geneValue, axs):
         ax=axs[i])
         axs[i].set_title(geneValue + "-Genes-" + geneset)
         pvalPlot.set_xscale("log")
+
+
+def plotLabelAllUMAP(conditions, points, ax):
+    """Scatterplot of UMAP visualization weighted by condition or cell type"""
+    subset = np.random.choice(a=[False, True], size=len(conditions), p=[.93, .07])
+    umap.plot.points(
+        points, labels=conditions, ax=ax, color_key_cmap="tab20", show_legend=True, subset_points=subset)
+    ax.set(
+        title="Pf2-Based Decomposition",
+        ylabel="UMAP2",
+        xlabel="UMAP1")
+
+
+def plotCellCount(dataDF, celltypes, ax):
+    """Plots a swarmplot for cell type distribution for each condition """
+    dataDF["Cell Type"] = celltypes
+    celltypeDF = dataDF.groupby(["Cell Type", "Condition"]).size().reset_index(name="Count") 
+    totalCellCount = dataDF.groupby(["Condition"]).size().values
+
+    for j, cond in enumerate(np.unique(dataDF["Condition"].values)):
+        df = celltypeDF.loc[celltypeDF["Condition"] == cond] 
+        perc = df["Count"].values / np.sum(df["Count"].values)
+        celltypeDF.loc[celltypeDF["Condition"] == cond, "Count"] = perc
+            
+    sns.swarmplot(data=celltypeDF, x="Condition", y="Count", hue="Cell Type", ax=ax)
+    
+def plotMetricSCIB(metricsDF, sheetName, axs):
+    """Plots all metrics values across SCIB and Pf2 for one dataset"""
+    for i, sheets in enumerate(sheetName):
+        datasetDF = metricsDF.loc[metricsDF["Dataset"] == sheets]
+        datasetDF = datasetDF.drop(columns="Dataset").reset_index(drop=True)
+        datasetDF = datasetDF.pivot_table(index="Metric", columns="Method", values="Value").reset_index()
+        pc(datasetDF, "Metric", colormap=plt.get_cmap("Set1"), ax=axs[i])
+        axs[i].tick_params(axis="x", rotation=45)
+        axs[i].set(title=sheets)
+    
+def plotCellCount(dataDF, ax):
+    """Plot number of cells per experiment for a dataframe"""
+    cellcountDF = dataDF.groupby(["Condition"]).size().reset_index(name="Cell Count") 
+    sns.barplot(data=cellcountDF, x="Condition", y="Cell Count", ax=ax)
+    ax.tick_params(axis="x", rotation=90)
+
