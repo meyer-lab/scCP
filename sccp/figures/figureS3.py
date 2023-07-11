@@ -34,7 +34,7 @@ warnings.filterwarnings("once")
 # get observational variables combined
 lupus_pan = lupus_data.to_df()
 
-lupus_pan_center = lupus_data.to_df().apply(lambda x: x-x.mean())
+#nlupus_pan_center = lupus_data.to_df().apply(lambda x: x-x.mean())
 
 
 
@@ -55,14 +55,19 @@ def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
     ax, f = getSetup((8, 4), # fig size
-                     (3, 2) # grid size
+                     (1, 1) # grid size
                      )
 
     # Add subplot labels
     subplotLabel(ax)
     # funky. it mostly is centered already, also some genes don't go up to 10. idk what's up
     print(lupus_pan.describe())
-    print(lupus_pan_center.describe())
+    # print(lupus_pan_center.describe())
+
+    description = lupus_pan.describe()
+
+
+    #print(description.loc[:, (description < 10).all()])
 
 
     # added CCR7 to look at T cell differences
@@ -71,12 +76,20 @@ def makeFigure():
     random.seed(1)
     rand_genes = random.choices(gene_list, k= 5)
 
-    counter = 0
+    max_values = description.loc["max"]
 
-    for gene in rand_genes:
-        ax[counter].set_xlim([-1, 1])
-        sns.histplot(data= combo_lupus,  x = gene, ax=ax[counter], bins=300)
-        ax[counter].set_title(gene + " Expression")
-        counter += 1
+    print(description.T)
+
+    sns.histplot(data = description.T, x = "max", kde=True)
+    ax[0].set_title("Max Gene Expression in Normalized Lupus Dataset")
+
+
+    #counter = 0
+
+    #for gene in rand_genes:
+    #    ax[counter].set_xlim([-1, 1])
+    #    sns.histplot(data= combo_lupus,  x = gene, ax=ax[counter], bins=300)
+    #    ax[counter].set_title(gene + " Expression")
+    #    counter += 1
 
     return f
