@@ -151,15 +151,8 @@ def plotCondFactorsReorder(factors, data: Pf2X, ax):
     
     X, ind = reorder_table(X)
     yt = yt[ind]
-    
-    controls = ["CTRL1", "CTRL2", "CTRL3", "CTRL4", "CTRL5", "CTRL6"]
-    ctrl_idx = []
-    for ctrl in controls:
-        ctrl_idx = np.append(ctrl_idx, np.argwhere(data.condition_labels == ctrl))
 
-    ctrlMean = np.mean(X[ctrl_idx.astype(int), :], axis=0)
-    X = X / ctrlMean
-    
+    X = X / np.max(X, axis=0)
 
     sns.heatmap(
         data=X,
@@ -442,3 +435,10 @@ def plotCellCount(dataDF, ax):
     sns.barplot(data=cellcountDF, x="Condition", y="Cell Count", ax=ax)
     ax.tick_params(axis="x", rotation=90)
 
+def plotWeight(weight, ax):
+    """Plots weights from Pf2 model"""
+    df = pd.DataFrame(data=np.transpose([weight]), columns=["Value"])
+    df["Component"] = [f"Cmp. {i}" for i in np.arange(1, len(weight) + 1)]
+    sns.barplot(data=df, x="Component", y="Value", ax=ax[0]
+    ax.tick_params(axis="y", rotation=0)
+    
