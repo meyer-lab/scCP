@@ -138,8 +138,23 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
         
         if saveGenes == True:
             if i == 2 and len(yt) > 50:
+                geneAmount = 30
                 df = pd.DataFrame(data=X, index=yt, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
                 df.to_csv(join(path_here, "data/TopBotGenes_Cmp"+str(rank)+".csv"))
+                
+ 
+                genesTop = np.empty((geneAmount, X.shape[1]), dtype="<U10")
+                genesBottom = np.empty((geneAmount, X.shape[1]), dtype="<U10")
+                sort_idx = np.argsort(X, axis=0)
+
+                for j in range(rank):
+                    sortGenes = yt[sort_idx[:, j]]
+                    genesTop[:, j] = np.flip(sortGenes[-geneAmount:])  
+                    genesBottom[:, j] = sortGenes[:geneAmount]
+
+                dfTop = pd.DataFrame(data=genesTop, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+                dfBottom = pd.DataFrame(data=genesBottom, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+                
                 
 def plotCondFactorsReorder(factors, data: Pf2X, ax):
     """Plots parafac2 factors."""
@@ -439,6 +454,6 @@ def plotWeight(weight, ax):
     """Plots weights from Pf2 model"""
     df = pd.DataFrame(data=np.transpose([weight]), columns=["Value"])
     df["Component"] = [f"Cmp. {i}" for i in np.arange(1, len(weight) + 1)]
-    sns.barplot(data=df, x="Component", y="Value", ax=ax[0]
-    ax.tick_params(axis="y", rotation=0)
+    sns.barplot(data=df, x="Component", y="Value", ax=ax)
+    ax.tick_params(axis="x", rotation=90)
     
