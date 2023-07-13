@@ -27,6 +27,7 @@ from .common import subplotLabel, getSetup, plotFactors
 import warnings
 import matplotlib.pyplot as plt
 import scipy.cluster.hierarchy as sch
+import tensorly as tl
 
 
 
@@ -52,10 +53,20 @@ def tensorFy(annD: anndata.AnnData, obsName: str) -> Pf2X:
     return Pf2X(data, sgUnique, annD.var_names)
 
 
-def lupus_data(third_axis= "ind_cov") -> Pf2X:
+def lupus_data(third_axis= "ind_cov", n_rand = 30):
     """Import Thompson lab PBMC dataset."""
     X = anndata.read_h5ad("/opt/andrew/lupus/lupus.h5ad")
-    X = X[::10, :]
+
+    # select n_rand random patients; evenly split between lupus and SLE
+    np.random.seed(42)
+    SLE_patients = X.obs["ind_cov"][X.obs["SLE_status"] == "SLE"].to_numpy()
+    healthy_patients = X.obs["ind_cov"][X.obs["SLE_status"] == "Healthy"].to_numpy()
+    random_patients = np.random.choice(SLE_patients, int(n_rand/2), replace=False).tolist() + np.random.choice(healthy_patients, int(n_rand/2), replace=False).tolist()
+
+    X = X[X.obs['ind_cov'].isin(random_patients), :]
+
+    # get cell types
+    cell_types = X.obs['cg_cov'].reset_index(drop=True)
 
     assert np.all(np.isfinite(X.X.data)) # yeah this should be true
 
@@ -65,15 +76,15 @@ def lupus_data(third_axis= "ind_cov") -> Pf2X:
     # X.X -= np.mean(X.X, axis=0)
 
     # Assign cells a count per-experiment so we can reindex
-    return tensorFy(X, third_axis)
+    return tensorFy(X, third_axis), cell_types
 
 ####################################################################################
 
-rank = 47
+rank = 30
 
 # hello hello hello
 
-lupus_tensor = lupus_data()
+lupus_tensor, cell_types = lupus_data()
 
 _, factors, projs, _ = parafac2_nd(lupus_tensor, 
                                    rank = rank, 
@@ -111,8 +122,9 @@ def plotLupusFactors(factors, data: Pf2X, og_data, axs, reorder=tuple(), trim=tu
         # The single cell mode has a square factors matrix
         if i == 0:
             yt = data.condition_labels
+            print(yt, type(yt))
             # set rowcolors as SLE status
-            status = og_data.obs[["ind_cov","SLE_status"]].sort_values(by= "ind_cov").drop_duplicates("ind_cov")
+            status = og_data.obs[["ind_cov","SLE_status"]][og_data.obs['ind_cov'].isin(data.condition_labels)].sort_values(by= "ind_cov").drop_duplicates("ind_cov")
 
             lut = {'SLE': 'c', 'Healthy': 'm'}
             row_colors = status['SLE_status'].map(lut)
@@ -162,15 +174,32 @@ def plotLupusFactors(factors, data: Pf2X, og_data, axs, reorder=tuple(), trim=tu
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8, 4), # fig size
+    ax, f = getSetup((8, 8), # fig size
                      (2, 2) # grid size
                      )
 
     # Add subplot labels
     subplotLabel(ax)
 
+    all_cell_projs = pd.DataFrame(tl.concatenate(list(projs), axis=0))
+    cell_state_28 = pd.concat([all_cell_projs.iloc[:, 27], cell_types], axis = 1)
+    cell_state_28.columns.values[0] = "contribution"
+    print(cell_state_28)
+
     #plotFactors(factors, lupus_tensor, ax[0:3], reorder=(0, 2), trim=(2,), saveGenes=False)
     plotLupusFactors(factors, lupus_tensor, anndata.read_h5ad("/opt/andrew/lupus/lupus.h5ad"), ax[0:3], reorder = (0,2), trim=(2,))
+
+    # examine the 28th cell state
+    sns.boxplot(data = cell_state_28,
+                   x = "cg_cov",
+                   y = 'contribution',
+                   hue = 'cg_cov',
+                   width= 4,
+                   ax = ax[3])
+    
+    ax[3].set_title('Cell Type Contrib to Cell State 28')
+    ax[3].tick_params(axis="x", rotation=90)
+    ax[3].get_legend().remove()
 
     # print("DataDF: \n\n", dataDF)
     # print("ProjDF: \n\n", projDF)
