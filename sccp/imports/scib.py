@@ -44,6 +44,11 @@ def import_scib_metrics():
                 "simulations_2", "pancreas", "mouse_brain_atac_genes_small", 
                 "mouse_brain_atac_genes_large"]
     
+    methods = ["BBKNN", "Harmony", "Scanorama", "Seruat v3 CCA", "Pf2: 5 Components", "Pf2: 10 Components",
+            "Pf2: 20 Components", "Pf2: 40 Components"]
+    
+
+    
     df = pd.DataFrame([])
     for i in range(len(sheet_name)):
         df = pd.concat([df, pd.read_excel(xls, sheet_name[i])])
@@ -56,5 +61,9 @@ def import_scib_metrics():
 
     df = pd.melt(df, id_vars=["Dataset", "Method"], value_vars=metrics).rename(
             columns={"variable": "Metric", "value": "Value"})
+    
+    print(df)
+    df = df.loc[df["Method"].isin(methods)]
+    print(df)
         
     return df.dropna(), sheet_name

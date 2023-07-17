@@ -26,11 +26,15 @@ def makeFigure():
         random_state=1,
     )
     
+    
     # UMAP dimension reduction
     pf2Points = umap.UMAP(random_state=1).fit(np.concatenate(projs, axis=0))
     
-    cellState = [23, 24, 25, 26, 27, 28, 29, 30]
-    component = [23, 24, 25, 26, 27, 28, 29, 30]
+    # cellState = [23, 24, 25, 26, 27, 28, 29, 30]
+    # component = [23, 24, 25, 26, 27, 28, 29, 30]
+    cellState = np.arange(18, 26, 1)
+    component = np.arange(18, 26, 1)
+    
     
     
     for i in range(len(cellState)):

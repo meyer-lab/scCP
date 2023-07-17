@@ -10,18 +10,18 @@ import umap
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((15, 15), (3, 2))
+    ax, f = getSetup((12, 12), (3, 2))
 
     # Add subplot labels
     subplotLabel(ax)
 
-    data, celltypes = import_scib_data(dataname="ImmuneHuman")
+    # data, celltypes = import_scib_data(dataname="ImmuneHuman")
     # data, celltypes = import_scib_data(dataname="ImmuneHumanMouse")
-    # data, celltypes = import_scib_data(dataname="Stimulation1")
+    data, celltypes = import_scib_data(dataname="Stimulation1")
     # data, celltypes = import_scib_data(dataname="Stimulation2")
     # data, celltypes = import_scib_data(dataname="Pancreas")
     
-    rank = 2
+    rank = 25
     _, factors, projs, _ = parafac2_nd(
         data,
         rank=rank,

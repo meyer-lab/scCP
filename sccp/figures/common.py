@@ -124,6 +124,12 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
         if i in reorder:
             X, ind = reorder_table(X)
             yt = yt[ind]
+            
+            
+        if i==2:
+            X = X / np.max(np.abs(X),axis=0)
+            
+            (2 * (X-np.min(X, axis=0)) / (np.max(X, axis=0) - np.min(X, axis=0)))-1
         sns.heatmap(
             data=X,
             xticklabels=xticks,
@@ -136,10 +142,29 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
         axs[i].set_title("Factors")
         axs[i].tick_params(axis="y", rotation=0)
         
+        
+        
         if saveGenes == True:
             if i == 2 and len(yt) > 50:
                 df = pd.DataFrame(data=X, index=yt, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
                 df.to_csv(join(path_here, "data/TopBotGenes_Cmp"+str(rank)+".csv"))
+                
+                geneAmount=50
+
+                genesTop = np.empty((geneAmount, X.shape[1]), dtype="<U10")
+                genesBottom = np.empty((geneAmount, X.shape[1]), dtype="<U10")
+                sort_idx = np.argsort(X, axis=0)
+
+                for j in range(rank):
+                    sortGenes = yt[sort_idx[:, j]]
+                    genesTop[:, j] = np.flip(sortGenes[-geneAmount:])  
+                    genesBottom[:, j] = sortGenes[:geneAmount]
+
+                dfTop = pd.DataFrame(data=genesTop, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+                dfBot = pd.DataFrame(data=genesBottom, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+                
+                dfTop.to_csv(join(path_here, "data/TopGenes_Cmp"+str(rank)+".csv"))
+                dfBot.to_csv(join(path_here, "data/BotGenes_Cmp"+str(rank)+".csv"))
    
 def plotCondFactorsReorder(factors, data: Pf2X, ax):
     """Plots parafac2 factors."""
@@ -261,8 +286,11 @@ def plotCmpUMAP(cellState, cmp, factors, pf2Points, projs, ax):
     projections for a component and cell state"""
     allP = np.concatenate(projs, axis=0)
     weightedProjs = allP[:, cellState-1] * factors[1][cellState-1, cmp-1]
+    # weightedProjs = (2 * (weightedProjs-np.min(weightedProjs)) / (np.max(weightedProjs) - np.min(weightedProjs)))-1
     subset = np.random.choice(a=[False, True], size= len(weightedProjs), p=[.95, .05])
-    psm = plt.pcolormesh([weightedProjs, weightedProjs], cmap=matplotlib.cm.get_cmap('viridis'))
+    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
+    
+    psm = plt.pcolormesh([[-1, 1],[-1, 1]], cmap=matplotlib.cm.get_cmap('viridis'))
     plot = umap.plot.points(pf2Points, values=weightedProjs, theme='viridis', subset_points= subset, ax=ax)
     colorbar= plt.colorbar(psm, ax=plot)
     ax.set(
@@ -417,6 +445,7 @@ def plotCellType(dataDF, celltypes, ax):
         celltypeDF.loc[celltypeDF["Condition"] == cond, "Count"] = perc
             
     sns.swarmplot(data=celltypeDF, x="Condition", y="Count", hue="Cell Type", ax=ax)
+    ax.tick_params(axis="x", rotation=90)
     
 def plotMetricSCIB(metricsDF, sheetName, axs):
     """Plots all metrics values across SCIB and Pf2 for one dataset"""

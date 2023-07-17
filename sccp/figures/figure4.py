@@ -19,15 +19,16 @@ def makeFigure():
 
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes()
-    rank = 25
+    rank = 30
 
     weight, factors, projs, _ = parafac2_nd(
         data,
         rank=rank,
         random_state=1,
     )
+    
 
-    plotFactors(factors, data, ax[0:3], reorder=(0, 2), trim=(2,), saveGenes=False)
+    plotFactors(factors, data, ax[0:3], reorder=(0, 2), trim=(2,), saveGenes=True)
     plotCondFactorsReorder(factors, data, ax[3])
     plotWeight(weight, ax[4])
 

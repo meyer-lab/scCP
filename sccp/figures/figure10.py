@@ -7,10 +7,11 @@ from ..imports.scib import  import_scib_metrics
 def makeFigure():
    """Get a list of the axis objects and create a figure."""
    # Get list of axis objects
-   ax, f = getSetup((18, 18), (4, 2))
+   ax, f = getSetup((12, 12), (4, 2))
 
    # Add subplot labels
    subplotLabel(ax)
+   
    
    metricsDF, sheetName = import_scib_metrics()
 
