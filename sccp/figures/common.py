@@ -299,14 +299,14 @@ def plotCmpUMAPDiv(cellState, cmp, factors, pf2Points, projs, ax):
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
     psm = plt.pcolormesh([[-1, 1],[-1, 1]], cmap=cmap)
     
-    tl = ax.scatter(
+    ax.scatter(
             umap1,
             umap2,
             c=weightedProjs,
             cmap=cmap,
             s=0.2,
         )
-    colorbar= plt.colorbar(psm, ax=ax)
+    plt.colorbar(psm, ax=ax)
     
     ax.set(
         ylabel="UMAP2",

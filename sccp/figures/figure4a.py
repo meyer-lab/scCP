@@ -6,7 +6,6 @@ from ..imports.scRNA import ThompsonXA_SCGenes
 from ..parafac2 import parafac2_nd
 import umap 
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 def makeFigure():
