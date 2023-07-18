@@ -17,7 +17,6 @@ from ..decomposition import R2X
 import os
 from os.path import join
 from pandas.plotting import parallel_coordinates as pc
-import tensorly as tl # added for `plotCellStateViolins`
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -522,7 +521,7 @@ def plotUMAP_ct(labels, pf2Points, projs, ax):
         title="Pf2-Based Decomposition: Label Cell Types")
     
 def plotCellStateViolins(projections, cell_types, cell_state: int, ax):
-    all_cell_projs = pd.DataFrame(tl.concatenate(list(projections), axis=0))
+    all_cell_projs = pd.DataFrame(np.concatenate(list(projections), axis=0))
     cell_state_n = pd.concat([all_cell_projs.iloc[:, (cell_state - 1)], cell_types], axis = 1)
     cell_state_n.columns.values[0] = "contribution"
 
