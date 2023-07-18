@@ -286,7 +286,7 @@ def plotCmpUMAP(cellState, cmp, factors, pf2Points, projs, ax):
         xlabel="UMAP1",
         title="Cell State:" + str(cellState)+"- Component:" + str(cmp))
     
-def plotCmpUMAPDiv(cellState, cmp, factors, pf2Points, projs, f, ax):
+def plotCmpUMAPDiv(cellState, cmp, factors, pf2Points, projs, ax):
     """Scatterplot of UMAP visualization weighted by
     projections for a component and cell state"""
     cellSkip = 10 
@@ -296,15 +296,8 @@ def plotCmpUMAPDiv(cellState, cmp, factors, pf2Points, projs, f, ax):
     weightedProjs = allP[:, cellState-1] * factors[1][cellState-1, cmp-1]
     weightedProjs = weightedProjs[::cellSkip]
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
-    
-    # weightedProjs = 2 * ((weightedProjs - np.min(weightedProjs)) / (np.max(weightedProjs)-np.min(weightedProjs))) - 1
-    print(np.max(weightedProjs))
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
-    
-    
     psm = plt.pcolormesh([[-1, 1],[-1, 1]], cmap=cmap)
-    # plot = umap.plot.points(pf2Points, values=weightedProjs, theme='viridis', subset_points= subset, ax=ax)
-    # colorbar= plt.colorbar(psm, ax=plot)
     
     tl = ax.scatter(
             umap1,
@@ -314,7 +307,6 @@ def plotCmpUMAPDiv(cellState, cmp, factors, pf2Points, projs, f, ax):
             s=0.2,
         )
     colorbar= plt.colorbar(psm, ax=ax)
-    # f.colorbar(tl, ax=ax)
     
     ax.set(
         ylabel="UMAP2",
@@ -323,11 +315,6 @@ def plotCmpUMAPDiv(cellState, cmp, factors, pf2Points, projs, f, ax):
         xticks=np.linspace(np.min(umap1), np.max(umap1), num=5),
         yticks=np.linspace(np.min(umap2), np.max(umap2), num=5),
     )
-    
-    # cbar = matplotlib.colorbar.ColorbarBase(ax, cmap=cmap,
-    #                    norm=matplotlib.colors.Normalize(vmin=-1, vmax=1))
-    # cbar.set_clim(-1, 1)
-    # plt.clim(-1,1)
     
     ax.axes.xaxis.set_ticklabels([])
     ax.axes.yaxis.set_ticklabels([])
