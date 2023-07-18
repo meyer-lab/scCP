@@ -12,7 +12,7 @@ from .common import (
     getSetup,
     plotCmpUMAP,
     plotCellStateViolins,
-    plotUMAP_ct
+    plotUMAP_ct,
 )
 from ..imports.scRNA import load_lupus_data
 from ..parafac2 import parafac2_nd
@@ -20,7 +20,7 @@ import numpy as np
 import umap
 from sklearn.decomposition import PCA
 
- 
+
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
@@ -30,9 +30,10 @@ def makeFigure():
     subplotLabel(ax)
 
     # Import of data
-    data, cell_types, _ = load_lupus_data() # don't need to get patient color mappings
+    data, cell_types, _ = load_lupus_data()  # don't need to get patient color mappings
     rank = 30
-    cellState = 28; cmp = 28
+    cellState = 28
+    cmp = 28
 
     # run pf2
     _, factors, projs, _ = parafac2_nd(
@@ -50,10 +51,8 @@ def makeFigure():
     pcaPoints = pc.fit_transform(data.unfold())
     pcaPoints = umap.UMAP(random_state=1).fit(pcaPoints)
 
-
     plotUMAP_ct(cell_types, pf2Points, projs, ax[0])
     plotCmpUMAP(cellState, cmp, factors, pf2Points, projs, ax[1])
     plotCellStateViolins(projs, cell_types, cellState, ax[2])
-
 
     return f
