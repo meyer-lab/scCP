@@ -6,6 +6,7 @@ from ..imports.scRNA import ThompsonXA_SCGenes
 from ..parafac2 import parafac2_nd
 import umap 
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def makeFigure():
@@ -19,6 +20,7 @@ def makeFigure():
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes()
     rank = 30
+    
 
     weight, factors, projs, _ = parafac2_nd(
         data,
@@ -26,11 +28,26 @@ def makeFigure():
         random_state=1,
     )
     
+    
     # UMAP dimension reduction
     pf2Points = umap.UMAP(random_state=1).fit_transform(np.concatenate(projs, axis=0))
     
-    cellState = np.arange(23, 31, 1) 
-    component = np.arange(23, 31, 1) 
+    
+    
+    cellState = np.arange(17, 25, 1) 
+    component = np.arange(17, 25, 1) 
+    
+    # cellState =[1]
+    # component =[1]
+    
+    # component =[3, 5, 6,  7, 10, 11, 12, 13, 17]
+    
+    # allprojs = np.concatenate(projs, axis=0)
+    
+    
+    # for i in range(len(component)):
+    #     ax[i].hist(allprojs[:, i], bins=100)
+    # ax[0].hist(allprojs[:,0])
     
     for i in range(len(cellState)):
         plotCmpUMAPDiv(cellState[i], component[i], factors, pf2Points, projs, f, ax[i])

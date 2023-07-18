@@ -294,17 +294,27 @@ def plotCmpUMAPDiv(cellState, cmp, factors, pf2Points, projs, f, ax):
     umap2 = pf2Points[::cellSkip, 1]
     allP = np.concatenate(projs, axis=0)
     weightedProjs = allP[:, cellState-1] * factors[1][cellState-1, cmp-1]
+    weightedProjs = weightedProjs[::cellSkip]
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
+    
+    # weightedProjs = 2 * ((weightedProjs - np.min(weightedProjs)) / (np.max(weightedProjs)-np.min(weightedProjs))) - 1
+    print(np.max(weightedProjs))
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
-  
+    
+    
+    psm = plt.pcolormesh([[-1, 1],[-1, 1]], cmap=cmap)
+    # plot = umap.plot.points(pf2Points, values=weightedProjs, theme='viridis', subset_points= subset, ax=ax)
+    # colorbar= plt.colorbar(psm, ax=plot)
+    
     tl = ax.scatter(
             umap1,
             umap2,
-            c=weightedProjs[::cellSkip],
+            c=weightedProjs,
             cmap=cmap,
             s=0.2,
         )
-    f.colorbar(tl, ax=ax)
+    colorbar= plt.colorbar(psm, ax=ax)
+    # f.colorbar(tl, ax=ax)
     
     ax.set(
         ylabel="UMAP2",
@@ -313,6 +323,11 @@ def plotCmpUMAPDiv(cellState, cmp, factors, pf2Points, projs, f, ax):
         xticks=np.linspace(np.min(umap1), np.max(umap1), num=5),
         yticks=np.linspace(np.min(umap2), np.max(umap2), num=5),
     )
+    
+    # cbar = matplotlib.colorbar.ColorbarBase(ax, cmap=cmap,
+    #                    norm=matplotlib.colors.Normalize(vmin=-1, vmax=1))
+    # cbar.set_clim(-1, 1)
+    # plt.clim(-1,1)
     
     ax.axes.xaxis.set_ticklabels([])
     ax.axes.yaxis.set_ticklabels([])
