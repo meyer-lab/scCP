@@ -153,6 +153,28 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
 
         axs[i].set_title(title)
         axs[i].tick_params(axis="y", rotation=0)
+        
+        if saveGenes == True:
+            if i == 2 and len(yt) > 50:
+                df = pd.DataFrame(data=X, index=yt, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+                df.to_csv(join(path_here, "data/TopBotGenes_Cmp"+str(rank)+".csv"))
+                
+                geneAmount=50
+                genesTop = np.empty((geneAmount, X.shape[1]), dtype="<U10")
+                genesBottom = np.empty((geneAmount, X.shape[1]), dtype="<U10")
+                sort_idx = np.argsort(X, axis=0)
+
+                for j in range(rank):
+                    sortGenes = yt[sort_idx[:, j]]
+                    genesTop[:, j] = np.flip(sortGenes[-geneAmount:])  
+                    genesBottom[:, j] = sortGenes[:geneAmount]
+
+                dfTop = pd.DataFrame(data=genesTop, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+                dfBot = pd.DataFrame(data=genesBottom, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+
+                dfTop.to_csv(join(path_here, "data/TopGenes_Cmp"+str(rank)+".csv"))
+                dfBot.to_csv(join(path_here, "data/BotGenes_Cmp"+str(rank)+".csv"))
+   
    
 def plotCondFactorsReorder(factors, data: Pf2X, ax):
     """Plots parafac2 factors."""
@@ -281,7 +303,40 @@ def plotCmpUMAP(cellState, cmp, factors, pf2Points, projs, ax):
     ax.set(
         ylabel="UMAP2",
         xlabel="UMAP1",
-        title="Cell State:" + str(cellState)+"-Pf2-Based Decomposition")
+        title="Cell State:" + str(cellState)+"- Component:" + str(cmp))
+    
+def plotCmpUMAPDiv(cellState, cmp, factors, pf2Points, projs, ax):
+    """Scatterplot of UMAP visualization weighted by
+    projections for a component and cell state"""
+    cellSkip = 10 
+    umap1 = pf2Points[::cellSkip, 0]
+    umap2 = pf2Points[::cellSkip, 1]
+    allP = np.concatenate(projs, axis=0)
+    weightedProjs = allP[:, cellState-1] * factors[1][cellState-1, cmp-1]
+    weightedProjs = weightedProjs[::cellSkip]
+    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
+    cmap = sns.diverging_palette(240, 10, as_cmap=True)
+    psm = plt.pcolormesh([[-1, 1],[-1, 1]], cmap=cmap)
+    
+    ax.scatter(
+            umap1,
+            umap2,
+            c=weightedProjs,
+            cmap=cmap,
+            s=0.2,
+        )
+    plt.colorbar(psm, ax=ax)
+    
+    ax.set(
+        ylabel="UMAP2",
+        xlabel="UMAP1",
+        title="Cell State:" + str(cellState)+"- Component:" + str(cmp),
+        xticks=np.linspace(np.min(umap1), np.max(umap1), num=5),
+        yticks=np.linspace(np.min(umap2), np.max(umap2), num=5),
+    )
+    
+    ax.axes.xaxis.set_ticklabels([])
+    ax.axes.yaxis.set_ticklabels([])
 
 
 def plotBatchUMAP(decomp_DF, ax):
@@ -418,7 +473,7 @@ def plotLabelAllUMAP(conditions, points, ax):
         xlabel="UMAP1")
 
 
-def plotCellCount(dataDF, celltypes, ax):
+def plotCellType(dataDF, celltypes, ax):
     """Plots a swarmplot for cell type distribution for each condition """
     dataDF["Cell Type"] = celltypes
     celltypeDF = dataDF.groupby(["Cell Type", "Condition"]).size().reset_index(name="Count") 
@@ -440,7 +495,7 @@ def plotMetricSCIB(metricsDF, sheetName, axs):
         axs[i].tick_params(axis="x", rotation=45)
         axs[i].set(title=sheets)
     
-def plotCellType(dataDF, ax):
+def plotCellCount(dataDF, ax):
     """Plot number of cells per experiment for a dataframe"""
     cellcountDF = dataDF.groupby(["Condition"]).size().reset_index(name="Cell Count") 
     sns.barplot(data=cellcountDF, x="Condition", y="Cell Count", ax=ax)
