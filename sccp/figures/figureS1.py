@@ -16,7 +16,7 @@ from .common import subplotLabel, getSetup
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((12, 12), (2, 2))  # fig size  # grid size
+    ax, f = getSetup((12, 48), (2, 2))  # fig size  # grid size
 
     # Add subplot labels
     subplotLabel(ax)
@@ -34,7 +34,7 @@ def makeFigure():
     )
 
     plotFactors(
-        factors, lupus_tensor, ax[0:3], reorder=(0, 2), trim=(2,), row_colors=row_colors
+        factors, lupus_tensor, ax[0:3], trim=(2,), row_colors=row_colors
     )
 
     plotWeight(weights, ax[3])
