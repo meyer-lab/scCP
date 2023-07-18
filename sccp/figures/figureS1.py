@@ -1,77 +1,47 @@
 """
-S1: Initial visualizations of Lupus Data Pt2: distributions of genes
+S1: Initial Attempt at Pf2 on the lupus data
 article: https://www.science.org/doi/10.1126/science.abf1970
 data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 """
 
-# GOAL: investigate the normalization methods used on the dataset as published
+# GOAL: test Pf2 on lupus data, get visualizations for factor matrices
 
 # load functions/modules ----
 from .common import (
     subplotLabel,
-    getSetup
+    getSetup,
+    plotFactors,
+    plotWeight
 )
-import pandas as pd
-import seaborn as sns
-import numpy as np
-import anndata
-import random
-
-
-# load data (need to change filepath once dataset gets uploaded to opt/...)
-# lupus_data = anndata.read_h5ad("/home/seanp/scCP/GSE174188_CLUES1_adjusted.h5ad")
-lupus_data = anndata.read_h5ad("/opt/andrew/lupus/lupus.h5ad")
-
-
-# get observational variables combined
-lupus_pan = lupus_data.to_df()
-
-
-lupus_observations = lupus_data.obs[["SLE_status"]]
-
-combo_lupus = lupus_observations.merge(lupus_pan, 
-                                       how= "left",
-                                       left_index=True,
-                                       right_index=True,
-                                       validate="one_to_one")
-
-
-lupus_genes = lupus_data.var
+from ..parafac2 import parafac2_nd
+from ..imports.scRNA import load_lupus_data
+from .common import subplotLabel, getSetup
 
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8, 4), # fig size
-                     (3, 2) # grid size
+    ax, f = getSetup((12, 12), # fig size
+                     (2, 2) # grid size
                      )
 
     # Add subplot labels
     subplotLabel(ax)
 
-    description = lupus_pan.describe()
+    rank = 30
 
+    lupus_tensor, _, row_colors = load_lupus_data() # don't need to grab cell types here
 
+    weights, factors, _, _ = parafac2_nd(lupus_tensor, 
+                                    rank = rank, 
+                                    n_iter_max= 20,
+                                    random_state = 1, 
+                                    verbose=True)
 
-    gene_list = lupus_genes.index.tolist()
+    plotFactors(factors, lupus_tensor, ax[0:3], reorder = (0,2), trim=(2,), row_colors = row_colors)
 
-    random.seed(1)
-    rand_genes = random.choices(gene_list, k= 6)
-
-    #sns.histplot(data = description.T, x = "max", kde=True)
-    #ax[0].set_title("Max Gene Expression in Normalized Lupus Dataset")
-    
-    # can uncomment above and comment below to show the max gene expression
-    # throughout. Otherwise this serves mostly to visualize the way
-    # this dataset was normalized
-
-    counter = 0
-
-    for gene in rand_genes:
-        ax[counter].set_xlim([-1, 1])
-        sns.histplot(data= combo_lupus,  x = gene, ax=ax[counter], bins=300)
-        ax[counter].set_title(gene + " Expression")
-        counter += 1
+    plotWeight(weights, ax[3])
+    ax[3].set_title('Weight of Each Componenet')
 
     return f
