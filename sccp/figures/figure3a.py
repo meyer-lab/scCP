@@ -5,10 +5,8 @@ import numpy as np
 from .common import (
     subplotLabel,
     getSetup,
-    flattenData,
     openPf2
 )
-from ..imports.scRNA import ThompsonXA_SCGenes
 import umap
 import umap.plot
 from sklearn.decomposition import PCA
@@ -23,7 +21,6 @@ def makeFigure():
     subplotLabel(ax)
 
     # Import of single cells: [Drug, Cell, Gene]
-    data = ThompsonXA_SCGenes(offset=1.0)
     rank = 30
     
     weight, factors, projs = openPf2(rank, "Thomson")
@@ -36,8 +33,7 @@ def makeFigure():
     pcaPoints = pc.fit_transform(data.unfold())
     pcaPoints = umap.UMAP(random_state=1).fit(pcaPoints)
 
-    dataDF = flattenData(data)
-    subset = np.random.choice(a=[False, True], size=np.shape(dataDF)[0], p=[.93, .07])
+    subset = np.random.choice(a=[False, True], size=np.shape(projs)[0], p=[.93, .07])
 
     umap.plot.points(pf2Points,theme='blue', subset_points= subset, ax=ax[0])
     ax[0].set(
@@ -51,4 +47,5 @@ def makeFigure():
             title="PCA-Based Decomposition",
             ylabel="UMAP2",
             xlabel="UMAP1")
+    
     return f
