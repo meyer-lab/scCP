@@ -10,7 +10,7 @@ def distDrugDF(data, ranks, Pf2s, PCs, conds):
     for ii, rank in enumerate(ranks):
         _, factors, projs, _ = Pf2s[ii]
         pf2All = np.concatenate(projs, axis=0)
-        projDF = flattenProjs(data, pf2All)
+        projDF = flattenProjs(data, projs)
         pcaAll = PCs[ii]
         for cond in conds:
             pf2Cond = projDF.loc[projDF["Condition"] == cond].values[:, 0:-1]
