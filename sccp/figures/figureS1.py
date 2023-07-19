@@ -26,7 +26,7 @@ def makeFigure():
     (
         lupus_tensor,
         _,
-        row_colors,
+        group_labs,
     ) = load_lupus_data()  # don't need to grab cell types here
 
     weights, factors, _, _ = parafac2_nd(
@@ -34,7 +34,7 @@ def makeFigure():
     )
 
     plotFactors(
-        factors, lupus_tensor, ax[0:3], trim=(2,), row_colors=row_colors
+        factors, lupus_tensor, ax[0:3], reorder = (0,2), trim=(2,), cond_group_labels = group_labs
     )
 
     plotWeight(weights, ax[3])

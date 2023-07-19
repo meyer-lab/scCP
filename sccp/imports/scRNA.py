@@ -146,9 +146,8 @@ def load_lupus_data(third_axis="ind_cov", every_n=4):
         .drop_duplicates("ind_cov")
     )
 
-    lut = {"SLE": "c", "Healthy": "m"}
-    row_colors = status["SLE_status"].map(lut)
+    cond_group_labels = status.set_index('ind_cov')['SLE_status']
 
     assert np.all(np.isfinite(X.X.data))  # this should be true
 
-    return tensorFy(X, third_axis), cell_types, row_colors
+    return tensorFy(X, third_axis), cell_types, cond_group_labels
