@@ -11,7 +11,7 @@ from ..parafac2 import parafac2_nd
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((18, 25), (3, 2))
+    ax, f = getSetup((18, 16), (2, 2))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -30,7 +30,7 @@ def makeFigure():
     weight, factors, projs = openPf2(rank, "Thomson")
 
     plotFactors(factors, data, ax[0:3], reorder=(0, 2), trim=(2,), saveGenes=False)
-    plotWeight(weight, ax[4])
+    plotWeight(weight, ax[3])
 
     # plotCV(data, rank+3, trainPerc=0.75, ax=ax[2])
     # plotR2X(data, rank+3, ax=ax[3])

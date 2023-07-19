@@ -464,6 +464,7 @@ def plotCellCount(dataDF, ax):
 def plotWeight(weight, ax):
     """Plots weights from Pf2 model"""
     df = pd.DataFrame(data=np.transpose([weight]), columns=["Value"])
+    df["Value"] = df["Value"]/np.max(df["Value"])
     df["Component"] = [f"Cmp. {i}" for i in np.arange(1, len(weight) + 1)]
     sns.barplot(data=df, x="Component", y="Value", ax=ax)
     ax.tick_params(axis="x", rotation=90)
