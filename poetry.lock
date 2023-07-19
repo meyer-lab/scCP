@@ -4376,7 +4376,7 @@ test = ["coverage", "pytest", "pytest-cov"]
 [[package]]
 name = "umap-learn"
 version = "0.5.3"
-description = ""
+description = "Uniform Manifold Approximation and Projection"
 optional = false
 python-versions = "*"
 files = []
