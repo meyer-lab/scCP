@@ -44,15 +44,16 @@ def makeFigure():
     # pc = PCA(n_components=rank)
     # pcaPoints = pc.fit_transform(data.unfold())
     # pcaPoints = umap.UMAP(random_state=1).fit(pcaPoints)
-    cd4 =  ["IL7R", "CCR7"]
+    cd4 =  ["IL7R"]
     cd8 =  ["CD8A", "CD8B"] 
-    nk =  ["GNLY", "NKG7", "KLRB1"] 
+    nk =  ["GNLY", "NKG7"] 
     mono1 =   ["CD14", "LYZ", "MS4A7"]
     mono2 = ["FCGR3A", "CST3"] 
-    megakary = ["PPBP"]
+    dc = ["CCR7", "HLA-DQA1", "GPR183"]
     b = ["MS4A1", "CD79A"]
     
-    plotGeneUMAP(np.concatenate((cd4, cd8, nk, mono1, mono2, megakary, b)), "Pf2", pf2Points, dataDF, ax[0:16])
+    
+    plotGeneUMAP(np.concatenate((cd4, cd8, nk, mono1, mono2, dc, b)), "Pf2", pf2Points, dataDF, ax[0:16])
     # plotGeneUMAP(genes, "PCA", pcaPoints, dataDF, ax[2:4])
 
     # Find cells associated with drugs
