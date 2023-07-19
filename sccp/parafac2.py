@@ -29,6 +29,7 @@ def _cmf_reconstruction_error(matrices, factors: list, norm_X_sq, rng=None):
     inner_product = 0
     CtC = C.T @ C
     projections = []
+    projected_X = []
 
     for i, mat in enumerate(matrices):
         if isinstance(B, torch.Tensor):
@@ -45,8 +46,9 @@ def _cmf_reconstruction_error(matrices, factors: list, norm_X_sq, rng=None):
         inner_product += tl.trace(B_i.T @ mat_gpu @ C)
         norm_cmf_sq += tl.sum((B_i.T @ B_i) * CtC)
         projections.append(proj)
+        projected_X.append(proj.T @ mat_gpu)
 
-    return norm_X_sq - 2 * inner_product + norm_cmf_sq, projections
+    return norm_X_sq - 2 * inner_product + norm_cmf_sq, projections, projected_X
 
 
 @torch.inference_mode()
@@ -54,7 +56,7 @@ def parafac2_nd(
     X_in,
     rank: int,
     n_iter_max: int = 200,
-    tol: float = 1e-7,
+    tol: float = 1e-5,
     verbose: bool = False,
     random_state=None,
 ) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray], float]:
@@ -90,18 +92,18 @@ def parafac2_nd(
 
     tq = tqdm(range(n_iter_max), disable=(not verbose), mininterval=2)
     for iter in tq:
-        err, projections = _cmf_reconstruction_error(
+        err, projections, projected_X = _cmf_reconstruction_error(
             X, CP.factors, norm_tensor, rng=rng
         )
         errs.append(tl.to_numpy((err / norm_tensor).cpu()))
 
         # Project tensor slices
-        projected_X = tl.stack([p.T @ torch.tensor(t).cuda().double() for p, t in zip(projections, X)])
+        projected_X = tl.stack(projected_X)
 
         CP = parafac(
             projected_X,
             rank,
-            n_iter_max=2,
+            n_iter_max=10,
             init=CP,
             tol=False,
             normalize_factors=False,
