@@ -15,8 +15,6 @@ from ..parafac2 import parafac2_nd
 import umap
 from sklearn.decomposition import PCA
 
-from cProfile import Profile
-
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
@@ -28,22 +26,13 @@ def makeFigure():
 
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes(offset=1.0)
-
-
-    pf = Profile()
-    pf.enable()
-
-    rank = 20
+    rank = 2
     _, factors, projs, _ = parafac2_nd(
         data,
         rank=rank,
         random_state=1,
-        n_iter_max=20,
         verbose=True,
     )
-
-    pf.disable()
-    pf.dump_stats("profile")
 
     dataDF = flattenData(data)
 
