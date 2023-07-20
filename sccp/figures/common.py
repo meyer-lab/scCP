@@ -224,11 +224,13 @@ def flattenProjs(data, projs):
 
 def plotGeneUMAP(genes, decomp, points, dataDF, axs):
     """Scatterplot of UMAP visualization weighted by gene"""
-    subset = np.random.choice(a=[False, True], size=np.shape(dataDF)[0], p=[.93, .07])
+    subset = np.random.choice(a=[False, True], size=np.shape(dataDF)[0], p=[.95, .05])
+    cmap = sns.color_palette("ch:s=-.2,r=.6", as_cmap=True)
     for i, genez in enumerate(genes):
         geneList = dataDF[genez].to_numpy()
-        psm = plt.pcolormesh([geneList, geneList], cmap=matplotlib.cm.get_cmap('viridis'))
-        plot = umap.plot.points(points, values=geneList, theme='viridis', subset_points= subset, ax=axs[i])
+        
+        psm = plt.pcolormesh([geneList, geneList], cmap=cmap)
+        plot = umap.plot.points(points, values=geneList, cmap=cmap, subset_points= subset, ax=axs[i])
         colorbar= plt.colorbar(psm, ax=plot)
         axs[i].set(
             title=genez + "-" + decomp + "-Based Decomposition",
@@ -240,7 +242,7 @@ def plotGeneUMAP(genes, decomp, points, dataDF, axs):
 
 def plotDrugUMAP(drugs, decomp, totaldrugs, points, axs):
     """Scatterplot of UMAP visualization weighted by condition"""
-    subset = np.random.choice(a=[False, True], size=len(totaldrugs), p=[.93, .07])
+    subset = np.random.choice(a=[False, True], size=len(totaldrugs), p=[.95, .05])
     for i, drugz in enumerate(drugs):
         drugList = np.where(np.asarray(totaldrugs == drugz), drugz, "Other Drugs")
         umap.plot.points(
