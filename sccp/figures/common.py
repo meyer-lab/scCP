@@ -258,45 +258,14 @@ def plotCmpUMAP(cellState, cmp, factors, pf2Points, allP, ax):
     projections for a component and cell state"""
     weightedProjs = allP[:, cellState-1] * factors[1][cellState-1, cmp-1]
     subset = np.random.choice(a=[False, True], size= len(weightedProjs), p=[.95, .05])
-    psm = plt.pcolormesh([weightedProjs, weightedProjs], cmap=matplotlib.cm.get_cmap('viridis'))
-    plot = umap.plot.points(pf2Points, values=weightedProjs, theme='viridis', subset_points= subset, ax=ax)
+    cmap = sns.diverging_palette(240, 10, as_cmap=True)
+    psm = plt.pcolormesh([weightedProjs, weightedProjs], cmap=cmap)
+    plot = umap.plot.points(pf2Points, values=weightedProjs, cmap=cmap, subset_points= subset, ax=ax)
     colorbar= plt.colorbar(psm, ax=plot)
     ax.set(
         ylabel="UMAP2",
         xlabel="UMAP1",
         title="Cell State:" + str(cellState)+"- Component:" + str(cmp))
-    
-def plotCmpUMAPDiv(cellState, cmp, factors, pf2Points, allP, ax):
-    """Scatterplot of UMAP visualization weighted by
-    projections for a component and cell state"""
-    cellSkip = 10 
-    umap1 = pf2Points[::cellSkip, 0]
-    umap2 = pf2Points[::cellSkip, 1]
-    weightedProjs = allP[:, cellState-1] * factors[1][cellState-1, cmp-1]
-    weightedProjs = weightedProjs[::cellSkip]
-    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
-    cmap = sns.diverging_palette(240, 10, as_cmap=True)
-    psm = plt.pcolormesh([[-1, 1],[-1, 1]], cmap=cmap)
-    
-    ax.scatter(
-            umap1,
-            umap2,
-            c=weightedProjs,
-            cmap=cmap,
-            s=0.2,
-        )
-    plt.colorbar(psm, ax=ax)
-    
-    ax.set(
-        ylabel="UMAP2",
-        xlabel="UMAP1",
-        title="Cell State:" + str(cellState)+"- Component:" + str(cmp),
-        xticks=np.linspace(np.min(umap1), np.max(umap1), num=5),
-        yticks=np.linspace(np.min(umap2), np.max(umap2), num=5),
-    )
-    
-    ax.axes.xaxis.set_ticklabels([])
-    ax.axes.yaxis.set_ticklabels([])
 
 
 def plotBatchUMAP(decomp_DF, ax):
