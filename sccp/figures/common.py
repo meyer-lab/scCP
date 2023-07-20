@@ -228,8 +228,8 @@ def plotGeneUMAP(genes, decomp, points, dataDF, axs):
     cmap = sns.color_palette("ch:s=-.2,r=.6", as_cmap=True)
     for i, genez in enumerate(genes):
         geneList = dataDF[genez].to_numpy()
-        
-        psm = plt.pcolormesh([geneList, geneList], cmap=cmap)
+        geneList = geneList / np.max(np.abs(geneList))
+        psm = plt.pcolormesh([[0, 1], [0, 1]], cmap=cmap)
         plot = umap.plot.points(points, values=geneList, cmap=cmap, subset_points= subset, ax=axs[i])
         colorbar= plt.colorbar(psm, ax=plot)
         axs[i].set(
