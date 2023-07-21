@@ -1,3 +1,4 @@
+import os
 from copy import deepcopy
 import torch
 import numpy as np
@@ -59,12 +60,17 @@ def parafac2_nd(
     rank: int,
     n_iter_max: int = 200,
     tol: float = 1e-7,
-    verbose: bool = False,
+    verbose = None,
     random_state=None,
     linesearch=True,
 ) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray], float]:
     r"""The same interface as regular PARAFAC2."""
     rng = np.random.RandomState(random_state)
+
+    # Check if verbose was not set
+    if verbose is None:
+        # Check if this is an automated build
+        verbose = "CI" not in os.environ
 
     acc_pow: float = 2.0  # Extrapolate to the iteration^(1/acc_pow) ahead
     acc_fail: int = 0  # How many times acceleration have failed
