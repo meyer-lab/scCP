@@ -36,11 +36,10 @@ def makeFigure():
 
     # rank = 30
 
-    lupus_tensor, _, group_labs = load_lupus_data(every_n = 10) # don't need to grab cell types here
+    lupus_tensor, _, group_labs = load_lupus_data() # don't need to grab cell types here
     
 
-
-    ranks_to_test = [5,10]
+    ranks_to_test = [35, 40, 45, 55, 65, 75, 80, 90, 100]
 
     results = []
     for rank in ranks_to_test:
@@ -50,7 +49,6 @@ def makeFigure():
               '\n\nPARAFAC2 FITTING: RANK ', str(rank))
         _, factors, _, _ = parafac2_nd(lupus_tensor, 
                                 rank = rank, 
-                                n_iter_max= 20,
                                 random_state = 1, 
                                 verbose=True)
         
@@ -58,8 +56,8 @@ def makeFigure():
         
         # train a logisitic regression model on that rank, using cross validation
 
-        log_reg = LogisticRegression(random_state=0, max_iter = 5000, penalty = 'elasticnet', solver = 'saga')
-        parameters = {'l1_ratio':(0, 0.25, 0.5, 0.75, 1), 'C':[1, 10]} # tune penalty and mixture
+        log_reg = LogisticRegression(random_state=0, max_iter = 5000, penalty = 'l1', solver = 'saga')
+        parameters = {'C':[1, 10, 100, 500, 1000]} # tune penalty and mixture
         grid_search = GridSearchCV(log_reg, parameters)
         grid_search.fit(A_matrix, group_labs.to_numpy())
 
@@ -77,12 +75,14 @@ def makeFigure():
 
     all_results = pd.concat(results, ignore_index = True)
 
+    all_results.to_csv('/home/seanp/scCP-2/sccp/data/logreg_results.csv')
+
     print(all_results)
     print(all_results.describe())
 
     sns.lineplot(data = all_results, 
                  x = 'rank', y = 'mean_test_score', 
-                 hue = 'l1_ratio', style = 'C', 
+                 hue = 'C',
                  palette= 'Set2',
                  ax = ax[0])
     ax[0].set_title('Accuracy by Hyperparameter input')

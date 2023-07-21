@@ -16,12 +16,12 @@ from .common import subplotLabel, getSetup
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((12, 48), (2, 2))  # fig size  # grid size
+    ax, f = getSetup((12, 16), (2, 2))  # fig size  # grid size
 
     # Add subplot labels
     subplotLabel(ax)
 
-    rank = 30
+    rank = 40
 
     (
         lupus_tensor,
@@ -30,7 +30,7 @@ def makeFigure():
     ) = load_lupus_data()  # don't need to grab cell types here
 
     weights, factors, _, _ = parafac2_nd(
-        lupus_tensor, rank=rank, n_iter_max=20, random_state=1, verbose=True
+        lupus_tensor, rank=rank, random_state=1, verbose=True
     )
 
     plotFactors(

@@ -111,7 +111,7 @@ def import_pancreas_all(tensor=True, method=str()):
     return pancreas, methods
 
 
-def load_lupus_data(third_axis="ind_cov", every_n=4):
+def load_lupus_data(third_axis="ind_cov", every_n=1):
     """Import Lupus PBMC dataset.
 
     `third_axis`: 3rd dimension along with to expand data. Defaults to patient (ind_cov)
