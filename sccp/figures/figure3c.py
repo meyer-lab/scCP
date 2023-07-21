@@ -10,7 +10,6 @@ from .common import (
     openPf2
 )
 from ..imports.scRNA import ThompsonXA_SCGenes
-from ..parafac2 import parafac2_nd
 import umap
 from sklearn.decomposition import PCA
 import numpy as np
@@ -32,7 +31,7 @@ def makeFigure():
     dataDF = flattenData(data)
 
     # UMAP dimension reduction
-    pf2Points = umap.UMAP(random_state=1).fit(np.concatenate(projs, axis=0))
+    pf2Points = umap.UMAP(random_state=1).fit(projs)
     
     # Genes for cells
     cd4 =  ["IL7R"]
