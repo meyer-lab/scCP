@@ -29,15 +29,16 @@ def makeFigure():
         row_colors,
     ) = load_lupus_data()  # don't need to grab cell types here
 
-    weights, factors, _, _ = parafac2_nd(
-        lupus_tensor, rank=rank, n_iter_max=20, random_state=1, verbose=True
-    )
 
-    plotFactors(
-        factors, lupus_tensor, ax[0:3], reorder=(0, 2), trim=(2,), row_colors=row_colors
-    )
+    # weights, factors, _, _ = parafac2_nd(
+    #     lupus_tensor, rank=rank, n_iter_max=20, random_state=1, verbose=True
+    # )
 
-    plotWeight(weights, ax[3])
-    ax[3].set_title("Weight of Each Componenet")
+    # plotFactors(
+    #     factors, lupus_tensor, ax[0:3], reorder=(0, 2), trim=(2,), row_colors=row_colors
+    # )
+
+    # plotWeight(weights, ax[3])
+    # ax[3].set_title("Weight of Each Componenet")
 
     return f

@@ -148,6 +148,7 @@ def load_lupus_data(third_axis="ind_cov", every_n=4):
 
     lut = {"SLE": "c", "Healthy": "m"}
     row_colors = status["SLE_status"].map(lut)
+    print(row_colors.values)
 
     assert np.all(np.isfinite(X.X.data))  # this should be true
 

@@ -22,7 +22,7 @@ from sklearn.decomposition import PCA
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((15, 13), (3, 3))
+    ax, f = getSetup((15, 13), (4, 4))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -37,21 +37,26 @@ def makeFigure():
     # UMAP dimension reduction
     pf2Points = umap.UMAP(random_state=1).fit(projs)
 
-    # PCA dimension reduction
-    pc = PCA(n_components=rank)
-    pcaPoints = pc.fit_transform(data.unfold())
-    pcaPoints = umap.UMAP(random_state=1).fit(pcaPoints)
+    # # PCA dimension reduction
+    # pc = PCA(n_components=rank)
+    # pcaPoints = pc.fit_transform(data.unfold())
+    # pcaPoints = umap.UMAP(random_state=1).fit(pcaPoints)
 
-    genes = ["GNLY", "NKG7"]
-    plotGeneUMAP(genes, "Pf2", pf2Points, dataDF, ax[0:2])
-    plotGeneUMAP(genes, "PCA", pcaPoints, dataDF, ax[2:4])
+    # genes = ["GNLY", "NKG7"]
+    # plotGeneUMAP(genes, "Pf2", pf2Points, dataDF, ax[0:2])
+    # plotGeneUMAP(genes, "PCA", pcaPoints, dataDF, ax[2:4])
 
     # Find cells associated with drugs
+    
     drugs = [
-        "Triamcinolone Acetonide",
-        "Alprostadil",
-    ]
-    plotDrugUMAP(drugs, "Pf2", dataDF["Condition"].values, pf2Points, ax[4:6])
-    plotDrugUMAP(drugs, "PCA", dataDF["Condition"].values, pcaPoints, ax[6:8])
+        "Triamcinolone Acetonide", "Loteprednol etabonate",
+        "Alprostadil", "Betamethasone Valerate", "Budesonide", "Meprednisone", 
+        "CTRL1", "CTRL2",  "CTRL3",   "CTRL4",  "CTRL5",   "CTRL6", 
+        "Dexrazoxane HCl (ICRF-187, ADR-529)", "Busulfan", "Pomalidomide", "Mianserin HCl"
+            ]
+    plotDrugUMAP(drugs, "Pf2", dataDF["Condition"].values, pf2Points, ax[0:16])
+    
+
+    # plotDrugUMAP(drugs, "PCA", dataDF["Condition"].values, pcaPoints, ax[6:8])
     
     return f

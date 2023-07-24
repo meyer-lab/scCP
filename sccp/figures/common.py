@@ -132,7 +132,14 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
             yt = yt[ind]
             if i == 0 and not (row_colors is None):
                 row_colors = row_colors[ind]
+                
+        X = X / np.max(np.abs(X))
 
+        if i == 0:
+            vmin=0
+        else:
+            vmin=-1
+        
         sns.heatmap(
                 data=X,
                 xticklabels=xticks,
@@ -140,7 +147,13 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
                 ax=axs[i],
                 center=0,
                 cmap=cmap,
-            )
+                vmin=vmin,
+                vmax=1)
+        
+        
+        # if i == 1 or i==2:
+        #     fig.collections[0].set_clim(np.max(np.abs(X)), -np.max(np.abs(X)))  
+        
 
         if i == 0 and not (row_colors is None):
             # add little boxes to denote SLE/healthy rows
@@ -244,7 +257,7 @@ def plotDrugUMAP(drugs, decomp, totaldrugs, points, axs):
     """Scatterplot of UMAP visualization weighted by condition"""
     subset = np.random.choice(a=[False, True], size=len(totaldrugs), p=[.95, .05])
     for i, drugz in enumerate(drugs):
-        drugList = np.where(np.asarray(totaldrugs == drugz), drugz, "Other Drugs")
+        drugList = np.where(np.asarray(totaldrugs == drugz), drugz, "Z Other Drugs")
         umap.plot.points(
             points, labels=drugList, ax=axs[i], color_key_cmap="tab20", show_legend=True, subset_points=subset)
         axs[i].set(
