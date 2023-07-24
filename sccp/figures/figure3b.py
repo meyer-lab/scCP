@@ -5,7 +5,7 @@ import numpy as np
 import umap
 from .common import subplotLabel, getSetup
 from ..imports.scRNA import ThompsonXA_SCGenes
-from ..parafac2 import parafac2_nd
+from parafac2 import parafac2_nd
 
 
 def makeFigure():
@@ -21,7 +21,6 @@ def makeFigure():
         data,
         rank=rank,
         random_state=1,
-        verbose=True,
     )
 
     # UMAP dimension reduction

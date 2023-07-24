@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.decomposition import PCA
-from .parafac2 import parafac2_nd, Pf2X
+from .parafac2 import Pf2X
+from parafac2 import parafac2_nd
 
 
 def R2X(tensor: Pf2X, rank: int) -> tuple[list[float], np.ndarray]:
@@ -8,7 +9,7 @@ def R2X(tensor: Pf2X, rank: int) -> tuple[list[float], np.ndarray]:
     rank_vec = np.arange(1, rank + 1)
 
     # Collect Pf2 results
-    pf2_error = [parafac2_nd(tensor, rank=r, verbose=True)[3] for r in rank_vec]
+    pf2_error = [parafac2_nd(tensor, rank=r)[3] for r in rank_vec]
 
     # Collect the PCA results
     pc = PCA(n_components=rank)

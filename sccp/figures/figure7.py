@@ -9,10 +9,10 @@ from .common import (
 )
 import numpy as np
 from ..imports.scRNA import import_perturb_RPE
-from ..parafac2 import parafac2_nd
+from parafac2 import parafac2_nd
 import mygene
 import umap
-from ..parafac2 import parafac2_nd
+from parafac2 import parafac2_nd
 from sklearn.decomposition import PCA
 
 
@@ -43,11 +43,10 @@ def makeFigure():
 
     data = X
     # Performing parafac2 on single-cell Xarray
-    rank = 2
+    rank = 40
     _, factors, projs, _ = parafac2_nd(
         X,
         rank=rank,
-        verbose=True,
         random_state=42
     )
 

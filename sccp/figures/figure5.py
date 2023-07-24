@@ -7,7 +7,7 @@ import pandas as pd
 import math
 from .common import subplotLabel, getSetup, plotDistDrug, plotDistGene, plotDistAllDrug, plotDistAllGene
 from ..imports.scRNA import ThompsonXA_SCGenes
-from ..parafac2 import parafac2_nd
+from parafac2 import parafac2_nd
 from sklearn.decomposition import PCA
 from scipy.spatial.distance import pdist
 from ..metric import distDrugDF, distGeneDF, distAllDrugDF, distAllGeneDF
@@ -24,7 +24,7 @@ def makeFigure():
 
     ranks = [10, 5, 2]
     
-    Pf2s = [parafac2_nd(data, rank=rank, random_state=1, verbose=True) for rank in ranks]
+    Pf2s = [parafac2_nd(data, rank=rank, random_state=1) for rank in ranks]
     PCs = [PCA(n_components=rank).fit_transform(data.unfold()) for rank in ranks]
     
     drugs = ["Dexrazoxane HCl (ICRF-187, ADR-529)"]

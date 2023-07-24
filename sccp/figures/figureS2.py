@@ -15,7 +15,7 @@ from .common import (
     plotUMAP_ct,
 )
 from ..imports.scRNA import load_lupus_data
-from ..parafac2 import parafac2_nd
+from parafac2 import parafac2_nd
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -58,7 +58,6 @@ def makeFigure():
         data,
         rank=rank,
         random_state=1,
-        verbose=True,
     )
 
     projs = np.concatenate(projs, axis=0)

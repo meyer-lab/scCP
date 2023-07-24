@@ -10,7 +10,7 @@ from .common import (
     plotCellUMAP
 )
 from ..imports.scRNA import import_pancreas
-from ..parafac2 import parafac2_nd
+from parafac2 import parafac2_nd
 import umap
 import scanpy as sc
 import pandas as pd
@@ -33,7 +33,7 @@ def makeFigure():
     pancreas_pf2 = import_pancreas(tensor=True)
     
     rank = 2
-    _, factors, projs, _ = parafac2_nd(pancreas_pf2, rank=rank, random_state=1, verbose=True)
+    _, factors, projs, _ = parafac2_nd(pancreas_pf2, rank=rank, random_state=1)
     dataDF  = flattenData(pancreas_pf2)
 
     # UMAP dimension reduction

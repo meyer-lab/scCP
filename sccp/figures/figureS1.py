@@ -8,7 +8,7 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 
 # load functions/modules ----
 from .common import subplotLabel, getSetup, plotFactors, plotWeight
-from ..parafac2 import parafac2_nd
+from parafac2 import parafac2_nd
 from ..imports.scRNA import load_lupus_data
 from .common import subplotLabel, getSetup
 
@@ -30,7 +30,7 @@ def makeFigure():
     ) = load_lupus_data()  # don't need to grab cell types here
 
     weights, factors, _, _ = parafac2_nd(
-        lupus_tensor, rank=rank, random_state=1, verbose=True
+        lupus_tensor, rank=rank, n_iter_max=20, random_state=1
     )
 
     plotFactors(

@@ -10,10 +10,10 @@ from .common import (
 )
 import numpy as np
 from ..imports.scRNA import import_perturb_RPE
-from ..parafac2 import parafac2_nd
+from parafac2 import parafac2_nd
 import seaborn as sns
 import mygene
-from ..parafac2 import parafac2_nd
+from parafac2 import parafac2_nd
 import umap
 from sklearn.decomposition import PCA
 import numpy as np
@@ -50,7 +50,6 @@ def makeFigure():
     _, factors, projs, _ = parafac2_nd(
         X,
         rank=24,
-        verbose=True,
         random_state=1,
     )
 
