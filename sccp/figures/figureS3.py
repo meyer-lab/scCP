@@ -16,8 +16,7 @@ from ..imports.scRNA import load_lupus_data
 import pandas as pd
 import numpy as np
 import seaborn as sns
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import GridSearchCV
+from sklearn.linear_model import LogisticRegressionCV
 import matplotlib
 
 # want to be able to see the different linetypes for this figure
@@ -39,7 +38,7 @@ def makeFigure():
     lupus_tensor, _, group_labs = load_lupus_data() # don't need to grab cell types here
     
 
-    ranks_to_test = [35, 40, 45, 55, 65, 75, 80, 90, 100]
+    ranks_to_test = list(range(39,40))
 
     results = []
     for rank in ranks_to_test:
@@ -56,20 +55,30 @@ def makeFigure():
         
         # train a logisitic regression model on that rank, using cross validation
 
-        log_reg = LogisticRegression(random_state=0, max_iter = 5000, penalty = 'l1', solver = 'saga')
-        parameters = {'C':[1, 10, 100, 500, 1000]} # tune penalty and mixture
-        grid_search = GridSearchCV(log_reg, parameters)
-        grid_search.fit(A_matrix, group_labs.to_numpy())
+        log_reg = LogisticRegressionCV(random_state=0, max_iter = 5000, penalty = 'l1', solver = 'saga',
+                                       Cs = [2, 10, 20, 30, 50, 100, 150, 200, 1000])
+        log_fit = log_reg.fit(A_matrix, group_labs.to_numpy())
+
+        acc_scores = pd.DataFrame(pd.DataFrame(log_fit.scores_.get('SLE')).mean()).rename(columns = {0: "accuracy"})
+        print(acc_scores)
+        c_vals = pd.DataFrame(log_fit.Cs_).rename(columns = {0: "penalty"})
+        print(c_vals)
+
+        acc_w_c = acc_scores.merge(c_vals, left_index = True, right_index = True)
+        print(acc_w_c)
+
+
+        #print(log_fit.Cs_)
 
         # grab fit results as a pandas dataframe, indicate which rank these are from
-        initial_results = pd.DataFrame(grid_search.cv_results_)[['params', 'mean_test_score']]
+        initial_results = pd.DataFrame(acc_w_c)
         initial_results['rank'] = rank
 
         # expand dictionary (params) into two columns
-        results_expanded = initial_results.drop(columns = 'params').join(pd.DataFrame(initial_results['params'].values.tolist(), index=initial_results.index))
+        #results_expanded = initial_results.drop(columns = 'params').join(pd.DataFrame(initial_results['params'].values.tolist(), index=initial_results.index))
 
         # save best results into results list
-        results.append(results_expanded)
+        results.append(initial_results)
 
     # concatenate all the results into one frame for viewing:
 
@@ -81,11 +90,11 @@ def makeFigure():
     print(all_results.describe())
 
     sns.lineplot(data = all_results, 
-                 x = 'rank', y = 'mean_test_score', 
-                 hue = 'C',
+                 x = 'rank', y = 'accuracy', 
+                 hue = 'penalty',
                  palette= 'Set2',
                  ax = ax[0])
     ax[0].set_title('Accuracy by Hyperparameter input')
-    ax[0].legend(loc='upper left')
+    #ax[0].legend(loc='upper left')
 
     return f
