@@ -31,22 +31,35 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    _, _, group_labs = load_lupus_data() 
+    lupus_tensor, _, group_labs = load_lupus_data(give_batch=True) 
 
+    patients = lupus_tensor.condition_labels
     
-
     _, factors, _, = openPf2(rank = 39, dataName = 'lupus')
 
         
-    A_matrix = factors[0] 
+    A_matrix = pd.DataFrame(factors[0], 
+                            index = patients,
+                            columns = [f"comp_{i}" for i in np.arange(1, 40)])
     
-    # SPLIT DATA INTO TEST/TRAIN
+    comps_w_sle_status = A_matrix.merge(group_labs, left_index=True, right_index=True)
 
-    cmp_train, cmp_test, y_train, y_test = train_test_split(A_matrix, group_labs.to_numpy(), 
-                                                            stratify=group_labs.to_numpy(),
-                                                            test_size = 0.75,
-                                                            random_state=0)
+    cohort_4 = comps_w_sle_status[comps_w_sle_status["Processing_Cohort"] == str(4.0)]
+    cohorts_123 = comps_w_sle_status[comps_w_sle_status["Processing_Cohort"] != str(4.0)]
 
+    cmp_train = cohort_4.loc[:, "comp_1":"comp_39"].to_numpy()
+    y_train = cohort_4.loc[:, "SLE_status"].to_numpy()
+    cmp_test = cohorts_123.loc[:, "comp_1":"comp_39"].to_numpy()
+    y_test = cohorts_123.loc[:, "SLE_status"].to_numpy()
+
+    
+    # SPLIT DATA INTO TEST/TRAIN: want to get 
+
+    #cmp_train, cmp_test, y_train, y_test = train_test_split(A_matrix, group_labs.to_numpy(), 
+    #                                                        stratify=group_labs.to_numpy(),
+    #                                                        test_size = 0.75,
+    #                                                        random_state=0)
+#
  
     # train a logisitic regression model using cross validation
 

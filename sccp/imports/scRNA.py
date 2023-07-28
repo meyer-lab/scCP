@@ -111,7 +111,7 @@ def import_pancreas_all(tensor=True, method=str()):
     return pancreas, methods
 
 
-def load_lupus_data(third_axis="ind_cov", every_n=1):
+def load_lupus_data(third_axis="ind_cov", every_n=1, give_batch = False):
     """Import Lupus PBMC dataset.
 
     `third_axis`: 3rd dimension along with to expand data. Defaults to patient (ind_cov)
@@ -141,13 +141,18 @@ def load_lupus_data(third_axis="ind_cov", every_n=1):
     # get color mapping for patients by SLE status
 
     status = (
-        X.obs[["ind_cov", "SLE_status"]]
+        X.obs[["ind_cov", "SLE_status", "Processing_Cohort"]]
         .sort_values(by="ind_cov")
         .drop_duplicates("ind_cov")
     )
 
     cond_group_labels = status.set_index('ind_cov')['SLE_status']
 
+    cond_group_labels_cohort = status.set_index('ind_cov')[['SLE_status', 'Processing_Cohort']]
+
     assert np.all(np.isfinite(X.X.data))  # this should be true
 
-    return tensorFy(X, third_axis), cell_types, cond_group_labels
+    if give_batch == True:
+        return tensorFy(X, third_axis), cell_types, cond_group_labels_cohort
+    else:
+        return tensorFy(X, third_axis), cell_types, cond_group_labels
