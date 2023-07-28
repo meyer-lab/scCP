@@ -10,7 +10,7 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 from .common import subplotLabel, getSetup, plotFactors, plotWeight
 from parafac2 import parafac2_nd
 from ..imports.scRNA import load_lupus_data
-from .common import subplotLabel, getSetup
+from .common import subplotLabel, getSetup, savePf2
 
 
 def makeFigure():
@@ -21,7 +21,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    rank = 40
+    rank = 20
 
     (
         lupus_tensor,
@@ -29,15 +29,17 @@ def makeFigure():
         group_labs,
     ) = load_lupus_data()  # don't need to grab cell types here
 
-    weights, factors, _, _ = parafac2_nd(
-        lupus_tensor, rank=rank, n_iter_max=20, random_state=1
+    weights, factors, projs, _ = parafac2_nd(
+        lupus_tensor, rank=rank, random_state=1, verbose = True
     )
+
+    savePf2(weights, factors, projs, dataName = "lupus")
 
     plotFactors(
         factors, lupus_tensor, ax[0:3], reorder = (0,2), trim=(2,), cond_group_labels = group_labs
     )
 
     plotWeight(weights, ax[3])
-    ax[3].set_title("Weight of Each Componenet")
+    ax[3].set_title("Weight of Each Component")
 
     return f

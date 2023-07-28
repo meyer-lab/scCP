@@ -13,6 +13,7 @@ from .common import (
     plotCmpUMAP,
     plotCellStateViolins,
     plotUMAP_ct,
+    openPf2
 )
 from ..imports.scRNA import load_lupus_data
 from parafac2 import parafac2_nd
@@ -49,22 +50,17 @@ def makeFigure():
 
     # Import of data
     data, cell_types, _ = load_lupus_data()  # don't need to get patient color mappings
-    rank = 40
-    cellState = 17
-    cmp = 17
+    rank = 39
+    cellState = 11
+    cmp = 11
 
-    # run pf2
-    _, factors, projs, _ = parafac2_nd(
-        data,
-        rank=rank,
-        random_state=1,
-    )
+    _, factors, projs, = openPf2(rank = 39, dataName = 'lupus')
+    print(projs.shape)
+    print(factors[1].shape)
 
-    projs = np.concatenate(projs, axis=0)
+    #projs = np.concatenate(projs, axis=0)
 
     proj_B = projs @ factors[1]
-    print(proj_B)
-    print(proj_B.shape)
 
     # UMAP dimension reduction
     pf2Points = umap.UMAP(random_state=1).fit(projs)

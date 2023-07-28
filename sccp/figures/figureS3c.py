@@ -35,21 +35,21 @@ def makeFigure():
 
     patients = lupus_tensor.condition_labels
     
-    _, factors, _, = openPf2(rank = 39, dataName = 'lupus')
+    _, factors, _, = openPf2(rank = 20, dataName = 'lupus')
 
         
     A_matrix = pd.DataFrame(factors[0], 
                             index = patients,
-                            columns = [f"comp_{i}" for i in np.arange(1, 40)])
+                            columns = [f"comp_{i}" for i in np.arange(1, 21)])
     
     comps_w_sle_status = A_matrix.merge(group_labs, left_index=True, right_index=True)
 
     cohort_4 = comps_w_sle_status[comps_w_sle_status["Processing_Cohort"] == str(4.0)]
     cohorts_123 = comps_w_sle_status[comps_w_sle_status["Processing_Cohort"] != str(4.0)]
 
-    cmp_train = cohort_4.loc[:, "comp_1":"comp_39"].to_numpy()
+    cmp_train = cohort_4.loc[:, "comp_1":"comp_20"].to_numpy()
     y_train = cohort_4.loc[:, "SLE_status"].to_numpy()
-    cmp_test = cohorts_123.loc[:, "comp_1":"comp_39"].to_numpy()
+    cmp_test = cohorts_123.loc[:, "comp_1":"comp_20"].to_numpy()
     y_test = cohorts_123.loc[:, "SLE_status"].to_numpy()
 
     
@@ -65,7 +65,8 @@ def makeFigure():
 
     log_reg = LogisticRegressionCV(random_state=0, max_iter = 5000, penalty = 'l1', solver = 'saga',
                                    scoring = "roc_auc",
-                                    Cs = [2, 10, 20, 30, 50, 100, 150, 200, 1000])
+                                    Cs = [10, 20, 30, 50, 100, 150, 200, 1000])
+
     log_fit = log_reg.fit(cmp_train, y_train)
 
     # get decision function for ROC AUC

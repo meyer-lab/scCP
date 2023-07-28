@@ -9,15 +9,14 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 # load functions/modules ----
 from .common import (
     subplotLabel,
-    getSetup
+    getSetup,
+    openPf2
 )
-from ..parafac2 import parafac2_nd
 from ..imports.scRNA import load_lupus_data
 import pandas as pd
 import numpy as np
 import seaborn as sns
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import GridSearchCV
 import matplotlib
 
 # want to be able to see the different linetypes for this figure
@@ -34,21 +33,18 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    rank = 75
+    rank = 39
 
     lupus_tensor, _, group_labs = load_lupus_data() # don't need to grab cell types here
     
 
-    _, factors, _, _ = parafac2_nd(lupus_tensor, 
-                                rank = rank, 
-                                random_state = 1, 
-                                verbose=True)
+    _, factors, _, = openPf2(rank = 39, dataName = 'lupus')
         
     A_matrix = factors[0]
         
         # train a logisitic regression model on that rank, using cross validation
 
-    log_reg = LogisticRegression(random_state=0, max_iter = 5000, penalty = 'l1', solver = 'saga', C = 500)
+    log_reg = LogisticRegression(random_state=0, max_iter = 5000, penalty = 'l1', solver = 'saga', C = 50)
 
     log_fit = log_reg.fit(A_matrix, group_labs.to_numpy())
 
