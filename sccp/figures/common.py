@@ -17,6 +17,10 @@ from ..decomposition import R2X
 import os
 from os.path import join
 from pandas.plotting import parallel_coordinates as pc
+from parafac2 import parafac2_nd
+from sklearn.linear_model import LogisticRegressionCV, LogisticRegression
+from sklearn.metrics import roc_auc_score, RocCurveDisplay
+
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -466,19 +470,19 @@ def plotUMAP_ct(labels, pf2Points, ax):
         xlabel="UMAP1",
         title="Pf2-Based Decomposition: Label Cell Types")
     
-def plotCellStateViolins(projections, cell_types, cell_state: int, ax):
-    all_cell_projs = pd.DataFrame(projections)
-    cell_state_n = pd.concat([all_cell_projs.iloc[:, (cell_state - 1)], cell_types], axis = 1)
-    cell_state_n.columns.values[0] = "contribution"
+def plotCompViolins(projection_B, cell_types, component: int, ax):
+    all_cell_projs = pd.DataFrame(projection_B)
+    comp_n = pd.concat([all_cell_projs.iloc[:, (component - 1)], cell_types], axis = 1)
+    comp_n.columns.values[0] = "contribution"
 
-    sns.violinplot(data = cell_state_n,
+    sns.violinplot(data = comp_n,
                    x = "cg_cov",
                    y = 'contribution',
                    hue = 'cg_cov',
                    dodge = False,
                    ax = ax)
     
-    ax.set_title('Cell Type Contrib to Cell State ' + str(cell_state))
+    ax.set_title('Cell Type Contrib to Component ' + str(component))
     ax.tick_params(axis="x", rotation=90)
     ax.get_legend().remove()
 
@@ -502,3 +506,106 @@ def openPf2(rank: int, dataName: str):
     projs = np.load(join(path_here, "data/"+dataName+"/"+dataName+"_ProjCmp"+str(rank)+".npy"), allow_pickle=True)
     
     return weight, factors, projs
+
+def testPf2Ranks(pfx2_data, condition_labels, ranks_to_test,
+                 penalty_type = 'l1', solver = 'saga', error_metric = 'accuracy',
+                 penalties_to_test = 10):
+    
+    results = []
+    for rank in ranks_to_test:
+
+        # perform pf2 on the given rank
+        print('########################################################################\n',
+              '########################################################################',
+              '\n\nPARAFAC2 FITTING: RANK ', str(rank))
+        _, factors, _, _ = parafac2_nd(pfx2_data, 
+                                rank = rank, 
+                                random_state = 1, 
+                                verbose=True)
+        
+        A_matrix = factors[0]
+        
+        # train a logisitic regression model on that rank, using cross validation
+
+        log_reg = LogisticRegressionCV(random_state=0, 
+                                       max_iter = 5000, 
+                                       penalty = penalty_type, 
+                                       solver = solver,
+                                       Cs = penalties_to_test,
+                                       scoring = error_metric)
+        
+        log_fit = log_reg.fit(A_matrix, condition_labels.to_numpy())
+
+        acc_scores = pd.DataFrame(pd.DataFrame(log_fit.scores_.get('SLE')).mean()).rename(columns = {0: error_metric})
+        c_vals = pd.DataFrame(log_fit.Cs_).rename(columns = {0: "penalty"})
+
+        acc_w_c = acc_scores.merge(c_vals, left_index = True, right_index = True)
+
+        # grab fit results as a pandas dataframe, indicate which rank these are from
+        initial_results = pd.DataFrame(acc_w_c)
+        initial_results['rank'] = rank
+
+        # save best results into results list
+        results.append(initial_results)
+
+    # concatenate all the results into one frame for viewing:
+
+    return pd.concat(results, ignore_index = True)
+
+def plotPf2RankTest(rank_test_results, ax, error_metric = "accuracy", palette = 'Set2'):
+    sns.lineplot(data = rank_test_results, 
+                 x = 'rank', y = error_metric, 
+                 hue = 'penalty',
+                 palette= 'Set2',
+                 ax = ax)
+    sns.scatterplot(data = rank_test_results,
+                    x = 'rank', y = error_metric,
+                    hue = 'penalty',
+                    palette= palette,
+                    legend=False,
+                    ax = ax)
+    ax.set_title(error_metric + ' by Hyperparameter input')
+
+def plotCmpRegContributions(A_matrix, target, penalty_amt, rank, ax):
+    log_reg = LogisticRegression(random_state=0, max_iter = 5000, penalty = 'l1', solver = 'saga', C = penalty_amt)
+
+    log_fit = log_reg.fit(A_matrix, target)
+
+    coefs = pd.DataFrame(log_fit.densify().coef_,
+                         columns = [f"comp_{i}" for i in np.arange(1, rank + 1)]).melt(var_name = "Component",
+                                                                                       value_name = "Weight")
+    
+    sns.barplot(data = coefs, x = "Component", y = "Weight", color = '#1a759f', ax = ax)
+    ax.tick_params(axis="x", rotation=90)
+    ax.set_title('Weight of Each component in Logsitic Regression')
+
+def plotPf2ROC(A_matrix, conditions, condition_batch_labels, rank, ax, penalties_to_test = 10):
+    
+    A_matrix = pd.DataFrame(A_matrix, 
+                            index = conditions,
+                            columns = [f"comp_{i}" for i in np.arange(1, rank + 1)])
+    comps_w_sle_status = A_matrix.merge(condition_batch_labels, left_index=True, right_index=True)
+    cohort_4 = comps_w_sle_status[comps_w_sle_status["Processing_Cohort"] == str(4.0)]
+    cohorts_123 = comps_w_sle_status[comps_w_sle_status["Processing_Cohort"] != str(4.0)]
+    last_comp = "comp_" + str(rank)
+    cmp_train = cohort_4.loc[:, "comp_1":last_comp].to_numpy()
+    y_train = cohort_4.loc[:, "SLE_status"].to_numpy()
+    cmp_test = cohorts_123.loc[:, "comp_1":last_comp].to_numpy()
+    y_test = cohorts_123.loc[:, "SLE_status"].to_numpy()
+    # train a logisitic regression model using cross validation
+    log_reg = LogisticRegressionCV(random_state=0, max_iter = 10000, penalty = 'l1', solver = 'saga',
+                                   scoring = "roc_auc",
+                                    Cs = penalties_to_test)
+    log_fit = log_reg.fit(cmp_train, y_train)
+
+    # get decision function for ROC AUC
+    sle_decisions = log_fit.decision_function(cmp_test)
+    # validate the ROC AUC of the model
+    roc_auc = roc_auc_score(y_test, sle_decisions)
+    print("The best ROC AUC is: ", roc_auc)
+    RocCurveDisplay.from_predictions(y_test, sle_decisions, 
+                                     pos_label = "SLE",
+                                     plot_chance_level = True,
+                                     ax = ax)
+    
+    ax.set_title('OOS ROC for Cases/Controls: ' + str(rank) + ' Comp LASSO')

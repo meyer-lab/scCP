@@ -6,38 +6,17 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 
 # GOAL: visualize the cell state compostition by cell type/UMAP
 
-import numpy as np
 from .common import (
     subplotLabel,
     getSetup,
     plotCmpUMAP,
-    plotCellStateViolins,
+    plotCompViolins,
     plotUMAP_ct,
     openPf2
 )
 from ..imports.scRNA import load_lupus_data
-from parafac2 import parafac2_nd
-import numpy as np
-import pandas as pd
-import seaborn as sns
 import umap
 from sklearn.decomposition import PCA
-
-def plotCompViolins(projections, cell_types, component: int, ax):
-    all_cell_projs = pd.DataFrame(projections)
-    comp_n = pd.concat([all_cell_projs.iloc[:, (component - 1)], cell_types], axis = 1)
-    comp_n.columns.values[0] = "contribution"
-
-    sns.violinplot(data = comp_n,
-                   x = "cg_cov",
-                   y = 'contribution',
-                   hue = 'cg_cov',
-                   dodge = False,
-                   ax = ax)
-    
-    ax.set_title('Cell Type Contrib to Component ' + str(component))
-    ax.tick_params(axis="x", rotation=90)
-    ax.get_legend().remove()
 
 
 def makeFigure():
@@ -55,20 +34,20 @@ def makeFigure():
     cmp = 11
 
     _, factors, projs, = openPf2(rank = 39, dataName = 'lupus')
-    print(projs.shape)
-    print(factors[1].shape)
 
-    #projs = np.concatenate(projs, axis=0)
 
     proj_B = projs @ factors[1]
+    print('finished matrix multiplication')
 
     # UMAP dimension reduction
     pf2Points = umap.UMAP(random_state=1).fit(projs)
+    print('finished proj UMAP')
 
     # PCA dimension reduction
     pc = PCA(n_components=rank)
     pcaPoints = pc.fit_transform(data.unfold())
     pcaPoints = umap.UMAP(random_state=1).fit(pcaPoints)
+    print('finished PCA umap')
 
     plotUMAP_ct(cell_types, pf2Points, ax[0])
     plotCmpUMAP(cellState, cmp, factors, pf2Points, projs, ax[1])

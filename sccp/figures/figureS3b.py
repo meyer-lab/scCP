@@ -10,17 +10,11 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 from .common import (
     subplotLabel,
     getSetup,
-    openPf2
+    openPf2,
+    plotCmpRegContributions
 )
 from ..imports.scRNA import load_lupus_data
-import pandas as pd
-import numpy as np
-import seaborn as sns
-from sklearn.linear_model import LogisticRegression
-import matplotlib
 
-# want to be able to see the different linetypes for this figure
-matplotlib.rcParams["legend.handlelength"] = 2
 
 
 def makeFigure():
@@ -35,28 +29,14 @@ def makeFigure():
 
     rank = 39
 
-    lupus_tensor, _, group_labs = load_lupus_data() # don't need to grab cell types here
+    _, _, group_labs = load_lupus_data() # don't need to grab cell types here
     
 
-    _, factors, _, = openPf2(rank = 39, dataName = 'lupus')
+    _, factors, _, = openPf2(rank = rank, dataName = 'lupus')
         
     A_matrix = factors[0]
         
-        # train a logisitic regression model on that rank, using cross validation
-
-    log_reg = LogisticRegression(random_state=0, max_iter = 5000, penalty = 'l1', solver = 'saga', C = 50)
-
-    log_fit = log_reg.fit(A_matrix, group_labs.to_numpy())
-
-    coefs = pd.DataFrame(log_fit.densify().coef_,
-                         columns = [f"comp_{i}" for i in np.arange(1, rank + 1)]).melt(var_name = "Component",
-                                                                                       value_name = "Weight")
-    
-    sns.barplot(data = coefs, x = "Component", y = "Weight", color = '#1a759f', ax = ax[0])
-    ax[0].tick_params(axis="x", rotation=90)
-    ax[0].set_title('Weight of Each component in Logsitic Regression')
-    print(coefs)
-    
+    plotCmpRegContributions(A_matrix, group_labs.to_numpy(), 50, rank, ax[0])
 
 
     return f
