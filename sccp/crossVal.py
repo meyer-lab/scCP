@@ -83,9 +83,7 @@ def CrossVal(X, rank: int, trainPerc: float = 0.75):
     rank_vec = np.arange(1, rank + 1)
 
     # Collect Pf2 results
-    cv_pf2_error = [
-        crossvalidate(X.X_list, rank=rank, trainPerc=trainPerc) for r in rank_vec
-    ]
+    cv_pf2_error = [crossvalidate(X.X_list, rank=rank, trainPerc=trainPerc) for r in rank_vec]
     cv_pca_error = crossvalidate_PCA(X.unfold(), rank, trainPerc=trainPerc)
 
     return cv_pf2_error, cv_pca_error

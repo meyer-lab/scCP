@@ -24,17 +24,18 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    methods=["bbknn", "scanorama", "harmony"]
-    ranks = [2]
+    # methods=["bbknn", "scanorama", "harmony"]
+    # ranks = [2]
     pancreas_pf2 = import_pancreas(tensor=True)
     rank = 2
-    _, factors, projs, _ = parafac2_nd(pancreas_pf2, rank=rank, random_state=1)
+    # _, factors, projs, _ = parafac2_nd(pancreas_pf2, rank=rank, random_state=1)
     pancreas = import_pancreas(tensor=False)
-    flatProjs = np.concatenate(projs, axis=0)
-    pancreas.obsm["Pf2"] = flatProjs
+    print(pancreas)
+    # flatProjs = np.concatenate(projs, axis=0)
+    # pancreas.obsm["Pf2"] = flatProjs
 
-    compare_int_methods(methods, flatProjs, ax=ax[0:2])
-    compare_ranks_methods(ranks, ax=ax[2:4])
+    # compare_int_methods(methods, flatProjs, ax=ax[0:2])
+    # compare_ranks_methods(ranks, ax=ax[2:4])
 
     return f
 

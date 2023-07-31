@@ -29,6 +29,7 @@ scanorama = "^1.7.3"
 scvi = "^0.6.8"
 openpyxl = "^3.1.2"
 parafac2 = { git = "https://github.com/meyer-lab/parafac2.git", rev = "02d4655154c54ed447cf3a4f0ea122ffbd392be7" }
+autopep8 = "^2.0.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.3"

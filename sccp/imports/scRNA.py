@@ -55,7 +55,7 @@ def import_thompson_drug() -> anndata.AnnData:
     return data
 
 
-def ThompsonXA_SCGenes(offset: float = 1.0) -> anndata.AnnData:
+def ThompsonXA_SCGenes(tensor=True, offset: float = 1.0) -> anndata.AnnData:
     """Import Thompson lab PBMC dataset."""
     X = import_thompson_drug()
     scalingfactor = 1000
@@ -67,13 +67,13 @@ def ThompsonXA_SCGenes(offset: float = 1.0) -> anndata.AnnData:
 
     # Only operating on the data works because 0 ends up as 0 here
     X.X = np.log10((scalingfactor * X.X) + 1)
-    means = np.mean(X.X, axis=0)
-    cv = np.std(X.X, axis=0) / means
-
-    logmean = np.log10(means + 1e-10)
-    logstd = np.log10(cv + 1e-10)
-
+    
     if offset != 1.0:
+        means = np.mean(X.X, axis=0)
+        cv = np.std(X.X, axis=0) / means
+        logmean = np.log10(means + 1e-10)
+        logstd = np.log10(cv + 1e-10)
+
         slope, intercept, _, _, _ = linregress(logmean, logstd)
 
         above_idx = logstd > logmean * slope + intercept + np.log10(offset)
@@ -83,7 +83,11 @@ def ThompsonXA_SCGenes(offset: float = 1.0) -> anndata.AnnData:
     X.X -= np.mean(X.X, axis=0)
 
     # Assign cells a count per-experiment so we can reindex
-    return tensorFy(X, "Drugs")
+    
+    if tensor:
+        return tensorFy(X, "Drugs")
+    else: 
+        return X
 
 
 def import_pancreas(tensor=True, method=str()):
