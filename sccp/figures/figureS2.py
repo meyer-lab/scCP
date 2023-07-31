@@ -17,6 +17,9 @@ from .common import (
 from ..imports.scRNA import load_lupus_data
 import umap
 from sklearn.decomposition import PCA
+# JUST SO THAT GITHUB CHECK WILL PASS-- USING ACTUAL PF2 NOT OPEN PF2
+# (because projs file is too large to upload to github)
+from parafac2 import parafac2_nd
 
 
 def makeFigure():
@@ -33,21 +36,26 @@ def makeFigure():
     cellState = 11
     cmp = 11
 
-    _, factors, projs, = openPf2(rank = 39, dataName = 'lupus')
+    # WOULD ACTUALLY BE USING THE FOLLOWING:
+    # _, factors, projs, = openPf2(rank = 39, dataName = 'lupus')
 
+    # WILL INSTEAD DO THIS:
+    lupus_tensor, _, _, = load_lupus_data()
+    _, factors, projs, _ = parafac2_nd(
+        lupus_tensor, rank=rank, random_state=1, verbose = True
+    )
+
+    # BACK TO REGULARLY SCHEDULED PROGRAMMING
 
     proj_B = projs @ factors[1]
-    print('finished matrix multiplication')
 
     # UMAP dimension reduction
     pf2Points = umap.UMAP(random_state=1).fit(projs)
-    print('finished proj UMAP')
 
     # PCA dimension reduction
     pc = PCA(n_components=rank)
     pcaPoints = pc.fit_transform(data.unfold())
     pcaPoints = umap.UMAP(random_state=1).fit(pcaPoints)
-    print('finished PCA umap')
 
     plotUMAP_ct(cell_types, pf2Points, ax[0])
     plotCmpUMAP(cellState, cmp, factors, pf2Points, projs, ax[1])
