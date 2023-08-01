@@ -31,31 +31,19 @@ def makeFigure():
     subplotLabel(ax)
 
     # Import of data
-    data, cell_types, _ = load_lupus_data()  # don't need to get patient color mappings
+    _, cell_types, _ = load_lupus_data()  # don't need to get patient color mappings
     rank = 39
     cellState = 11
     cmp = 11
 
-    # WOULD ACTUALLY BE USING THE FOLLOWING:
-    # _, factors, projs, = openPf2(rank = 39, dataName = 'lupus')
+    _, factors, projs, = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
 
-    # WILL INSTEAD DO THIS:
-    lupus_tensor, _, _, = load_lupus_data()
-    _, factors, projs, _ = parafac2_nd(
-        lupus_tensor, rank=rank, random_state=1, verbose = True
-    )
-
-    # BACK TO REGULARLY SCHEDULED PROGRAMMING
 
     proj_B = projs @ factors[1]
 
     # UMAP dimension reduction
     pf2Points = umap.UMAP(random_state=1).fit(projs)
 
-    # PCA dimension reduction
-    pc = PCA(n_components=rank)
-    pcaPoints = pc.fit_transform(data.unfold())
-    pcaPoints = umap.UMAP(random_state=1).fit(pcaPoints)
 
     plotUMAP_ct(cell_types, pf2Points, ax[0])
     plotCmpUMAP(cellState, cmp, factors, pf2Points, projs, ax[1])
