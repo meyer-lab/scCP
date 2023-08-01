@@ -17,10 +17,17 @@ from .common import (
 from ..imports.scRNA import load_lupus_data
 import umap
 from sklearn.decomposition import PCA
-# JUST SO THAT GITHUB CHECK WILL PASS-- USING ACTUAL PF2 NOT OPEN PF2
-# (because projs file is too large to upload to github)
-from parafac2 import parafac2_nd
 
+def plotUMAP_obslabel(labels, pf2Points, ax):
+    """Scatterplot of UMAP visualization labeled by cell type"""
+    plot = umap.plot.points(pf2Points, 
+                            labels = labels, 
+                            theme='viridis', 
+                            ax=ax)
+    ax.set(
+        ylabel="UMAP2",
+        xlabel="UMAP1",
+        title="Pf2-Based Decomposition: Label Cell Types")
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
@@ -31,34 +38,25 @@ def makeFigure():
     subplotLabel(ax)
 
     # Import of data
-    data, cell_types, _ = load_lupus_data()  # don't need to get patient color mappings
+    data, louvain, _ = load_lupus_data(obs_return='louvain')
+    _, status, _ = load_lupus_data(obs_return='Status')
+    _, age, _ = load_lupus_data(obs_return='Age')
     rank = 39
-    cellState = 11
-    cmp = 11
+    cellState = 16
+    cmp = 16
 
-    # WOULD ACTUALLY BE USING THE FOLLOWING:
-    # _, factors, projs, = openPf2(rank = 39, dataName = 'lupus')
+    _, factors, projs, = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
 
-    # WILL INSTEAD DO THIS:
-    lupus_tensor, _, _, = load_lupus_data()
-    _, factors, projs, _ = parafac2_nd(
-        lupus_tensor, rank=rank, random_state=1, verbose = True
-    )
 
-    # BACK TO REGULARLY SCHEDULED PROGRAMMING
-
-    proj_B = projs @ factors[1]
+   # proj_B = projs @ factors[1]
 
     # UMAP dimension reduction
-    pf2Points = umap.UMAP(random_state=1).fit(projs)
+    pf2Points = umap.UMAP(random_state=1, verbose=True).fit(projs)
 
-    # PCA dimension reduction
-    pc = PCA(n_components=rank)
-    pcaPoints = pc.fit_transform(data.unfold())
-    pcaPoints = umap.UMAP(random_state=1).fit(pcaPoints)
 
-    plotUMAP_ct(cell_types, pf2Points, ax[0])
-    plotCmpUMAP(cellState, cmp, factors, pf2Points, projs, ax[1])
-    plotCompViolins(proj_B, cell_types, cmp, ax[2])
+    plotCmpUMAP(cellState, cmp, factors, pf2Points, projs, ax[0])
+    plotUMAP_obslabel(louvain, pf2Points, ax[1])
+    plotUMAP_obslabel(status, pf2Points, ax[2])
+    plotUMAP_obslabel(age, pf2Points, ax[3])
 
     return f

@@ -111,11 +111,12 @@ def import_pancreas_all(tensor=True, method=str()):
     return pancreas, methods
 
 
-def load_lupus_data(third_axis="ind_cov", every_n=1, give_batch = False):
+def load_lupus_data(third_axis="ind_cov", every_n=1, give_batch = False, obs_return = 'cg_cov'):
     """Import Lupus PBMC dataset.
 
     `third_axis`: 3rd dimension along with to expand data. Defaults to patient (ind_cov)
     `every_n`: takes every nth cell to be included. set to 1 to include all data
+    `obs_return`: name observation column to output. defaults to cell type, 'cg_cov'
 
     *NOTE*: This function has three outputs, not one. The first is the data in tensor format,
     the second is a list of cell types compatible with later functions that plot by cell type,
@@ -136,7 +137,7 @@ def load_lupus_data(third_axis="ind_cov", every_n=1, give_batch = False):
     X = X[::every_n, :]
 
     # get cell types -> only stay true if order of cells doesn't change after this
-    cell_types = X.obs["cg_cov"].reset_index(drop=True)
+    obs_column = X.obs[obs_return].reset_index(drop=True)
 
     # get color mapping for patients by SLE status
 
@@ -153,6 +154,6 @@ def load_lupus_data(third_axis="ind_cov", every_n=1, give_batch = False):
     assert np.all(np.isfinite(X.X.data))  # this should be true
 
     if give_batch == True:
-        return tensorFy(X, third_axis), cell_types, cond_group_labels_cohort
+        return tensorFy(X, third_axis), obs_column, cond_group_labels_cohort
     else:
-        return tensorFy(X, third_axis), cell_types, cond_group_labels
+        return tensorFy(X, third_axis), obs_column, cond_group_labels

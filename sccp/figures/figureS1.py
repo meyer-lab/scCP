@@ -7,7 +7,7 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 # GOAL: test Pf2 on lupus data, get visualizations for factor matrices
 
 # load functions/modules ----
-from .common import subplotLabel, getSetup, plotFactors, plotWeight
+from .common import subplotLabel, getSetup, plotFactors, plotWeight, openPf2
 from parafac2 import parafac2_nd
 from ..imports.scRNA import load_lupus_data
 from .common import subplotLabel, getSetup, savePf2
@@ -21,7 +21,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    rank = 20
+    rank = 39
 
     (
         lupus_tensor,
@@ -29,14 +29,15 @@ def makeFigure():
         group_labs,
     ) = load_lupus_data()  # don't need to grab cell types here
 
-    weights, factors, projs, _ = parafac2_nd(
-        lupus_tensor, rank=rank, random_state=1, verbose = True
-    )
+    #weights, factors, projs, _ = parafac2_nd(
+    #    lupus_tensor, rank=rank, random_state=1, verbose = True
+    #)
 
-    savePf2(weights, factors, projs, dataName = "lupus")
+    #savePf2(weights, factors, projs, dataName = "lupus")
+    weights, factors, _ = openPf2(rank = 39, dataName = 'lupus')
 
     plotFactors(
-        factors, lupus_tensor, ax[0:3], reorder = (0,2), trim=(2,), cond_group_labels = group_labs
+        factors, lupus_tensor, ax[0:3], reorder = (0,2), trim=(2,), cond_group_labels = group_labs, saveGenes=True
     )
 
     plotWeight(weights, ax[3])
