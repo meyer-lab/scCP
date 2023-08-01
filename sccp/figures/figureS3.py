@@ -38,6 +38,7 @@ def makeFigure():
 
     results = testPf2Ranks(lupus_tensor, group_labs, ranks_to_test, 
                            penalties_to_test=penalties_to_test)
+    
     plotPf2RankTest(results, ax[0])
 
     return f

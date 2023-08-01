@@ -266,6 +266,7 @@ def plotCmpUMAP(cellState, cmp, factors, pf2Points, allP, ax):
     """Scatterplot of UMAP visualization weighted by
     projections for a component and cell state"""
     weightedProjs = allP[:, cellState-1] * factors[1][cellState-1, cmp-1]
+
     subset = np.random.choice(a=[False, True], size= len(weightedProjs), p=[.95, .05])
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
@@ -471,6 +472,7 @@ def plotUMAP_ct(labels, pf2Points, ax):
         title="Pf2-Based Decomposition: Label Cell Types")
     
 def plotCompViolins(projection_B, cell_types, component: int, ax):
+    """Violin Plots of Proj @ B across some observation variable for a certain component"""
     all_cell_projs = pd.DataFrame(projection_B)
     comp_n = pd.concat([all_cell_projs.iloc[:, (component - 1)], cell_types], axis = 1)
     comp_n.columns.values[0] = "contribution"
@@ -513,6 +515,7 @@ def openPf2(rank: int, dataName: str, optProjs = False):
 def testPf2Ranks(pfx2_data, condition_labels, ranks_to_test,
                  penalty_type = 'l1', solver = 'saga', error_metric = 'accuracy',
                  penalties_to_test = 10):
+    """Tests different Pf2 ranks, outputs different logistic regression performance for each"""
     
     results = []
     for rank in ranks_to_test:
@@ -539,6 +542,7 @@ def testPf2Ranks(pfx2_data, condition_labels, ranks_to_test,
         
         log_fit = log_reg.fit(A_matrix, condition_labels.to_numpy())
 
+        # here, SLE is hardcoded for the lupus dataset
         acc_scores = pd.DataFrame(pd.DataFrame(log_fit.scores_.get('SLE')).mean()).rename(columns = {0: error_metric})
         c_vals = pd.DataFrame(log_fit.Cs_).rename(columns = {0: "penalty"})
 
@@ -556,6 +560,7 @@ def testPf2Ranks(pfx2_data, condition_labels, ranks_to_test,
     return pd.concat(results, ignore_index = True)
 
 def plotPf2RankTest(rank_test_results, ax, error_metric = "accuracy", palette = 'Set2'):
+    """ Plots output from `testPf2Ranks`"""
     sns.lineplot(data = rank_test_results, 
                  x = 'rank', y = error_metric, 
                  hue = 'penalty',
@@ -570,6 +575,7 @@ def plotPf2RankTest(rank_test_results, ax, error_metric = "accuracy", palette = 
     ax.set_title(error_metric + ' by Hyperparameter input')
 
 def plotCmpRegContributions(A_matrix, target, penalty_amt, rank, ax):
+    """Plot weights of each component in logistic regression"""
     log_reg = LogisticRegression(random_state=0, max_iter = 5000, penalty = 'l1', solver = 'saga', C = penalty_amt)
 
     log_fit = log_reg.fit(A_matrix, target)
@@ -583,7 +589,7 @@ def plotCmpRegContributions(A_matrix, target, penalty_amt, rank, ax):
     ax.set_title('Weight of Each component in Logsitic Regression')
 
 def plotPf2ROC(A_matrix, conditions, condition_batch_labels, rank, ax, penalties_to_test = 10):
-    
+    """Plot ROC AUC of model trained with cohort 4 tested with 1,2, and 3"""
     A_matrix = pd.DataFrame(A_matrix, 
                             index = conditions,
                             columns = [f"comp_{i}" for i in np.arange(1, rank + 1)])
