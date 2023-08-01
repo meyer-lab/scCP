@@ -16,10 +16,6 @@ from .common import (
 )
 from ..imports.scRNA import load_lupus_data
 import umap
-from sklearn.decomposition import PCA
-# JUST SO THAT GITHUB CHECK WILL PASS-- USING ACTUAL PF2 NOT OPEN PF2
-# (because projs file is too large to upload to github)
-from parafac2 import parafac2_nd
 
 
 def makeFigure():
