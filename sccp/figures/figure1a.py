@@ -24,16 +24,17 @@ warnings.filterwarnings("ignore")
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8, 4), (2, 4))
+    ax, f = getSetup((8, 4), (1, 2))
 
     # Add subplot labels
     subplotLabel(ax)
 
-    ranks = [30]
+    ranks = [5, 10, 15, 25, 30]
 
-    compare_ranks_methods(ranks, ax=ax[2:4])
+    compare_ranks_methods(ranks, ax=ax[0])
 
     return f
+
 
 
 # def compare_int_methods(methods, projs, ax): 
@@ -63,7 +64,7 @@ def makeFigure():
 
 def compare_ranks_methods(ranks, ax): 
     """Compares all sc methodologies using scib metrics"""
-    metric_df = pd.DataFrame()
+    metric_df = pd.DataFrame([])
     Xtensor = ThompsonXA_SCGenes(tensor=True)
     X = ThompsonXA_SCGenes(tensor=False)
     X.obs["celltype"] = pd.Categorical(np.repeat("X Cells", np.shape(X)[0]))
@@ -92,12 +93,21 @@ def compare_ranks_methods(ranks, ax):
         print(gc)
         print(pcr)
         
-        a
-        # metric_df = pd.concat([metric_df, pd.DataFrame({"Rank": [rank], "ASW": asw, "kBET": kBET})])
+        metric_df = pd.concat([metric_df, pd.DataFrame({"Rank": [rank], "SB": sb, "kBET": kBET,
+                                                       "PCR": pcr, "GC": gc, "iLisi": iLisi},)])
+        
+        
+    
 
     metric_df = metric_df.reset_index(drop=True)
-    sns.lineplot(data=metric_df, x="Rank", y="ASW", ax=ax[0])
-    sns.lineplot(data=metric_df, x="Rank", y="kBET", ax=ax[1])
+    
+                
+    metric_df = pd.melt(metric_df, id_vars=["Rank"], value_vars=["SB", "kBET", "PCR", "GC", "iLisi"]).rename(
+            columns={"variable": "Metric", "value": "Value"})
+    
+    print(metric_df)
+    
+    sns.barplot(data=metric_df, x="Metric", y="Value", hue="Rank", ax=ax)
 
 
 func_dict = {"scanvi": scib.ig.scanvi,
