@@ -29,16 +29,16 @@ def makeFigure():
 
     rank = 39
 
-    lupus_tensor, _, _ = load_lupus_data(give_batch=True) 
+    lupus_tensor, _, _ = load_lupus_data() 
 
     genes = lupus_tensor.variable_labels
     
-    _, factors, _, = openPf2(rank = rank, dataName = 'lupus')
+    _, factors, _, = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
 
     C_matrix = pd.DataFrame(factors[2], columns = [f"comp_{i}" for i in np.arange(1, rank + 1)], index = genes)
 
-    # threshold of 0.25 decided by looking at threshold of 0.01; then chose elbow
-    high_expr16 = C_matrix[C_matrix['comp_16'] > 0.25]['comp_16'].sort_values(ascending=False)
+    # threshold of 0.025 decided by looking at threshold of 0.01; then chose elbow
+    high_expr16 = C_matrix[C_matrix['comp_16'] > 0.025]['comp_16'].sort_values(ascending=False)
 
     #high_expr16 = expr16[expr16['comp_16'] > 0.01]
     print(high_expr16)

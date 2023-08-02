@@ -111,16 +111,17 @@ def import_pancreas_all(tensor=True, method=str()):
     return pancreas, methods
 
 
-def load_lupus_data(third_axis="ind_cov", every_n=1, give_batch = False, obs_return = 'cg_cov'):
+def load_lupus_data(third_axis="ind_cov", every_n=1, obs_return = 'cg_cov', cond_return: str or list = 'SLE_status'):
     """Import Lupus PBMC dataset.
 
     `third_axis`: 3rd dimension along with to expand data. Defaults to patient (ind_cov)
     `every_n`: takes every nth cell to be included. set to 1 to include all data
-    `obs_return`: name observation column to output. defaults to cell type, 'cg_cov'
+    `obs_return`: name observation column to output. defaults to cell type, 'cg_cov'; gives observations for ALL CELLS
+    `cond_return`: name(s) of columns to return with observation data for ALL CONDITIONS
 
     *NOTE*: This function has three outputs, not one. The first is the data in tensor format,
-    the second is a list of cell types compatible with later functions that plot by cell type,
-    and the third is a list of row colors for use coloring factor plot A by SLE status.
+    the second is a list of observation values for each cell,
+    and the third is a list of group labels for each individual.
     """
     X = anndata.read_h5ad("/opt/andrew/lupus/lupus.h5ad")
 
@@ -140,20 +141,22 @@ def load_lupus_data(third_axis="ind_cov", every_n=1, give_batch = False, obs_ret
     obs_column = X.obs[obs_return].reset_index(drop=True)
 
     # get color mapping for patients by SLE status
-
-    status = (
-        X.obs[["ind_cov", "SLE_status", "Processing_Cohort"]]
-        .sort_values(by="ind_cov")
-        .drop_duplicates("ind_cov")
-    )
-
-    cond_group_labels = status.set_index('ind_cov')['SLE_status']
-
-    cond_group_labels_cohort = status.set_index('ind_cov')[['SLE_status', 'Processing_Cohort']]
+    if isinstance(cond_return, list): # if input is a list; get a list with ind_cov and take those cols
+        subset_with = sum([["ind_cov"], cond_return], []) # brute force unnesting
+        status = (
+            X.obs[subset_with]
+            .sort_values(by="ind_cov")
+            .drop_duplicates("ind_cov")
+        )
+    else:
+        status = (
+            X.obs[['ind_cov', cond_return]]
+            .sort_values(by="ind_cov")
+            .drop_duplicates("ind_cov")
+        )
+    
+    cond_group_labels = status.set_index('ind_cov')[cond_return]
 
     assert np.all(np.isfinite(X.X.data))  # this should be true
 
-    if give_batch == True:
-        return tensorFy(X, third_axis), obs_column, cond_group_labels_cohort
-    else:
-        return tensorFy(X, third_axis), obs_column, cond_group_labels
+    return tensorFy(X, third_axis), obs_column, cond_group_labels

@@ -10,10 +10,10 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 from .common import (
     subplotLabel,
     getSetup,
-    testPf2Ranks,
     plotPf2RankTest
 )
 from ..imports.scRNA import load_lupus_data
+from ..logisitcReg import testPf2Ranks
 import matplotlib
 
 # want to be able to see the different linetypes for this figure
@@ -30,10 +30,10 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    lupus_tensor, _, group_labs = load_lupus_data() # don't need to grab cell types here
+    lupus_tensor, _, group_labs = load_lupus_data(every_n=10) # leaving in every_n for the github checks
     
 
-    ranks_to_test = [5, 10]
+    ranks_to_test = [2, 3]
     penalties_to_test = [10, 50, 200, 1000]
 
     results = testPf2Ranks(lupus_tensor, group_labs, ranks_to_test, 

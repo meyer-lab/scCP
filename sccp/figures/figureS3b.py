@@ -14,7 +14,7 @@ from .common import (
     plotCmpRegContributions
 )
 from ..imports.scRNA import load_lupus_data
-
+from ..logisitcReg import getCompContribs
 
 
 def makeFigure():
@@ -32,11 +32,12 @@ def makeFigure():
     _, _, group_labs = load_lupus_data() # don't need to grab cell types here
     
 
-    _, factors, _, = openPf2(rank = rank, dataName = 'lupus')
+    _, factors, _, = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
         
     A_matrix = factors[0]
-        
-    plotCmpRegContributions(A_matrix, group_labs.to_numpy(), 50, rank, ax[0])
 
+    contribs = getCompContribs(A_matrix, group_labs.to_numpy(), 50)
+        
+    plotCmpRegContributions(contribs, ax[0])
 
     return f

@@ -10,24 +10,12 @@ from .common import (
     subplotLabel,
     getSetup,
     plotCmpUMAP,
-    plotCompViolins,
-    plotUMAP_ct,
+    plotUMAP_obslabel,
     openPf2
 )
 from ..imports.scRNA import load_lupus_data
 import umap
-from sklearn.decomposition import PCA
-
-def plotUMAP_obslabel(labels, pf2Points, ax):
-    """Scatterplot of UMAP visualization labeled by cell type"""
-    plot = umap.plot.points(pf2Points, 
-                            labels = labels, 
-                            theme='viridis', 
-                            ax=ax)
-    ax.set(
-        ylabel="UMAP2",
-        xlabel="UMAP1",
-        title="Pf2-Based Decomposition: Label Cell Types")
+import pickle
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
@@ -38,25 +26,27 @@ def makeFigure():
     subplotLabel(ax)
 
     # Import of data
-    data, louvain, _ = load_lupus_data(obs_return='louvain')
-    _, status, _ = load_lupus_data(obs_return='Status')
-    _, age, _ = load_lupus_data(obs_return='Age')
+    _, broad_type, _ = load_lupus_data(obs_return='cg_cov')
+    _, lympho_type, _ = load_lupus_data(obs_return='ct_cov')
+    # replace NaN with string
+    lympho_type = lympho_type.cat.add_categories('other').fillna('other')
     rank = 39
-    cellState = 16
-    cmp = 16
+    cmp = 26
 
     _, factors, projs, = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
 
 
-   # proj_B = projs @ factors[1]
-
     # UMAP dimension reduction
     pf2Points = umap.UMAP(random_state=1, verbose=True).fit(projs)
 
+    # IF RUNNING MANY TIMES LOCALLY: CAN PICKLE DUMP AND LOAD
+    #f_name = 'pf2Points_39comp.sav'
+    #pickle.dump(pf2Points, open(f_name, 'wb')) # do this first time; then comment and run load subsequently
+    #pf2Points = pickle.load((open(f_name, 'rb')))
 
-    plotCmpUMAP(cellState, cmp, factors, pf2Points, projs, ax[0])
-    plotUMAP_obslabel(louvain, pf2Points, ax[1])
-    plotUMAP_obslabel(status, pf2Points, ax[2])
-    plotUMAP_obslabel(age, pf2Points, ax[3])
+
+    plotCmpUMAP(cmp, factors, pf2Points, projs, ax[0])
+    plotUMAP_obslabel(broad_type, pf2Points, cmp, ax[1])
+    plotUMAP_obslabel(lympho_type, pf2Points, cmp, ax[2])
 
     return f

@@ -11,10 +11,11 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 from .common import (
     subplotLabel,
     getSetup,
-    openPf2,
-    plotPf2ROC
+    openPf2
 )
 from ..imports.scRNA import load_lupus_data
+from ..logisitcReg import getPf2ROC
+from sklearn.metrics import RocCurveDisplay
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
@@ -28,17 +29,25 @@ def makeFigure():
 
     rank = 39
 
-    lupus_tensor, _, group_labs = load_lupus_data(give_batch=True) 
+    lupus_tensor, _, group_labs = load_lupus_data(cond_return=['SLE_status', 'Processing_Cohort']) 
 
     patients = lupus_tensor.condition_labels
     
-    _, factors, _, = openPf2(rank = rank, dataName = 'lupus')
+    _, factors, _, = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
 
     A_matrix = factors[0]
 
     penalties_to_test = [10, 20, 30, 50, 100, 150, 200, 1000]
 
-    plotPf2ROC(A_matrix, patients, group_labs, rank, ax[0], penalties_to_test= penalties_to_test)
-
+    # get test data, and decisions made by the trained model corresponding to those test data
+    y_test, sle_decisions = getPf2ROC(A_matrix, patients, group_labs, rank, penalties_to_test=penalties_to_test)
+    
+    # make plot of ROC AUC
+    RocCurveDisplay.from_predictions(y_test, sle_decisions, 
+                                     pos_label = "SLE",
+                                     plot_chance_level = True,
+                                     ax = ax[0])
+    
+    ax[0].set_title('OOS ROC for Cases/Controls: ' + str(rank) + ' Component LASSO')
 
     return f

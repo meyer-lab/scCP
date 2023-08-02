@@ -9,14 +9,10 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 from .common import (
     subplotLabel,
     getSetup,
-    plotCmpUMAP,
     plotCompViolins,
-    plotUMAP_ct,
     openPf2
 )
 from ..imports.scRNA import load_lupus_data
-import umap
-from sklearn.decomposition import PCA
 
 
 def makeFigure():
@@ -28,11 +24,9 @@ def makeFigure():
     subplotLabel(ax)
 
     # Import of data
-    _, cell_types, _ = load_lupus_data()  # don't need to get patient color mappings
+    _, cell_types, _ = load_lupus_data()  
     rank = 39
-    #cmp = 7
 
-    # WOULD ACTUALLY BE USING THE FOLLOWING:
     _, factors, projs, = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
 
 
