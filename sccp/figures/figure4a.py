@@ -29,7 +29,8 @@ def makeFigure():
     component = np.copy(cellState)
     
     for i in range(len(cellState)):
-        plotCmpUMAP(cellState[i], component[i], factors, pf2Points, projs, ax[i])
+        #plotCmpUMAP(cellState[i], component[i], factors, pf2Points, projs, ax[i])
+        plotCmpUMAP(component[i], factors, pf2Points, projs, ax[i])
 
     return f
 
