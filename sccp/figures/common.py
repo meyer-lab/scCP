@@ -260,9 +260,41 @@ def plotCmpUMAP(cellState, cmp, factors, pf2Points, allP, ax):
     projections for a component and cell state"""
     weightedProjs = allP @ factors[1]
     weightedProjs = weightedProjs[:, cmp-1]
-    subset = np.random.choice(a=[False, True], size= len(weightedProjs), p=[.95, .05])
+    
+    
+    
+    subset = np.random.choice(a=[False, True], size= len(weightedProjs), p=[.98, .02])
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
+    
+    
+    
+    a = [i for i in weightedProjs if i > 0]
+    b = [i for i in weightedProjs if i < 0]
+    
+    print(len(a))
+    print(np.mean(a))
+    print(len(b))
+    print(np.mean(b))
+    
+    print("Overall", np.mean(weightedProjs))
+    # idx = np.argwhere(weightedProjs<-.2)
+    
+    # print(idx)
+    # print(len(weightedProjs[idx]))
+    
+    # print(np.mean(weightedProjs[idx]))
+    
+    
+    
+    
+    # idx = np.argwhere(weightedProjs>.2)
+    # # print(idx)
+    # print(len(weightedProjs[idx]))
+    # print(np.mean(weightedProjs[idx]))
+    
+    print("MeanOveall", np.mean(weightedProjs))
+    
     psm = plt.pcolormesh([[-1, 1],[-1, 1]], cmap=cmap)
     plot = umap.plot.points(pf2Points, values=weightedProjs, cmap=cmap, subset_points= subset, ax=ax)
     colorbar= plt.colorbar(psm, ax=plot)
