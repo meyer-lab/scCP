@@ -10,7 +10,11 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 import umap.plot
+import os
+from os.path import join
+from pandas.plotting import parallel_coordinates as pc
 
+path_here = os.path.dirname(os.path.dirname(__file__))
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
@@ -64,11 +68,11 @@ def makeFigure():
     idx = df.index[(df["UMAP1"] >= -.75) &
                    (df["UMAP2"] >= 5) & (df["UMAP2"] <= 9.5)].tolist()
     df.loc[idx, "Cell Type"] = "T Cells"
-    
-    # print(df.groupby(["Cell Type"])[0])
-    # print(df.groupby(["Cell Type"]).count())
-    
+
     dataDF["Cell Type"] = df["Cell Type"].values
+    
+    dataDF.to_csv(join(path_here, "data/Thomson/Thomson_DataWCellType.csv"))
+    
     
     
     # # idx = dataDF.index[(dataDF["Condition"] == "CTRL1") & (dataDF["Condition"] == "Triamcinolone Acetonide") ].tolist()
@@ -85,7 +89,7 @@ def makeFigure():
     #         sns.histplot(data=dataDF.loc[dataDF["Condition"] == drug], x="Cell Type", ax=ax[i-30])
     #         ax[i-30].set(title=drug)
     
-    df1 = dataDF[(dataDF["Condition"] == "Triamcinolone Acetonide")]
+    # df1 = dataDF[(dataDF["Condition"] == "Triamcinolone Acetonide")]
     # print(df1.groupby(["Cell Type"]).count())
     # df2 = dataDF[(dataDF["Condition"] == "CTRL1")]
     # print(df2.groupby(["Cell Type"]).count())
@@ -96,9 +100,9 @@ def makeFigure():
     # df4 = dataDF[(dataDF["Condition"] == "CTRL3")]
     # df5 = dataDF[(dataDF["Condition"] == "CTRL4")]
     # df6 = dataDF[(dataDF["Condition"] == "CTRL5")]
-    df7 = dataDF[(dataDF["Condition"] == "CTRL6")]
+    # df7 = dataDF[(dataDF["Condition"] == "CTRL6")]
     
-    dataDF = pd.concat([df1, df7])
+    # dataDF = pd.concat([df1, df7])
     # # dataDF = dataDF[(dataDF["Condition"] == "CTRL1") & (dataDF["Condition"] == "Triamcinolone Acetonide")]
     # print(dataDF)
     # sns.violinplot(data=dataDF, x="CD163", y="Cell Type", hue="Condition", split=True, ax=ax[0])
@@ -107,7 +111,7 @@ def makeFigure():
     
     # sns.violinplot(data=dataDF, x="CD163", y="Cell Type", hue="Condition", split=True, ax=ax[1])
     # ax[1].set_xscale('log')
-    sns.boxplot(data=dataDF, x="CD163", y="Cell Type", hue="Condition", ax=ax[0])
+    # sns.boxplot(data=dataDF, x="CD163", y="Cell Type", hue="Condition", ax=ax[0])
     # sns.violinplot(data=pd.concat([df1, df4]), x="CD163", y="Cell Type", hue="Condition", split=True, ax=ax[2])
     # sns.violinplot(data=pd.concat([df1, df5]), x="CD163", y="Cell Type", hue="Condition", split=True, ax=ax[3])
     # sns.violinplot(data=pd.concat([df1, df6]), x="CD163", y="Cell Type", hue="Condition", split=True, ax=ax[4])
