@@ -247,13 +247,13 @@ def flattenWeightedProjs(data, factors, projs):
 
 def plotGeneUMAP(genes, decomp, points, dataDF, axs):
     """Scatterplot of UMAP visualization weighted by gene"""
-    subset = np.random.choice(a=[False, True], size=np.shape(dataDF)[0], p=[.95, .05])
+    # subset = np.random.choice(a=[False, True], size=np.shape(dataDF)[0], p=[.95, .05])
     cmap = sns.color_palette("ch:s=-.2,r=.6", as_cmap=True)
     for i, genez in enumerate(genes):
         geneList = dataDF[genez].to_numpy()
         geneList = geneList / np.max(np.abs(geneList))
         psm = plt.pcolormesh([[0, 1], [0, 1]], cmap=cmap)
-        plot = umap.plot.points(points, values=geneList, cmap=cmap, subset_points= subset, ax=axs[i])
+        plot = umap.plot.points(points, values=geneList, cmap=cmap, ax=axs[i])
         colorbar= plt.colorbar(psm, ax=plot)
         axs[i].set(
             title=genez + "-" + decomp + "-Based Decomposition",
@@ -265,11 +265,11 @@ def plotGeneUMAP(genes, decomp, points, dataDF, axs):
 
 def plotDrugUMAP(drugs, decomp, totaldrugs, points, axs):
     """Scatterplot of UMAP visualization weighted by condition"""
-    subset = np.random.choice(a=[False, True], size=len(totaldrugs), p=[.95, .05])
+    # subset = np.random.choice(a=[False, True], size=len(totaldrugs), p=[.95, .05])
     for i, drugz in enumerate(drugs):
-        drugList = np.where(np.asarray(totaldrugs == drugz), drugz, "Other Drugs")
+        drugList = np.where(np.asarray(totaldrugs == drugz), drugz, "Z Other Drugs")
         umap.plot.points(
-            points, labels=drugList, ax=axs[i], color_key_cmap="tab20", show_legend=True, subset_points=subset)
+            points, labels=drugList, ax=axs[i], color_key_cmap="tab20", show_legend=True)
         axs[i].set(
             title=decomp + "-Based Decomposition",
         ylabel="UMAP2",
@@ -283,11 +283,11 @@ def plotCmpUMAP(cmp, factors, pf2Points, allP, ax):
     projections for a component and cell state"""
     weightedProjs = allP @ factors[1]
     weightedProjs = weightedProjs[:, cmp-1]
-    subset = np.random.choice(a=[False, True], size= len(weightedProjs), p=[.95, .05])
+    # subset = np.random.choice(a=[False, True], size= len(weightedProjs), p=[.95, .05])
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
     psm = plt.pcolormesh([[-1, 1],[-1, 1]], cmap=cmap)
-    plot = umap.plot.points(pf2Points, values=weightedProjs, cmap=cmap, subset_points= subset, ax=ax)
+    plot = umap.plot.points(pf2Points, values=weightedProjs, cmap=cmap, ax=ax)
     colorbar= plt.colorbar(psm, ax=plot)
     ax.set(
         ylabel="UMAP2",
@@ -520,9 +520,9 @@ def openPf2(rank: int, dataName: str, optProjs = False):
                np.load(join(path_here, "data/"+dataName+"/"+dataName+"_Factor1Cmp"+str(rank)+ ".npy"), allow_pickle=True),
                np.load(join(path_here, "data/"+dataName+"/"+dataName+"_Factor2Cmp"+str(rank)+ ".npy"), allow_pickle=True)]
         
-    if optProjs is False:
+    if optProjs == False:
         projs = np.load(join(path_here, "data/"+dataName+"/"+dataName+"_ProjCmp"+str(rank)+".npy"), allow_pickle=True)
     else:
-        projs = np.load(join(path_here, "/opt/andrew/"+dataName+"/"+dataName+"_ProjCmp"+str(rank)+".npy"), allow_pickle=True)
+        projs = np.load(join(path_here, "/opt/andrew/"+dataName+"/"+dataName+"_ProjCmp"+str(rank)+".npy"))
         
     return weight, factors, projs

@@ -34,22 +34,28 @@ def makeFigure():
 
     # UMAP dimension reduction
     pf2Points = umap.UMAP(random_state=1).fit(projs)
+    # pf2Points = umap.UMAP(random_state=1, n_neighbors=5, min_dist=.01).fit(projs)
 
-    # PCA dimension reduction
-    pc = PCA(n_components=rank)
-    pcaPoints = pc.fit_transform(data.unfold())
-    pcaPoints = umap.UMAP(random_state=1).fit(pcaPoints)
+
+    # # PCA dimension reduction
+    # pc = PCA(n_components=rank)
+    # pcaPoints = pc.fit_transform(data.unfold())
+    # pcaPoints = umap.UMAP(random_state=1).fit(pcaPoints)
 
     genes = ["GNLY", "NKG7"]
     plotGeneUMAP(genes, "Pf2", pf2Points, dataDF, ax[0:2])
-    plotGeneUMAP(genes, "PCA", pcaPoints, dataDF, ax[2:4])
+    # plotGeneUMAP(genes, "PCA", pcaPoints, dataDF, ax[2:4])
 
     # Find cells associated with drugs
-    drugs = [
-        "Triamcinolone Acetonide",
-        "Alprostadil",
-    ]
-    plotDrugUMAP(drugs, "Pf2", dataDF["Condition"].values, pf2Points, ax[4:6])
-    plotDrugUMAP(drugs, "PCA", dataDF["Condition"].values, pcaPoints, ax[6:8])
+    # drugs = [
+    #     "Triamcinolone Acetonide",
+    #     "Budesonide",
+    #     "Loteprednol etabonate",
+    #     "Betamethasone Valerate",
+    #     "Alprostadil",
+    #     "Meprednisone"
+    # ]
+    # plotDrugUMAP(drugs, "Pf2", dataDF["Condition"].values, pf2Points, ax[0:6])
+    # plotDrugUMAP(drugs, "PCA", dataDF["Condition"].values, pcaPoints, ax[6:8])
     
     return f

@@ -22,9 +22,10 @@ def makeFigure():
     weight, factors, projs = openPf2(rank, "Thomson")
     
     # UMAP dimension reduction
-    pf2Points = umap.UMAP(random_state=1).fit(projs)
+    # pf2Points = umap.UMAP(random_state=1).fit(projs)
+    pf2Points = umap.UMAP(random_state=1, n_neighbors=5, min_dist=.01).fit(projs)
 
-    component = np.arange(17, 25, 1) 
+    component = np.arange(9, 17, 1) 
     
     for i in range(len(component)):
         plotCmpUMAP(component[i], factors, pf2Points, projs, ax[i])

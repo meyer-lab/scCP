@@ -11,7 +11,7 @@ from .common import subplotLabel, getSetup, plotFactors, plotWeight
 from parafac2 import parafac2_nd
 from ..imports.scRNA import load_lupus_data
 from .common import subplotLabel, getSetup
-
+import numpy as np
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
@@ -29,9 +29,11 @@ def makeFigure():
         row_colors,
     ) = load_lupus_data()  # don't need to grab cell types here
 
-    weights, factors, _, _ = parafac2_nd(
+    weights, factors, proj, _ = parafac2_nd(
         lupus_tensor, rank=rank, n_iter_max=20, random_state=1
     )
+    
+    print(np.shape(proj))
 
     plotFactors(
         factors, lupus_tensor, ax[0:3], reorder=(0, 2), trim=(2,), row_colors=row_colors
