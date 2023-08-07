@@ -255,7 +255,7 @@ def plotDrugUMAP(drugs, decomp, totaldrugs, points, axs):
     return
 
 
-def plotCmpUMAP(cellState, cmp, factors, pf2Points, allP, ax):
+def plotCmpUMAP(cmp, factors, pf2Points, allP, ax):
     """Scatterplot of UMAP visualization weighted by
     projections for a component and cell state"""
     weightedProjs = allP @ factors[1]
@@ -269,7 +269,7 @@ def plotCmpUMAP(cellState, cmp, factors, pf2Points, allP, ax):
     ax.set(
         ylabel="UMAP2",
         xlabel="UMAP1",
-        title="Cell State:" + str(cellState)+"- Component:" + str(cmp))
+        title="Component:" + str(cmp))
 
 
 def plotBatchUMAP(decomp_DF, ax):
