@@ -49,7 +49,6 @@ def makeFigure():
     
     idx = df.index[(df["UMAP1"] >= 5)].tolist()
     df.loc[idx, "Cell Type"] = "DCs"
-
     
     idx = df.index[(df["UMAP2"] >= 9.5)].tolist()
     df.loc[idx, "Cell Type"] = "B Cells"
@@ -69,9 +68,11 @@ def makeFigure():
                    (df["UMAP2"] >= 5) & (df["UMAP2"] <= 9.5)].tolist()
     df.loc[idx, "Cell Type"] = "T Cells"
 
-    dataDF["Cell Type"] = df["Cell Type"].values
+    dataName="Thomson"
+    np.save(join(path_here, "data/"+dataName+"/"+dataName+"CellTypes.npy"),  df["Cell Type"].values)
+
     
-    dataDF.to_csv(join(path_here, "data/Thomson/Thomson_DataWCellType.csv"))
+    # dataDF.to_csv(join(path_here, "data/Thomson/Thomson_DataWCellType.csv"))
     
     
     
