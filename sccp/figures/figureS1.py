@@ -21,7 +21,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    rank = 39
+    rank = 40
 
     (
         lupus_tensor,
@@ -30,12 +30,12 @@ def makeFigure():
     ) = load_lupus_data()  
 
 
-    #weights, factors, projs, _ = parafac2_nd(
-    #    lupus_tensor, rank=rank, random_state=1, verbose = True
-    #)
+    weights, factors, projs, _ = parafac2_nd(
+        lupus_tensor, rank=rank, random_state=1, verbose = True
+    )
 
-    #savePf2(weights, factors, projs, dataName = "lupus")
-    weights, factors, _ = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
+    savePf2(weights, factors, projs, dataName = "lupus")
+    #weights, factors, _ = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
 
     plotFactors(
         factors, lupus_tensor, ax[0:3], reorder = (0,2), trim=(2,), cond_group_labels = group_labs, saveGenes=True

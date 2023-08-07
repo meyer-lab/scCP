@@ -27,7 +27,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    rank = 39
+    rank = 40
 
     _, _, group_labs = load_lupus_data() # don't need to grab cell types here
     

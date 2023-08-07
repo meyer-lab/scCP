@@ -111,10 +111,10 @@ def import_pancreas_all(tensor=True, method=str()):
     return pancreas, methods
 
 
-def load_lupus_data(third_axis="ind_cov", every_n=1, obs_return = 'cg_cov', cond_return: str or list = 'SLE_status'):
+def load_lupus_data(third_axis='ind_cov_batch_cov', every_n=1, obs_return = 'cg_cov', cond_return: str or list = 'SLE_status'):
     """Import Lupus PBMC dataset.
 
-    `third_axis`: 3rd dimension along with to expand data. Defaults to patient (ind_cov)
+    `third_axis`: 3rd dimension along with to expand data. Defaults to sample ('ind_cov_batch_cov')
     `every_n`: takes every nth cell to be included. set to 1 to include all data
     `obs_return`: name observation column to output. defaults to cell type, 'cg_cov'; gives observations for ALL CELLS
     `cond_return`: name(s) of columns to return with observation data for ALL CONDITIONS
@@ -124,10 +124,13 @@ def load_lupus_data(third_axis="ind_cov", every_n=1, obs_return = 'cg_cov', cond
     and the third is a list of group labels for each individual.
     """
     X = anndata.read_h5ad("/opt/andrew/lupus/lupus.h5ad")
+    # get rid of IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831 (only 3 cells)
+    X = X[X.obs['ind_cov_batch_cov'] != 'IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831']
+
 
     # reorder X so that all of the patients are in alphanumeric order. this is important
     # so that we can steal cell typings at this point
-    obsV = X.obs_vector("ind_cov")
+    obsV = X.obs_vector(third_axis)
     sgUnique, sgIndex = np.unique(obsV, return_inverse=True)
 
     ann_data_objects = [X[sgIndex == sgi, :] for sgi in range(len(sgUnique))]
@@ -142,20 +145,20 @@ def load_lupus_data(third_axis="ind_cov", every_n=1, obs_return = 'cg_cov', cond
 
     # get color mapping for patients by SLE status
     if isinstance(cond_return, list): # if input is a list; get a list with ind_cov and take those cols
-        subset_with = sum([["ind_cov"], cond_return], []) # brute force unnesting
+        subset_with = sum([[third_axis], cond_return], []) # brute force unnesting
         status = (
             X.obs[subset_with]
-            .sort_values(by="ind_cov")
-            .drop_duplicates("ind_cov")
+            .sort_values(by=third_axis)
+            .drop_duplicates()
         )
     else:
         status = (
-            X.obs[['ind_cov', cond_return]]
-            .sort_values(by="ind_cov")
-            .drop_duplicates("ind_cov")
+            X.obs[[third_axis, cond_return]]
+            .sort_values(by=third_axis)
+            .drop_duplicates()
         )
     
-    cond_group_labels = status.set_index('ind_cov')[cond_return]
+    cond_group_labels = status.set_index(third_axis)[cond_return]
 
     assert np.all(np.isfinite(X.X.data))  # this should be true
 

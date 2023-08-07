@@ -18,21 +18,21 @@ from ..imports.scRNA import load_lupus_data
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((15, 13), (3, 2))
+    ax, f = getSetup((15, 13), (2, 2))
 
     # Add subplot labels
     subplotLabel(ax)
 
     # Import of data
     _, cell_types, _ = load_lupus_data()  
-    rank = 39
+    rank = 40
 
     _, factors, projs, = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
 
 
     proj_B = projs @ factors[1]
 
-    comps_to_investigate = [14, 16, 17, 22, 26, 29]
+    comps_to_investigate = [13, 16, 26, 29]
 
     for i in range(len(comps_to_investigate)):
         cmp = comps_to_investigate[i]

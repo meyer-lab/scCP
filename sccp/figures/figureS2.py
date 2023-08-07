@@ -30,8 +30,8 @@ def makeFigure():
     _, lympho_type, _ = load_lupus_data(obs_return='ct_cov')
     # replace NaN with string
     lympho_type = lympho_type.cat.add_categories('other').fillna('other')
-    rank = 39
-    cmp = 26
+    rank = 40
+    cmp = 16
 
     _, factors, projs, = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
 
@@ -40,7 +40,7 @@ def makeFigure():
     pf2Points = umap.UMAP(random_state=1, verbose=True).fit(projs)
 
     # IF RUNNING MANY TIMES LOCALLY: CAN PICKLE DUMP AND LOAD
-    #f_name = 'pf2Points_39comp.sav'
+    #f_name = 'pf2Points_40comp.sav'
     #pickle.dump(pf2Points, open(f_name, 'wb')) # do this first time; then comment and run load subsequently
     #pf2Points = pickle.load((open(f_name, 'rb')))
 

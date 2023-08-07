@@ -30,14 +30,17 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    lupus_tensor, _, group_labs = load_lupus_data(every_n=10) # leaving in every_n for the github checks
+    lupus_tensor, _, group_labs = load_lupus_data(cond_return=['SLE_status', 'ind_cov', 'Processing_Cohort']) # leaving in every_n for the github checks
+    print(group_labs)
     
 
-    ranks_to_test = [2, 3]
-    penalties_to_test = [10, 50, 200, 1000]
+    ranks_to_test = [2, 3] # set to 2,3 for github test
+    penalties_to_test = [10, 25, 50, 100, 200]
 
     results = testPf2Ranks(lupus_tensor, group_labs, ranks_to_test, 
-                           penalties_to_test=penalties_to_test)
+                           penalties_to_test=penalties_to_test,
+                           cv_group='Processing_Cohort')
+    print(results)
     plotPf2RankTest(results, ax[0])
 
     return f
