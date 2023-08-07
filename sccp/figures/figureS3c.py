@@ -27,10 +27,9 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    rank = 39
+    rank = 40
 
     lupus_tensor, _, group_labs = load_lupus_data(cond_return=['SLE_status', 'Processing_Cohort']) 
-
     patients = lupus_tensor.condition_labels
     
     _, factors, _, = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
