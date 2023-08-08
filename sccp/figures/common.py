@@ -394,9 +394,8 @@ def plotPvalGO(GO, geneValue, axs):
 
 def plotLabelAllUMAP(conditions, points, ax):
     """Scatterplot of UMAP visualization weighted by condition or cell type"""
-    subset = np.random.choice(a=[False, True], size=len(conditions), p=[.93, .07])
     umap.plot.points(
-        points, labels=conditions, ax=ax, color_key_cmap="tab20", show_legend=True, subset_points=subset)
+        points, labels=conditions, ax=ax, color_key_cmap="tab20", show_legend=True)
     ax.set(
         title="Pf2-Based Decomposition",
         ylabel="UMAP2",
