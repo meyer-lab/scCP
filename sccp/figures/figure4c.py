@@ -18,7 +18,7 @@ path_here = os.path.dirname(os.path.dirname(__file__))
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((10, 10), (3, 2))
+    ax, f = getSetup((14, 14), (3, 3))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -74,22 +74,24 @@ def makeFigure():
     
     # sns.boxplot(data=df[["CD163", "Cell Type", "Condition"]], x="CD163", y="Cell Type", hue="Condition", ax=ax[2])
     
-    sns.boxplot(data=weightedProjDF, x= "Cmp. 5", y= "Cell Type", ax=ax[0])
+    sns.violinplot(data=weightedProjDF, x= "Cmp. 5", y= "Cell Type", ax=ax[6])
+    sns.boxplot(data=weightedProjDF, x= "Cmp. 5", y= "Cell Type", ax=ax[7])
+    sns.barplot(data=weightedProjDF, x= "Cmp. 5", y= "Cell Type", ax=ax[8])
     
-    # df1 = dataDF[(dataDF["Condition"] == "Triamcinolone Acetonide")]
-    # df2 = dataDF[(dataDF["Condition"] == "CTRL1")]
+    df1 = dataDF[(dataDF["Condition"] == "Triamcinolone Acetonide")]
+    df2 = dataDF[(dataDF["Condition"] == "CTRL1")]
     
-    # df = pd.concat([df1, df2])
+    df = pd.concat([df1, df2])
     
     
-    # sns.boxplot(data=df[["GNLY", "Cell Type", "Condition"]], x="GNLY", y="Cell Type", hue="Condition", ax=ax[0])
-    # sns.boxplot(data=df[["NKG7", "Cell Type", "Condition"]], x="NKG7", y="Cell Type", hue="Condition", ax=ax[1])
+    sns.boxplot(data=df[["GNLY", "Cell Type", "Condition"]], x="GNLY", y="Cell Type", hue="Condition", ax=ax[0])
+    sns.boxplot(data=df[["NKG7", "Cell Type", "Condition"]], x="NKG7", y="Cell Type", hue="Condition", ax=ax[1])
     
-    # sns.barplot(data=df[["GNLY", "Cell Type", "Condition"]], x="GNLY", y="Cell Type", hue="Condition", ax=ax[2])
-    # sns.barplot(data=df[["NKG7", "Cell Type", "Condition"]], x="NKG7", y="Cell Type", hue="Condition", ax=ax[3])
+    sns.barplot(data=df[["GNLY", "Cell Type", "Condition"]], x="GNLY", y="Cell Type", hue="Condition", ax=ax[2])
+    sns.barplot(data=df[["NKG7", "Cell Type", "Condition"]], x="NKG7", y="Cell Type", hue="Condition", ax=ax[3])
     
-    # sns.violinplot(data=df[["GNLY", "Cell Type", "Condition"]], x="GNLY", y="Cell Type", hue="Condition",split=True, ax=ax[4])
-    # sns.violinplot(data=df[["NKG7", "Cell Type", "Condition"]], x="NKG7", y="Cell Type", hue="Condition",split=True, ax=ax[5])
+    sns.violinplot(data=df[["GNLY", "Cell Type", "Condition"]], x="GNLY", y="Cell Type", hue="Condition",split=True, ax=ax[4])
+    sns.violinplot(data=df[["NKG7", "Cell Type", "Condition"]], x="NKG7", y="Cell Type", hue="Condition",split=True, ax=ax[5])
 
     
      
