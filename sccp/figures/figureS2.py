@@ -56,5 +56,6 @@ def makeFigure():
 
     plotUMAP_ct(cell_types, pf2Points, ax[0])
     plotCmpUMAP(cmp, factors, pf2Points, projs, ax[1])
+    plotCellStateViolins(projs, cell_types, cellState, ax[2])
 
     return f
