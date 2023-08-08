@@ -38,6 +38,11 @@ def makeFigure():
         .drop_duplicates("sample_ID")
     )
 
+    # make sure that these two are in the same order
+    bool = status['sample_ID'] == lupus_tensor.condition_labels
+    assert bool.mean() == 1.0
+
+
     lut = {"SLE": "c", "Healthy": "m"}
     row_colors = status["SLE_status"].map(lut)
 
