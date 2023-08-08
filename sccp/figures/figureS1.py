@@ -35,7 +35,6 @@ def makeFigure():
 
     status = (
         obs[["sample_ID", "SLE_status"]]
-        .sort_values(by="sample_ID")
         .drop_duplicates("sample_ID")
     )
 

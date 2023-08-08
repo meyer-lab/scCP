@@ -255,7 +255,7 @@ def plotDrugUMAP(drugs, decomp, totaldrugs, points, axs):
     return
 
 
-def plotCmpUMAP(cellState, cmp, factors, pf2Points, allP, ax):
+def plotCmpUMAP(cmp, factors, pf2Points, allP, ax):
     """Scatterplot of UMAP visualization weighted by
     projections for a component and cell state"""
     weightedProjs = allP @ factors[1]
@@ -269,7 +269,7 @@ def plotCmpUMAP(cellState, cmp, factors, pf2Points, allP, ax):
     ax.set(
         ylabel="UMAP2",
         xlabel="UMAP1",
-        title="Cell State:" + str(cellState)+"- Component:" + str(cmp))
+        title="- Component:" + str(cmp))
 
 
 def plotBatchUMAP(decomp_DF, ax):
@@ -463,22 +463,6 @@ def plotUMAP_ct(labels, pf2Points, ax):
         ylabel="UMAP2",
         xlabel="UMAP1",
         title="Pf2-Based Decomposition: Label Cell Types")
-    
-def plotCellStateViolins(projections, cell_types, cell_state: int, ax):
-    all_cell_projs = pd.DataFrame(projections)
-    cell_state_n = pd.concat([all_cell_projs.iloc[:, (cell_state - 1)], cell_types], axis = 1)
-    cell_state_n.columns.values[0] = "contribution"
-
-    sns.violinplot(data = cell_state_n,
-                   x = "cell_type_broad",
-                   y = 'contribution',
-                   hue = 'cell_type_broad',
-                   dodge = False,
-                   ax = ax)
-    
-    ax.set_title('Cell Type Contrib to Cell State ' + str(cell_state))
-    ax.tick_params(axis="x", rotation=90)
-    ax.get_legend().remove()
 
 
 def savePf2(weight, factors, projs, dataName: str):
