@@ -136,8 +136,6 @@ def load_lupus_data(every_n=1):
 
     """
     X = anndata.read_h5ad("/opt/andrew/lupus/lupus.h5ad")
-    # get rid of IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831 (only 3 cells)
-    X = X[X.obs['ind_cov_batch_cov'] != 'IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831']
 
     # rename columns to make more sense 
     X.obs = X.obs.rename({'batch_cov': 'pool',
@@ -149,7 +147,9 @@ def load_lupus_data(every_n=1):
                           'Sex': 'sex',
                           'pop_cov': 'ancestry',
                           'Status': 'SLE_condition'}, axis = 1)
-
+    
+    # get rid of IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831 (only 3 cells)
+    X = X[X.obs['sample_ID'] != 'IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831']
 
     # reorder X so that all of the patients are in alphanumeric order. this is important
     # so that we can steal cell typings at this point
@@ -165,4 +165,4 @@ def load_lupus_data(every_n=1):
 
     assert np.all(np.isfinite(X.X.data))  # this should be true
 
-    return tensorFy(X, 'ind_cov_batch_cov'), X.obs
+    return tensorFy(X, 'sample_ID'), X.obs

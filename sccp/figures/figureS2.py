@@ -30,21 +30,24 @@ def makeFigure():
     subplotLabel(ax)
 
     # Import of data
-    data, cell_types, _ = load_lupus_data()  # don't need to get patient color mappings
-    rank = 30
-    cellState = 28
-    cmp = 28
+    data, obs = load_lupus_data(every_n=10)  # don't need to get patient color mappings
+    rank = 5
+    cellState = 4
+    cmp = 4
+
+    cell_types = obs["cell_type_broad"].reset_index(drop=True)
 
     # run pf2
     _, factors, projs, _ = parafac2_nd(
         data,
         rank=rank,
+        n_iter_max=10,
         random_state=1,
     )
 
     projs = np.concatenate(projs, axis=0)
     # UMAP dimension reduction
-    pf2Points = umap.UMAP(random_state=1).fit(projs)
+    pf2Points = umap.UMAP(random_state=1, verbose=True).fit(projs)
 
     # PCA dimension reduction
     pc = PCA(n_components=rank)
