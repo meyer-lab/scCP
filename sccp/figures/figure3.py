@@ -20,10 +20,12 @@ from sklearn.decomposition import PCA
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((15, 13), (3, 3))
+    ax, f = getSetup((15, 13), (3, 2))
 
     # Add subplot labels
     subplotLabel(ax)
+
+
 
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes(offset=1.0)
