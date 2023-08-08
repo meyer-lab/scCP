@@ -11,7 +11,6 @@ from .common import (
     subplotLabel,
     getSetup,
     plotCmpUMAP,
-    plotCellStateViolins,
     plotUMAP_ct,
 )
 from ..imports.scRNA import load_lupus_data
@@ -32,7 +31,6 @@ def makeFigure():
     # Import of data
     data, obs = load_lupus_data(every_n=10)  # don't need to get patient color mappings
     rank = 5
-    cellState = 4
     cmp = 4
 
     cell_types = obs["cell_type_broad"].reset_index(drop=True)
@@ -56,6 +54,5 @@ def makeFigure():
 
     plotUMAP_ct(cell_types, pf2Points, ax[0])
     plotCmpUMAP(cmp, factors, pf2Points, projs, ax[1])
-    plotCellStateViolins(projs, cell_types, cellState, ax[2])
 
     return f
