@@ -470,9 +470,9 @@ def plotCellStateViolins(projections, cell_types, cell_state: int, ax):
     cell_state_n.columns.values[0] = "contribution"
 
     sns.violinplot(data = cell_state_n,
-                   x = "cg_cov",
+                   x = "cell_type_broad",
                    y = 'contribution',
-                   hue = 'cg_cov',
+                   hue = 'cell_type_broad',
                    dodge = False,
                    ax = ax)
     
