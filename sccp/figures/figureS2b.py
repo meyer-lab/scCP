@@ -38,7 +38,7 @@ def makeFigure():
 
     print(weightedProjDF)
 
-    comps = ["Cmp. 13", "Cmp. 16", "Cmp. 26", "Cmp. 29"]
+    comps = [13, 16, 26, 29]
     for i, comp in enumerate(comps):
         plotCmpPerCellType(weightedProjDF, comp, ax[i], violins=True)
 
