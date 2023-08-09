@@ -8,9 +8,7 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 
 # load functions/modules ----
 from .common import subplotLabel, getSetup, plotFactors, plotWeight, openPf2
-from parafac2 import parafac2_nd
 from ..imports.scRNA import load_lupus_data
-from .common import subplotLabel, getSetup, savePf2
 
 
 def makeFigure():
@@ -41,11 +39,6 @@ def makeFigure():
 
     group_labs = status.set_index("sample_ID")[group_to_label]
 
-    #weights, factors, projs, _ = parafac2_nd(
-    #    lupus_tensor, rank=rank, random_state=1, verbose = True
-    #)
-
-    #savePf2(weights, factors, projs, dataName = "lupus")
     weights, factors, _ = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
 
     plotFactors(
