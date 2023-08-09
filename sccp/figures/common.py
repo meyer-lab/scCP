@@ -17,6 +17,7 @@ from ..decomposition import R2X
 import os
 from os.path import join
 from pandas.plotting import parallel_coordinates as pc
+import pickle
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -485,6 +486,19 @@ def openPf2(rank: int, dataName: str, optProjs = False):
         projs = np.load(join(path_here, "/opt/andrew/"+dataName+"/"+dataName+"_ProjCmp"+str(rank)+".npy"), allow_pickle=True)
         
     return weight, factors, projs
+
+def saveUMAP(fit_points, rank:int, dataName: str):
+    """Saves UMAP points locally, large files uploaded manually to opt"""
+    f_name = join(path_here, "data/"+dataName+"/"+dataName+"_UMAPCmp"+str(rank)+".sav")
+    pickle.dump(fit_points, open(f_name, 'wb'))
+
+def openUMAP(rank: int, dataName: str, opt = True):
+    """Opens UMAP points for plotting, defaults to using the opt folder (for big files)"""
+    if opt == True:
+        f_name = join(path_here, "/opt/andrew/"+dataName+"/"+dataName+"_UMAPCmp"+str(rank)+".sav")
+    else:
+        f_name = join(path_here, "data/"+dataName+"/"+dataName+"_UMAPCmp"+str(rank)+".sav")
+    return pickle.load((open(f_name, 'rb')))
 
 
 def plotCellTypePerExpCount(dataDF, condition, ax):

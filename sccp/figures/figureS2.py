@@ -11,7 +11,9 @@ from .common import (
     getSetup,
     plotCmpUMAP,
     plotUMAP_obslabel,
-    openPf2
+    openPf2,
+    saveUMAP,
+    openUMAP
 )
 from ..imports.scRNA import load_lupus_data
 import umap
@@ -42,12 +44,7 @@ def makeFigure():
 
 
     # UMAP dimension reduction
-    #pf2Points = umap.UMAP(random_state=1, verbose=True).fit(projs)
-
-    # IF RUNNING MANY TIMES LOCALLY: CAN PICKLE DUMP AND LOAD
-    f_name = 'pf2Points_40comp.sav'
-    #pickle.dump(pf2Points, open(f_name, 'wb')) # do this first time; then comment and run load subsequently
-    pf2Points = pickle.load((open(f_name, 'rb')))
+    pf2Points = openUMAP(40, 'lupus', opt = True)
 
 
     plotCmpUMAP(cmp, factors, pf2Points, projs, ax[0])
