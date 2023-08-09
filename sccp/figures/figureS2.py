@@ -42,16 +42,16 @@ def makeFigure():
 
 
     # UMAP dimension reduction
-    pf2Points = umap.UMAP(random_state=1, verbose=True).fit(projs)
+    #pf2Points = umap.UMAP(random_state=1, verbose=True).fit(projs)
 
     # IF RUNNING MANY TIMES LOCALLY: CAN PICKLE DUMP AND LOAD
-    #f_name = 'pf2Points_40comp.sav'
+    f_name = 'pf2Points_40comp.sav'
     #pickle.dump(pf2Points, open(f_name, 'wb')) # do this first time; then comment and run load subsequently
-    #pf2Points = pickle.load((open(f_name, 'rb')))
+    pf2Points = pickle.load((open(f_name, 'rb')))
 
 
     plotCmpUMAP(cmp, factors, pf2Points, projs, ax[0])
-    plotUMAP_obslabel(broad_type, pf2Points, cmp, ax[1])
-    plotUMAP_obslabel(lympho_type, pf2Points, cmp, ax[2])
+    plotUMAP_obslabel(broad_type, pf2Points, ax[1])
+    plotUMAP_obslabel(lympho_type, pf2Points, ax[2])
 
     return f
