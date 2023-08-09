@@ -12,12 +12,9 @@ from .common import (
     plotCmpUMAP,
     plotUMAP_obslabel,
     openPf2,
-    saveUMAP,
     openUMAP
 )
 from ..imports.scRNA import load_lupus_data
-import umap
-import pickle
 
 
 def makeFigure():
