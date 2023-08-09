@@ -535,3 +535,18 @@ def flattenWeightedProjs(data, factors, projs):
     dataDF["Condition"] = condNames
 
     return dataDF
+
+def plotPf2RankTest(rank_test_results, ax, error_metric = "accuracy", palette = 'Set2'):
+    """Plots results from Pf2 test of various ranks using defined error metric and logistic reg"""
+    sns.lineplot(data = rank_test_results, 
+                 x = 'rank', y = error_metric, 
+                 hue = 'penalty',
+                 palette= 'Set2',
+                 ax = ax)
+    sns.scatterplot(data = rank_test_results,
+                    x = 'rank', y = error_metric,
+                    hue = 'penalty',
+                    palette= palette,
+                    legend=False,
+                    ax = ax)
+    ax.set_title(error_metric + ' by Hyperparameter input')
