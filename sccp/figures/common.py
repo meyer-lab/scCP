@@ -460,6 +460,22 @@ def plotUMAP_ct(labels, pf2Points, ax):
         xlabel="UMAP1",
         title="Pf2-Based Decomposition: Label Cell Types")
 
+def plotCompViolins(projection_B, cell_types, component: int, ax):
+    all_cell_projs = pd.DataFrame(projection_B)
+    comp_n = pd.concat([all_cell_projs.iloc[:, (component - 1)], cell_types], axis = 1)
+    comp_n.columns.values[0] = "contribution"
+
+    sns.violinplot(data = comp_n,
+                   x = str(cell_types.columns[0]),
+                   y = 'contribution',
+                   hue = 'SLE_status',
+                   split = True,
+                   dodge = False,
+                   ax = ax)
+    
+    ax.set_title('Cell Type Contrib to Component ' + str(component))
+    ax.tick_params(axis="x", rotation=90)
+    #ax.get_legend().remove() # helpful when fill is redundant
 
 def savePf2(weight, factors, projs, dataName: str):
     """Saves weight factors and projections for one dataset for a component"""
