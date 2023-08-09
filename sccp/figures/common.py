@@ -267,6 +267,7 @@ def plotCmpUMAP(cmp, factors, pf2Points, allP, ax):
         ylabel="UMAP2",
         xlabel="UMAP1",
         title="Component:" + str(cmp))
+    
 
 
 def plotBatchUMAP(decomp_DF, ax):
@@ -449,16 +450,16 @@ def plotWeight(weight, ax):
     ax.tick_params(axis="x", rotation=90)
 
 
-def plotUMAP_ct(labels, pf2Points, ax):
-    """Scatterplot of UMAP visualization labeled by cell type"""
-    plot = umap.plot.points(pf2Points, 
-                            labels = labels, 
-                            theme='viridis', 
-                            ax=ax)
+def plotUMAP_obslabel(labels, pf2Points, comp_num, ax):
+    """Scatterplot of UMAP visualization labeled by cell type or other obs column"""
+    umap.plot.points(pf2Points, 
+                        labels = labels, 
+                        theme='viridis', 
+                        ax=ax)
     ax.set(
         ylabel="UMAP2",
         xlabel="UMAP1",
-        title="Pf2-Based Decomposition: Label Cell Types")
+        title="Comp " + str(comp_num) + ": Pf2-Based Decomposition")
 
 
 def savePf2(weight, factors, projs, dataName: str):
