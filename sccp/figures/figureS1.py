@@ -22,6 +22,7 @@ def makeFigure():
     subplotLabel(ax)
 
     rank = 40
+    group_to_label = "SLE_status" # group to label on left side of factor A plot
 
     (
         lupus_tensor,
@@ -30,7 +31,7 @@ def makeFigure():
 
 
     status = (
-        obs[["sample_ID", "SLE_status"]]
+        obs[["sample_ID", group_to_label]]
         .drop_duplicates("sample_ID")
     )
 
@@ -38,7 +39,7 @@ def makeFigure():
     bool = status['sample_ID'] == lupus_tensor.condition_labels
     assert bool.mean() == 1.0
 
-    group_labs = status.set_index("sample_ID")["SLE_status"]
+    group_labs = status.set_index("sample_ID")[group_to_label]
 
     #weights, factors, projs, _ = parafac2_nd(
     #    lupus_tensor, rank=rank, random_state=1, verbose = True
