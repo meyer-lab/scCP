@@ -539,7 +539,17 @@ def plotCmpPerCellType(weightedprojs, cmp, ax):
     
 def plotGenePerCellType(data, gene, ax):
     """Boxplot of genes for one across cell types"""
-    sns.boxplot(data=data[[gene, "Cell Type", "Condition"]], x=gene, y="Cell Type", hue="Condition", ax=ax)
+    data=data[[gene, "Cell Type", "Condition"]]
+    sns.boxplot(data, x=gene, y="Cell Type", hue="Condition", ax=ax)
+    counts = pd.DataFrame(data).groupby(['Cell Type', 'Condition']).count().rename({gene: 'count'}, axis = 1).reset_index()
+    num_unique_conditions = counts['Condition'].nunique()
+    for i in range(len(counts['count'])):
+        ax.text(1.08 * float(pd.Series(data[gene]).max()), # x coord  
+                (i - 0.6)/num_unique_conditions, # y coord
+                'n = ' + str(counts['count'][i]), # label
+                color = 'black',
+                verticalalignment = 'top')
+
     
 
 def flattenWeightedProjs(data, factors, projs):
