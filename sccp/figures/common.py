@@ -535,7 +535,7 @@ def plotCmpPerCellType(weightedprojs, cmp, ax, violins = False):
     """Boxplot of weighted projections for one component across cell types"""
     cmpName = "Cmp. "+str(cmp)
     if violins == True:
-        sns.violinplot(data=weightedprojs, x=cmp, y="Cell Type",
+        sns.violinplot(data=weightedprojs, x=cmpName, y="Cell Type",
                         inner=None, linewidth=0, ax=ax)
         for i in range(pd.Series(weightedprojs['Cell Type']).nunique()):
             ax.collections[i].set_alpha(0.4)
