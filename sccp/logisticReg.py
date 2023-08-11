@@ -80,6 +80,18 @@ def testPf2Ranks(pfx2_data, condition_labels_all, ranks_to_test,
 
     return pd.concat(results, ignore_index = True)
 
+def getCompContribs(A_matrix, target, penalty_amt = 50):
+    """Fit logistic regression model, return coefficients of that model"""
+    rank = A_matrix.shape[1]
+    log_reg = LogisticRegression(random_state=0, max_iter = 5000, penalty = 'l1', solver = 'saga', C = penalty_amt)
+
+    log_fit = log_reg.fit(A_matrix, target)
+
+    coefs = pd.DataFrame(log_fit.densify().coef_,
+                         columns = [f"comp_{i}" for i in np.arange(1, rank + 1)]).melt(var_name = "Component",
+                                                                                       value_name = "Weight")
+    return coefs
+
 def getPf2ROC(A_matrix, condition_batch_labels, rank, penalties_to_test = 10):
     """Train a logistic regression model using CV on some cohorts, test on another
     A_matrix: first factor matrix (Pf2 output)
