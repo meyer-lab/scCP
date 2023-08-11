@@ -9,7 +9,8 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 from .common import (
     subplotLabel,
     getSetup,
-    plotCompViolins,
+    plotCmpPerCellType,
+    flattenWeightedProjs,
     openPf2
 )
 from ..imports.scRNA import load_lupus_data
@@ -18,28 +19,27 @@ from ..imports.scRNA import load_lupus_data
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((15, 13), (2, 2))
+    ax, f = getSetup((15, 26), (2, 2))
 
     # Add subplot labels
     subplotLabel(ax)
 
     # Import of data
-    _, obs = load_lupus_data()  
+    lupus_tensor, obs = load_lupus_data()  
     rank = 40
 
     # get cell types
     cell_types = obs[['cell_type_broad', 'SLE_status']].reset_index(drop=True)
-
-
+    print(cell_types)
     _, factors, projs, = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
+    
+    weightedProjDF = flattenWeightedProjs(lupus_tensor, factors, projs)
+    weightedProjDF["Cell Type"] = cell_types["cell_type_broad"].values
 
+    print(weightedProjDF)
 
-    proj_B = projs @ factors[1]
-
-    comps_to_investigate = [13, 16, 26, 29]
-
-    for i in range(len(comps_to_investigate)):
-        cmp = comps_to_investigate[i]
-        plotCompViolins(proj_B, cell_types, cmp, ax[i])
+    comps = ["Cmp. 13", "Cmp. 16", "Cmp. 26", "Cmp. 29"]
+    for i, comp in enumerate(comps):
+        plotCmpPerCellType(weightedProjDF, comp, ax[i], violins=True)
 
     return f

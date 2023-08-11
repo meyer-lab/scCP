@@ -460,23 +460,6 @@ def plotUMAP_ct(labels, pf2Points, ax):
         xlabel="UMAP1",
         title="Pf2-Based Decomposition: Label Cell Types")
 
-def plotCompViolins(projection_B, cell_types, component: int, ax):
-    all_cell_projs = pd.DataFrame(projection_B)
-    comp_n = pd.concat([all_cell_projs.iloc[:, (component - 1)], cell_types], axis = 1)
-    comp_n.columns.values[0] = "contribution"
-
-    sns.violinplot(data = comp_n,
-                   x = str(cell_types.columns[0]),
-                   y = 'contribution',
-                   hue = 'SLE_status',
-                   split = True,
-                   dodge = False,
-                   ax = ax)
-    
-    ax.set_title('Cell Type Contrib to Component ' + str(component))
-    ax.tick_params(axis="x", rotation=90)
-    #ax.get_legend().remove() # helpful when fill is redundant
-
 def savePf2(weight, factors, projs, dataName: str):
     """Saves weight factors and projections for one dataset for a component"""
     rank = len(weight)
@@ -520,8 +503,13 @@ def plotCellTypeUMAP(points, data, ax):
     """Plots UMAP labeled by cell type"""
     umap.plot.points(points, labels=data["Cell Type"].values, ax=ax)
     
-def plotCmpPerCellType(weightedprojs, cmp, ax):
+def plotCmpPerCellType(weightedprojs, cmp, ax, violins = False):
     """Boxplot of weighted projections for one component across cell types"""
+    if violins == True:
+        sns.violinplot(data=weightedprojs, x=cmp, y="Cell Type",
+                        inner=None, linewidth=0, ax=ax)
+        for i in range(pd.Series(weightedprojs['Cell Type']).nunique()):
+            ax.collections[i].set_alpha(0.4)
     sns.boxplot(data=weightedprojs, x=cmp, y="Cell Type", ax=ax)
     
 def plotGenePerCellType(data, gene, ax):
@@ -544,7 +532,7 @@ def flattenWeightedProjs(data, factors, projs):
 
     weightedProjs = projs @ factors[1]
 
-    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs),axis=0)
+    #weightedProjs = weightedProjs / np.max(np.abs(weightedProjs),axis=0)
 
     cmpNames = [f"Cmp. {i}" for i in np.arange(1, weightedProjs.shape[1] + 1)]
     dataDF = pd.DataFrame(data=weightedProjs, columns=cmpNames)
