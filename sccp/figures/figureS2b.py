@@ -30,16 +30,15 @@ def makeFigure():
 
     # get cell types
     cell_types = obs[['cell_type_broad', 'SLE_status']].reset_index(drop=True)
-    print(cell_types)
     _, factors, projs, = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
+
     
     weightedProjDF = flattenWeightedProjs(lupus_tensor, factors, projs)
     weightedProjDF["Cell Type"] = cell_types["cell_type_broad"].values
 
-    print(weightedProjDF)
-
     comps = [13, 16, 26, 29]
     for i, comp in enumerate(comps):
-        plotCmpPerCellType(weightedProjDF, comp, ax[i], violins=True)
+            plotCmpPerCellType(weightedProjDF, comp, ax[i], outliers=False)
+
 
     return f

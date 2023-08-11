@@ -531,15 +531,10 @@ def plotCellTypeUMAP(points, data, ax):
     """Plots UMAP labeled by cell type"""
     umap.plot.points(points, labels=data["Cell Type"].values, ax=ax)
     
-def plotCmpPerCellType(weightedprojs, cmp, ax, violins = False):
+def plotCmpPerCellType(weightedprojs, cmp, ax, outliers = True):
     """Boxplot of weighted projections for one component across cell types"""
     cmpName = "Cmp. "+str(cmp)
-    if violins == True:
-        sns.violinplot(data=weightedprojs, x=cmpName, y="Cell Type",
-                        inner=None, linewidth=0, ax=ax)
-        for i in range(pd.Series(weightedprojs['Cell Type']).nunique()):
-            ax.collections[i].set_alpha(0.4)
-    sns.boxplot(data=weightedprojs[[cmpName, "Cell Type"]], x=cmpName, y="Cell Type", ax=ax)
+    sns.boxplot(data=weightedprojs[[cmpName, "Cell Type"]], x=cmpName, y="Cell Type", showfliers = outliers, ax=ax)
     
 def plotGenePerCellType(data, gene, ax):
     """Boxplot of genes for one across cell types"""
