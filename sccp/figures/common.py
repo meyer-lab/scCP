@@ -272,14 +272,49 @@ def plotCmpUMAP(cmp, factors, pf2Points, allP, ax):
     weightedProjs = allP @ factors[1]
     weightedProjs = weightedProjs[:, cmp-1]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
+
+
+    # subset = np.random.choice(a=[False, True], size=np.shape(weightedProjs)[0], p=[.75, .25])
+    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))    
+    subset = np.random.choice(a=[False, True], size=np.shape(weightedProjs)[0], p=[.9, .1])
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
-    psm = plt.pcolormesh([[-1, 1],[-1, 1]], cmap=cmap)
-    plot = umap.plot.points(pf2Points, values=weightedProjs, cmap=cmap, ax=ax)
+    print(np.max(weightedProjs))
+    print(np.argmax(np.abs(weightedProjs)))
+    print(subset[np.argmax(np.abs(weightedProjs))])
+    subset[np.argmax(np.abs(weightedProjs))] = True
+    print(subset[np.argmax(np.abs(weightedProjs))])
+    
+    psm = plt.pcolormesh([[-1, 1], [-1, 1]], cmap=cmap)
+    plot = umap.plot.points(pf2Points, values=weightedProjs,cmap=cmap, ax=ax)
     colorbar= plt.colorbar(psm, ax=plot)
     ax.set(
         ylabel="UMAP2",
         xlabel="UMAP1",
         title="Component:" + str(cmp))
+    
+
+def plotCmpUMAP2(cmp, factors, pf2Points, allP, ax):
+    """Scatterplot of UMAP visualization weighted by
+    projections for a component and cell state"""
+    weightedProjs = allP @ factors[1]
+    weightedProjs = weightedProjs[:, cmp-1]
+    cmap = sns.diverging_palette(240, 10, as_cmap=True)
+
+    subset = np.random.choice(a=[False, True], size=np.shape(weightedProjs)[0], p=[.5, .5])
+    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
+    print(np.max(weightedProjs))
+    print(np.argmax(np.abs(weightedProjs)))
+    print(subset[np.argmax(np.abs(weightedProjs))])
+    subset[np.argmax(np.abs(weightedProjs))] = True
+    print(subset[np.argmax(np.abs(weightedProjs))])
+    psm = plt.pcolormesh([[-1, 1]], cmap=cmap)
+    plot = umap.plot.points(pf2Points, values=weightedProjs, subset_points=subset,cmap=cmap, ax=ax)
+    colorbar= plt.colorbar(psm, ax=plot)
+    ax.set(
+        ylabel="UMAP2",
+        xlabel="UMAP1",
+        title="Component:" + str(cmp))
+    
     
 
 
@@ -539,7 +574,9 @@ def plotCmpPerCellType(weightedprojs, cmp, ax):
     
 def plotGenePerCellType(data, gene, ax):
     """Boxplot of genes for one across cell types"""
-    sns.boxplot(data=data[[gene, "Cell Type", "Condition"]], x=gene, y="Cell Type", hue="Condition", ax=ax)
+    sns.stripplotplot(data=data[[gene, "Cell Type", "Condition"]], x=gene, y="Cell Type", hue="Condition", ax=ax)
+    # sns.boxplot(data=data[[gene, "Cell Type", "Condition"]], x=gene, y="Cell Type", hue="Condition", ax=ax)
+    # sns.stripplot(data=tips, x="total_bill", y="day", hue="sex", dodge=True)
     
 
 def flattenWeightedProjs(data, factors, projs):
