@@ -11,7 +11,8 @@ import numpy as np
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((25, 25), (4,4))
+    # ax, f = getSetup((25, 25), (4,4))
+    ax, f = getSetup((14, 12), (3, 3))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -29,16 +30,18 @@ def makeFigure():
     
     # UMAP dimension reduction
     pf2Points = umap.UMAP(random_state=1).fit(projs)
-    saveUMAP(pf2Points, rank=30, dataName="Thomoson")
+    # saveUMAP(pf2Points, rank=30, dataName="Thomoson")
     
     # component = np.arange(17, 25, 1) 
     
+    component = [5, 30]
     
     
     
-    # for i in range(len(component)):
-    #     plotCmpUMAP(component[i], factors, pf2Points, projs, ax[2*i])
-    #     plotCmpUMAP2(component[i], factors, pf2Points, projs, ax[(2*i)+1])
+    
+    for i in range(len(component)):
+        # plotCmpUMAP(component[i], factors, pf2Points, projs, ax[2*i])
+        plotCmpUMAP2(component[i], factors, pf2Points, projs, ax[(2*i)+1])
 
     return f
 

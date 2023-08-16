@@ -2,7 +2,7 @@
 Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs
 """
 from .common import (subplotLabel, getSetup, 
-                     plotCmpUMAP, openPf2, 
+                     plotCmpUMAP2, openPf2, 
                      flattenData, flattenWeightedProjs, 
                      plotCellTypeUMAP, plotCmpPerCellType, 
                      plotGenePerCellType)
@@ -12,6 +12,7 @@ import umap
 import os
 from os.path import join
 import pandas as pd
+import numpy as np
 
 import seaborn as sns
 
@@ -34,21 +35,30 @@ def makeFigure():
     rank = 30
     dataDF["Cell Type"] = gateThomsonCells(rank=rank, saveCellTypes=False)
 
-    # _, factors, projs = openPf2(rank, "Thomson")
+    _, factors, projs = openPf2(rank, "Thomson")
     # pf2Points = umap.UMAP(random_state=1).fit(projs)
-    
-    # # plotCellTypeUMAP(pf2Points, dataDF, ax[0])
+
+    # print(np.shape(pf2Points))
+    # plotCellTypeUMAP(pf2Points, dataDF, ax[0])
         
     # weightedProjDF = flattenWeightedProjs(data, factors, projs)
     # weightedProjDF["Cell Type"] = dataDF["Cell Type"].values
     # weightedProjDF.sort_values(by=["Condition", "Cell Type"], inplace=True)
     # dataDF.sort_values(by=["Condition", "Cell Type"], inplace=True)
     
-    # comps = [5, 6]
+    # comps = [5, 30]
     # for i, comp in enumerate(comps):
     #     plotCmpPerCellType(weightedProjDF, comps[i], ax[i+1])
 
-    genes = ["NKG7", "GNLY"]
+#     GNLY
+# GZMB
+# GZMH
+# KLRC2
+# MT1G
+# PRF1
+# MT1H
+# NKG7
+    genes = ["NKG7", "GNLY", "GZMB", "GZMH", "PRF1"]
 #     df = dataDF[(dataDF["Condition"].isin(["Budesonide", "CTRL3"]))]
     
     data = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=genes).rename(
@@ -57,14 +67,14 @@ def makeFigure():
     
     df = data.groupby(["Condition", "Cell Type", "Gene"]).mean()
     
-    print(df)
+    # print(df)
     
 #     .reset_index(name="Mean Expression Across Drugs")
 
 
     
-    
-    sns.stripplot(data=df, x="Gene", y="Value", hue="Cell Type", dodge=True, jitter=False, ax=ax[0])
+    # df = df.rename(columns={"Value": "Average Gene Expression For Drugs"})
+    # sns.stripplot(data=df, x="Gene", y="Average Gene Expression For Drugs", hue="Cell Type", dodge=True, jitter=False, ax=ax[0])
     # for i, gene in enumerate(genes):
     #     plotGenePerCellType(dataDF[(dataDF["Condition"].isin(["Budesonide", "CTRL3"]))], gene, ax[(2*i)+5])
     #     plotGenePerCellType(dataDF[(dataDF["Condition"].isin(["Triamcinolone Acetonide", "CTRL1"]))], gene, ax[(2*i)+6])

@@ -11,8 +11,9 @@ from parafac2 import parafac2_nd
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((18, 16), (2, 2))
+    ax, f = getSetup((10, 12), (2, 2))
 
+# 6 9 and 12 for the heiht and 12 for the width
     # Add subplot labels
     subplotLabel(ax)
 

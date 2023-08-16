@@ -120,6 +120,7 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
             title = "Components by Gene"
 
         X = factors[i]
+        
 
         if i in trim:
             max_weight = np.max(np.abs(X), axis=1)
@@ -134,6 +135,14 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
             yt = yt[ind]
             if i == 0 and not (cond_group_labels is None):
                 cond_group_labels = cond_group_labels[ind]
+                
+        
+        X = X / np.max(np.abs(X))
+
+        if i == 0:
+            vmin=0
+        else:
+            vmin=-1
 
         sns.heatmap(
                 data=X,
@@ -142,7 +151,17 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
                 ax=axs[i],
                 center=0,
                 cmap=cmap,
-            )
+                vmin=vmin,
+                vmax=1)
+
+        # sns.heatmap(
+        #         data=X,
+        #         xticklabels=xticks,
+        #         yticklabels=yt,
+        #         ax=axs[i],
+        #         center=0,
+        #         cmap=cmap,
+        #     )
 
         if i == 0 and not (cond_group_labels is None):
             # add little boxes to denote SLE/healthy rows
@@ -276,7 +295,7 @@ def plotCmpUMAP(cmp, factors, pf2Points, allP, ax):
 
     # subset = np.random.choice(a=[False, True], size=np.shape(weightedProjs)[0], p=[.75, .25])
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))    
-    subset = np.random.choice(a=[False, True], size=np.shape(weightedProjs)[0], p=[.9, .1])
+    subset = np.random.choice(a=[False, True], size=np.shape(weightedProjs)[0], p=[.75, .25])
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
     print(np.max(weightedProjs))
     print(np.argmax(np.abs(weightedProjs)))
@@ -300,7 +319,7 @@ def plotCmpUMAP2(cmp, factors, pf2Points, allP, ax):
     weightedProjs = weightedProjs[:, cmp-1]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
 
-    subset = np.random.choice(a=[False, True], size=np.shape(weightedProjs)[0], p=[.5, .5])
+    subset = np.random.choice(a=[False, True], size=np.shape(weightedProjs)[0], p=[.75, .25])
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
     print(np.max(weightedProjs))
     print(np.argmax(np.abs(weightedProjs)))
@@ -564,13 +583,37 @@ def plotCellTypePerExpPerc(dataDF, condition, ax):
     ax.set(title=condition)
     
 def plotCellTypeUMAP(points, data, ax):
-    """Plots UMAP labeled by cell type"""
-    umap.plot.points(points, labels=data["Cell Type"].values, ax=ax)
+    # """Plots UMAP labeled by cell type"""ef plotCmpUMAP2(cmp, factors, pf2Points, allP, ax):
+    """Scatterplot of UMAP visualization weighted by
+    projections for a component and cell state"""
+    # weightedProjs = allP @ factors[1]
+    # weightedProjs = weightedProjs[:, cmp-1]
+    # cmap = sns.diverging_palette(240, 10, as_cmap=True)
+
+    subset = np.random.choice(a=[False, True], size=len(data["Cell Type"].values), p=[.75, .25])
+    # weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
+    # print(np.max(weightedProjs))
+    # print(np.argmax(np.abs(weightedProjs)))
+    # print(subset[np.argmax(np.abs(weightedProjs))])
+    # subset[np.argmax(np.abs(weightedProjs))] = True
+    # print(subset[np.argmax(np.abs(weightedProjs))])
+    # psm = plt.pcolormesh([[-1, 1]], cmap=cmap)
+    # plot = umap.plot.points(pf2Points, values=weightedProjs, subset_points=subset,cmap=cmap, ax=ax)
+    # colorbar= plt.colorbar(psm, ax=plot)
+
+    
+    
+    
+    umap.plot.points(points, labels=data["Cell Type"].values, subset_points=subset,ax=ax)    
+    ax.set(
+        ylabel="UMAP2",
+        xlabel="UMAP1")
     
 def plotCmpPerCellType(weightedprojs, cmp, ax):
     """Boxplot of weighted projections for one component across cell types"""
     cmpName = "Cmp. "+str(cmp)
-    sns.boxplot(data=weightedprojs[[cmpName, "Cell Type"]], x=cmpName, y="Cell Type", ax=ax)
+    sns.boxplot(data=weightedprojs[[cmpName, "Cell Type"]], x=cmpName, y="Cell Type", showfliers = False, ax=ax)
+    ax.set(xlim=(-.5, .5))
     
 def plotGenePerCellType(data, gene, ax):
     """Boxplot of genes for one across cell types"""
