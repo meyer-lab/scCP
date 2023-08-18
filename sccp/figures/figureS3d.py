@@ -22,8 +22,8 @@ import seaborn as sns
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((12, 6), # fig size
-                     (1, 1) # grid size
+    ax, f = getSetup((8,8), # fig size
+                     (1,1) # grid size
                      )
 
     # Add subplot labels
@@ -54,5 +54,6 @@ def makeFigure():
     print(merged)
 
     sns.scatterplot(data = merged, x = 'Cmp. 13', y = 'Cmp. 26', hue = 'SLE_status')
-
+    #merged['ratio'] = merged['Cmp. 13']/merged['Cmp. 26']
+    #sns.swarmplot(data = merged, y = 'ratio', hue = 'SLE_status')
     return f
