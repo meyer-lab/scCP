@@ -80,17 +80,50 @@ def testPf2Ranks(pfx2_data, condition_labels_all, ranks_to_test,
 
     return pd.concat(results, ignore_index = True)
 
-def getCompContribs(A_matrix, target, penalty_amt = 50):
-    """Fit logistic regression model, return coefficients of that model"""
+def getCompContribs(A_matrix, obs, groups_to_predict: dict, penalty_amt = 50):
+    """Fit logistic regression model, return coefficients of that model
+    This function uses the factor A matrix, observations, and a penalty to fit 
+    logistic regression to estimate the importance of certain factors.
+    The `groups_to_predict` input should be a dictionary, where each key is the name
+    of a column in `obs`, and the entry corresponding with that key is the entry that
+    you would like to predict (i.e., for multiclass models, your output will predict 
+    whether or not something is in your chosen class)
+    """
+
     rank = A_matrix.shape[1]
-    log_reg = LogisticRegression(random_state=0, max_iter = 5000, penalty = 'l1', solver = 'saga', C = penalty_amt)
 
-    log_fit = log_reg.fit(A_matrix, target)
+    contributions = []
+    for group in groups_to_predict:
+        status = (
+                obs[['sample_ID', group]]
+                .drop_duplicates()
+            )
+        
+        # make group binary based on dictionary entry
 
-    coefs = pd.DataFrame(log_fit.densify().coef_,
-                         columns = [f"comp_{i}" for i in np.arange(1, rank + 1)]).melt(var_name = "Component",
-                                                                                       value_name = "Weight")
-    return coefs
+        group_labs = status.set_index('sample_ID')
+
+        group_labs[group] = np.where(group_labs[group] == groups_to_predict.get(group), 
+                                     groups_to_predict.get(group),
+                                     'Not ' + groups_to_predict.get(group))
+
+        group_labs = group_labs[group]
+
+
+        log_reg = LogisticRegression(random_state=0, max_iter = 5000, penalty = 'l1', solver = 'saga', C = penalty_amt)
+
+        log_fit = log_reg.fit(A_matrix, group_labs.to_numpy())
+
+
+        coefs = pd.DataFrame(log_fit.densify().coef_,
+                             columns = [f"comp_{i}" for i in np.arange(1, rank + 1)])
+        
+        coefs = coefs.melt(var_name = "Component", value_name = "Weight")
+        coefs['predicting'] = pd.Series(group_labs.to_numpy()).unique()[0]
+
+        contributions.append(coefs)
+    
+    return pd.concat(contributions, axis=0)
 
 def getPf2ROC(A_matrix, condition_batch_labels, rank, penalties_to_test = 10):
     """Train a logistic regression model using CV on some cohorts, test on another

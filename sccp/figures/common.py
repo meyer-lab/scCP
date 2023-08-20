@@ -581,9 +581,9 @@ def plotPf2RankTest(rank_test_results, ax, error_metric = "accuracy", palette = 
 
 def plotCmpRegContributions(contribs, predicting: str, ax):  
     """Plots weights of components in logistic regression from `getCompContribs`"""
-    sns.barplot(data = contribs, x = "Component", y = "Weight", color = '#1a759f', errorbar=None, ax = ax)
+    sns.barplot(data = contribs, x = "Component", y = "Weight", hue= predicting, errorbar=None, ax = ax)
     ax.tick_params(axis="x", rotation=90)
-    ax.set_title('Weight of Each component in Logsitic Regression: Predicting ' + predicting)
+    ax.set_title('Weight of Each component in Binary Logsitic Regression')
 
 def investigate_comp(comp: int, rank: int, obs, proj_B, obs_column, ax, threshold = 0.05):
     """Makes barplots of the percentages of each observation column (obs_column) that are represented in the top
