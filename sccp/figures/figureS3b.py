@@ -30,7 +30,6 @@ def makeFigure():
     subplotLabel(ax)
 
     rank = 40
-    #groups_to_predict = ["SLE_status", 'ancestry'] # group(s) to predict in logistic regression
 
     _, obs = load_lupus_data() # leaving in every_n for the github checks
 
