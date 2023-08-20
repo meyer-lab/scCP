@@ -610,3 +610,13 @@ def investigate_comp(comp: int, rank: int, obs, proj_B, obs_column, ax, threshol
     sns.barplot(pcts, x = obs_column, y = 'percent', errorbar=None, ax=ax)
     ax.tick_params(axis="x", rotation=90)
     ax.set_title(obs_column + ' Percentages, Threshold: ' + str(threshold) + ' for comp ' + str(comp))
+
+def plot2DSeparationByComp(merged_data, x_y: tuple, hue, ax):
+    """
+    Plots the separation of some observation variable (hue) that is contained in
+    the input merged dataframe across two components, passed as two strings in a tuple (x_y)
+    that denote the names of the columns to be used for the x and y axes.   
+    """
+    sns.scatterplot(data = merged_data, x = x_y[0], y = x_y[1], hue = hue, ax = ax)
+
+

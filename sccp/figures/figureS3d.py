@@ -11,7 +11,8 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 from .common import (
     subplotLabel,
     getSetup,
-    openPf2
+    openPf2,
+    plot2DSeparationByComp
 )
 from ..imports.scRNA import load_lupus_data
 
@@ -22,8 +23,8 @@ import seaborn as sns
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8,8), # fig size
-                     (1,1) # grid size
+    ax, f = getSetup((12,12), # fig size
+                     (2,2) # grid size
                      )
 
     # Add subplot labels
@@ -32,7 +33,7 @@ def makeFigure():
     rank = 40
     group_to_predict = "SLE_status" # group to predict 
 
-    lupus_tensor, obs = load_lupus_data() # leaving in every_n for the github checks
+    lupus_tensor, obs = load_lupus_data() 
 
     group_labs = (
             obs[['sample_ID', group_to_predict]]
@@ -40,20 +41,21 @@ def makeFigure():
         )
 
     group_labs = group_labs.set_index('sample_ID')
-    print(group_labs)
-
 
     _, factors, _, = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
 
     factor_A = pd.DataFrame(factors[0],
                             columns = [f"Cmp. {i}" for i in np.arange(1, rank + 1)],
                             index = lupus_tensor.condition_labels)
-    print(factor_A)
 
     merged = factor_A.merge(group_labs, left_index=True, right_index=True)
-    print(merged)
 
-    sns.scatterplot(data = merged, x = 'Cmp. 13', y = 'Cmp. 26', hue = 'SLE_status')
-    #merged['ratio'] = merged['Cmp. 13']/merged['Cmp. 26']
-    #sns.swarmplot(data = merged, y = 'ratio', hue = 'SLE_status')
+    comps_to_test = [('Cmp. 13', 'Cmp. 26'),
+                     ('Cmp. 32', 'Cmp. 26'),
+                     ('Cmp. 13', 'Cmp. 32'),
+                     ('Cmp. 13', 'Cmp. 29')]
+    
+    for i, pair in enumerate(comps_to_test):
+        plot2DSeparationByComp(merged, pair, group_to_predict, ax[i])
+
     return f
