@@ -119,7 +119,7 @@ def getCompContribs(A_matrix, obs, groups_to_predict: dict, penalty_amt = 50):
                              columns = [f"comp_{i}" for i in np.arange(1, rank + 1)])
         
         coefs = coefs.melt(var_name = "Component", value_name = "Weight")
-        coefs['predicting'] = pd.Series(group_labs.to_numpy()).unique()[0]
+        coefs['target_variable'] = pd.Series(group_labs.to_numpy()).unique()[0]
 
         contributions.append(coefs)
     

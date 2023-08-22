@@ -42,6 +42,6 @@ def makeFigure():
 
     contribs = getCompContribs(A_matrix, obs, groups_to_predict, penalty_amt= 50)
         
-    plotCmpRegContributions(contribs, 'predicting', ax[0])
+    plotCmpRegContributions(contribs, 'target_variable', ax[0])
 
     return f
