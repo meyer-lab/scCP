@@ -14,11 +14,13 @@ import scipy.cluster.hierarchy as sch
 from ..parafac2 import Pf2X
 from ..crossVal import CrossVal
 from ..decomposition import R2X
+from ..geneontology import addGOCol
 import os
 from os.path import join
 from pandas.plotting import parallel_coordinates as pc
 import pickle
 from matplotlib.patches import Patch
+
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -610,3 +612,27 @@ def investigate_comp(comp: int, rank: int, obs, proj_B, obs_column, ax, threshol
     sns.barplot(pcts, x = obs_column, y = 'percent', errorbar=None, ax=ax)
     ax.tick_params(axis="x", rotation=90)
     ax.set_title(obs_column + ' Percentages, Threshold: ' + str(threshold) + ' for comp ' + str(comp))
+
+
+def plotTopGenes(C_matrix, component: int, ax, top_n: int = 25, geneset = "GO_Biological_Process_2018", top_term = 1, bottom_term = 1, verbose = False):
+    """Plots the `top_n` genes that are upregulated AND downregulated for a certain component, with bars
+    showing their weights. Bars will be colored to represent inclusion in the top GO group in each group (top/bottom).
+    If `verbose = True`, the top 10 GO terms will be printed as the function runs, and can be selected by number
+    as `top_term` or `bottom_term` in order to visualize different GO groupings.
+
+    Requires an input `C_matrix` which should be a pandas dataframe that is genes by components, with components labeled 'comp_#'
+
+    See also: geneontology.addGOCol
+    """
+    comp_str = 'comp_' + str(component)
+    bottom = C_matrix.sort_values(by = comp_str)[comp_str].head(top_n)
+    top = C_matrix.sort_values(by = comp_str)[comp_str].tail(top_n)
+    bardata = pd.concat([bottom, top], axis = 0)
+    bardata = bardata.reset_index().rename({'index': 'Gene ID'}, axis = 1)
+    
+    bardata = addGOCol(top, bardata, geneset, term = top_term, verbose = verbose)
+    bardata = addGOCol(bottom, bardata, geneset, term = bottom_term, verbose = verbose)
+
+    sns.barplot(data = bardata, x = 'Gene ID', y = comp_str, hue = 'GO_term', palette = 'Dark2', dodge = False, ax = ax)
+    ax.tick_params(axis="x", rotation=90)
+    ax.set_title('Genes with major variance contributing to component ' + str(component))
