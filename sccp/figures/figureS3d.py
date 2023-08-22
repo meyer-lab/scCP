@@ -50,6 +50,9 @@ def makeFigure():
 
     merged = factor_A.merge(group_labs, left_index=True, right_index=True)
 
+    # components can be varied; including these for now because 13 and 26 seemed
+    # to have high weights in logistic regression, as do 32 and 29. 32 and 13 both
+    # had positive weights while 26 and 29 were negative
     comps_to_test = [('Cmp. 13', 'Cmp. 26'),
                      ('Cmp. 32', 'Cmp. 26'),
                      ('Cmp. 13', 'Cmp. 32'),
