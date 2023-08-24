@@ -32,6 +32,7 @@ def makeFigure():
     # UMAP dimension reduction
     pf2Points = openUMAP(rank, "Thomson", opt=False)
     
+    
     # Genes for cells
     cd4 =  ["IL7R"]
     cd8 =  ["CD8A", "CD8B"] 

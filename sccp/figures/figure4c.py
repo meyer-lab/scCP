@@ -12,9 +12,6 @@ from ..imports.gating import gateThomsonCells
 import pandas as pd
 
 
-path_here = os.path.dirname(os.path.dirname(__file__))
-
-
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
