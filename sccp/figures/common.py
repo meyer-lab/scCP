@@ -547,7 +547,7 @@ def plotCmpPerCellType(weightedprojs, cmp, ax, outliers = True):
     
 def plotGenePerCellType(data, gene, ax):
     """Boxplot of genes for one across cell types"""
-    sns.stripplotplot(data=data[[gene, "Cell Type", "Condition"]], x=gene, y="Cell Type", hue="Condition", ax=ax)
+    sns.stripplot(data=data[[gene, "Cell Type", "Condition"]], x=gene, y="Cell Type", hue="Condition", ax=ax)
     
 
 def flattenWeightedProjs(data, factors, projs):
