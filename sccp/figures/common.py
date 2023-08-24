@@ -23,6 +23,9 @@ from matplotlib.patches import Patch
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import RocCurveDisplay, auc
 from sklearn.model_selection import StratifiedGroupKFold
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import RocCurveDisplay, auc
+from sklearn.model_selection import StratifiedGroupKFold
 
 
 path_here = os.path.dirname(os.path.dirname(__file__))
