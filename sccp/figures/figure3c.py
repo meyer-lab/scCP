@@ -44,6 +44,7 @@ def makeFigure():
     
     plotGeneUMAP(np.concatenate((cd4, cd8, nk, mono1, mono2, dc, b)), "Pf2", pf2Points, dataDF, ax[0:16])
     
+    
     # # PCA dimension reduction
     # pc = PCA(n_components=rank)
     # pcaPoints = pc.fit_transform(data.unfold())
