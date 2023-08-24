@@ -2,15 +2,13 @@
 Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs
 """
 from .common import (subplotLabel, getSetup, 
-                     plotCmpUMAP, openPf2, 
+                     plotCmpUMAP, openPf2, openUMAP,
                      flattenData, flattenWeightedProjs, 
                      plotCellTypeUMAP, plotCmpPerCellType, 
                      plotGenePerCellType)
 from ..imports.scRNA import ThompsonXA_SCGenes
 from ..imports.gating import gateThomsonCells
-import umap 
-import os
-from os.path import join
+
 import pandas as pd
 
 
@@ -33,7 +31,7 @@ def makeFigure():
     dataDF["Cell Type"] = gateThomsonCells(rank=rank, saveCellTypes=False)
 
     _, factors, projs = openPf2(rank, "Thomson")
-    pf2Points = umap.UMAP(random_state=1).fit(projs)
+    pf2Points = openUMAP(rank, "Thomson", opt=False)
     
     plotCellTypeUMAP(pf2Points, dataDF, ax[0])
         
