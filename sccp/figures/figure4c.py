@@ -36,10 +36,10 @@ def makeFigure():
     dataDF["Cell Type"] = gateThomsonCells(rank=rank, saveCellTypes=False)
 
     _, factors, projs = openPf2(rank, "Thomson")
-    # pf2Points = umap.UMAP(random_state=1).fit(projs)
+    pf2Points = umap.UMAP(random_state=1).fit(projs)
 
-    # print(np.shape(pf2Points))
-    # plotCellTypeUMAP(pf2Points, dataDF, ax[0])
+    print(np.shape(pf2Points))
+    plotCellTypeUMAP(pf2Points, dataDF, ax[0])
         
     # weightedProjDF = flattenWeightedProjs(data, factors, projs)
     # weightedProjDF["Cell Type"] = dataDF["Cell Type"].values
@@ -58,14 +58,14 @@ def makeFigure():
 # PRF1
 # MT1H
 # NKG7
-    genes = ["NKG7", "GNLY", "GZMB", "GZMH", "PRF1"]
-#     df = dataDF[(dataDF["Condition"].isin(["Budesonide", "CTRL3"]))]
+#     genes = ["NKG7", "GNLY", "GZMB", "GZMH", "PRF1"]
+# #     df = dataDF[(dataDF["Condition"].isin(["Budesonide", "CTRL3"]))]
     
-    data = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=genes).rename(
-            columns={"variable": "Gene", "value": "Value"})
+#     data = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=genes).rename(
+#             columns={"variable": "Gene", "value": "Value"})
     
     
-    df = data.groupby(["Condition", "Cell Type", "Gene"]).mean()
+#     df = data.groupby(["Condition", "Cell Type", "Gene"]).mean()
     
     # print(df)
     

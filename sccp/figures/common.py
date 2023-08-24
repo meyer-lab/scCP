@@ -257,11 +257,12 @@ def flattenProjs(data, projs):
 def plotGeneUMAP(genes, decomp, points, dataDF, axs):
     """Scatterplot of UMAP visualization weighted by gene"""
     cmap = sns.color_palette("ch:s=-.2,r=.6", as_cmap=True)
+    subset = np.random.choice(a=[False, True], size=len(dataDF[genes[0]].values), p=[.9, .1])
     for i, genez in enumerate(genes):
         geneList = dataDF[genez].to_numpy()
         geneList = geneList / np.max(np.abs(geneList))
         psm = plt.pcolormesh([[0, 1], [0, 1]], cmap=cmap)
-        plot = umap.plot.points(points, values=geneList, cmap=cmap, ax=axs[i])
+        plot = umap.plot.points(points, values=geneList, cmap=cmap, subset_points=subset, ax=axs[i])
         colorbar= plt.colorbar(psm, ax=plot)
         axs[i].set(
             title=genez + "-" + decomp + "-Based Decomposition",
@@ -274,9 +275,10 @@ def plotGeneUMAP(genes, decomp, points, dataDF, axs):
 def plotDrugUMAP(drugs, decomp, totaldrugs, points, axs):
     """Scatterplot of UMAP visualization weighted by condition"""
     for i, drugz in enumerate(drugs):
+        subset = np.random.choice(a=[False, True], size=len(totaldrugs), p=[.9, .1])
         drugList = np.where(np.asarray(totaldrugs == drugz), drugz, "Z Other Drugs")
         umap.plot.points(
-            points, labels=drugList, ax=axs[i], color_key_cmap="tab20", show_legend=True)
+            points, labels=drugList, ax=axs[i], color_key_cmap="tab20", subset_points=subset,show_legend=True)
         axs[i].set(
             title=decomp + "-Based Decomposition",
         ylabel="UMAP2",
@@ -590,7 +592,7 @@ def plotCellTypeUMAP(points, data, ax):
     # weightedProjs = weightedProjs[:, cmp-1]
     # cmap = sns.diverging_palette(240, 10, as_cmap=True)
 
-    subset = np.random.choice(a=[False, True], size=len(data["Cell Type"].values), p=[.75, .25])
+    subset = np.random.choice(a=[False, True], size=len(data["Cell Type"].values), p=[.9, .1])
     # weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
     # print(np.max(weightedProjs))
     # print(np.argmax(np.abs(weightedProjs)))

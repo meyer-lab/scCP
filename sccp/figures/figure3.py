@@ -11,6 +11,7 @@ from .common import (
     openPf2
 
   
+  
 )
 from ..imports.scRNA import ThompsonXA_SCGenes
 from parafac2 import parafac2_nd
@@ -21,10 +22,11 @@ from sklearn.decomposition import PCA
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((15, 13), (3, 3))
+    ax, f = getSetup((12, 10), (3, 3))
 
     # Add subplot labels
     subplotLabel(ax)
+
 
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes(offset=1.0)
