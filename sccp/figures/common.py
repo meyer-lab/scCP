@@ -542,7 +542,9 @@ def plotCellTypeUMAP(points, data, ax):
 def plotCmpPerCellType(weightedprojs, cmp, ax, outliers = True):
     """Boxplot of weighted projections for one component across cell types"""
     cmpName = "Cmp. "+str(cmp)
+    maxvalue = np.max(np.abs(weightedprojs[cmpName]))
     sns.boxplot(data=weightedprojs[[cmpName, "Cell Type"]], x=cmpName, y="Cell Type", showfliers = outliers, ax=ax)
+    ax.set(xlim=(-maxvalue, maxvalue))
     
     
 def plotGenePerCellType(data, gene, ax):

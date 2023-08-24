@@ -1,14 +1,15 @@
 """
 Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs
 """
-from .common import (subplotLabel, getSetup, 
-                     plotCmpUMAP, openPf2, openUMAP,
+from .common import (subplotLabel, getSetup,
+                     openPf2, openUMAP,
                      flattenData, flattenWeightedProjs, 
                      plotCellTypeUMAP, plotCmpPerCellType, 
-                     plotGenePerCellType)
+                    plotCmpUMAP
+        )
 from ..imports.scRNA import ThompsonXA_SCGenes
 from ..imports.gating import gateThomsonCells
-
+import seaborn as sns
 import pandas as pd
 
 
@@ -39,12 +40,22 @@ def makeFigure():
     
     comps = [5, 12, 20, 30]
     for i, comp in enumerate(comps):
-        plotCmpPerCellType(weightedProjDF, comps[i], ax[i+1])
+        plotCmpPerCellType(weightedProjDF, comps[i], ax[(2*i)+1], outliers=False)
+        plotCmpUMAP(comps[i], factors, pf2Points, projs, ax[(2*i)+2])
+ 
+    set1 = ["NKG7", "GNLY", "GZMB", "GZMH", "PRF1"]
+    set2 = "NKG7", "GNLY", "GZMB", "GZMH", "PRF1"
+    set3 = ["NKG7", "GNLY", "GZMB", "GZMH", "PRF1"]
+    set4 = ["NKG7", "GNLY", "GZMB", "GZMH", "PRF1"]
+    
+    genes = [set1, set2, set3, set4]
+    for i in range(len(genes)):
+        data = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=genes[i]).rename(
+                columns={"variable": "Gene", "value": "Value"})
+        df = data.groupby(["Condition", "Cell Type", "Gene"]).mean()
 
-    genes = ["NKG7", "GNLY", "MS4A1", "CD79A"]
-    for i, gene in enumerate(genes):
-        plotGenePerCellType(dataDF[(dataDF["Condition"].isin(["Budesonide", "CTRL3"]))], gene, ax[(2*i)+5])
-        plotGenePerCellType(dataDF[(dataDF["Condition"].isin(["Triamcinolone Acetonide", "CTRL1"]))], gene, ax[(2*i)+6])
+        df = df.rename(columns={"Value": "Average Gene Expression For Drugs"})
+        sns.stripplot(data=df, x="Gene", y="Average Gene Expression For Drugs", hue="Cell Type", dodge=True, jitter=False, ax=ax[i+11])
     
     
     return f
