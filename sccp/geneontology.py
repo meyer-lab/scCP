@@ -2,7 +2,8 @@ import numpy as np
 import gseapy as gp
 import pandas as pd
 import seaborn as sns
-#from .figures.common import plotCombGO, plotPvalGO
+from gseapy import Biomart
+bm = Biomart()
 
 def geneOntology(cmpNumb: int, geneAmount, goTerms, geneValue):
     """Plots top Gene Ontology terms for molecular function, 
@@ -80,29 +81,25 @@ def pvalueDF(enrichrGO, geneSet, geneValue, goTerms):
     
     return pvalDF
 
-def addGOCol(seriez, data, geneset, term: int = 1, verbose = False):
-    """Adds/Updates a column to/from the input dataset called 'GO_term' that contains a GO term
-    relevant to that gene. To do this, it finds the top 10 enriched go terms in the set it was given,
-    defaulting to using GO_Biological_Process_2018. If `verbose = True`, it will print out these terms
-    as it runs, and subsequent runs can select GO terms to color manually using `term`.
+def getGOFromTopGenes(C_matrix, component, top_n = 30, geneset = 'GO_Biological_Process_2023'):
+    comp_str = 'comp_' + str(component)
 
-    Requires an input `seriez`, which is a pandas series of genes in data. Used with common.plotTopGenes
+    bottom = C_matrix.sort_values(by = comp_str)[comp_str].head(top_n)
+    top = C_matrix.sort_values(by = comp_str)[comp_str].tail(top_n)
+    top_go = runGO(top.index, geneset)
+    bottom_go = runGO(bottom.index, geneset)
+    return top_go, bottom_go
+
+def getGenesfromGO(go_accession):
+    """Gets a list of the genes associated with a GO term, passed in by accesssion number
+    in the format 'GO:########' (str)
+    Uses the Biomart API, which has "limited support"...
+    https://gseapy.readthedocs.io/en/latest/gseapy_example.html?highlight=biomart#Biomart-API
     """
-    term = term - 1
-    enrichrGO = runGO(seriez.index, geneset)
-    # give info about which ones they can choose
-    if verbose == True:
-        print('Top 10 GO terms:\n')
-        for i in range(10):
-            print(i + 1, enrichrGO.index[i])
-        print('\nYou Selected:\n', enrichrGO.index[term])
+    queries ={'go': [go_accession]}
+    results = bm.query(dataset='hsapiens_gene_ensembl',
+             attributes=['ensembl_gene_id', 'external_gene_name'],
+             filters=queries)
+    list_of_genes_in_go_term = results['external_gene_name'].to_numpy()
+    return list_of_genes_in_go_term
 
-    genes_from_term = enrichrGO['Genes'][term].split(";")
-    term = enrichrGO.index[term]
-    if 'GO_term' not in data.columns:
-        data['GO_term'] = np.where(data['Gene ID'].isin(genes_from_term), term, 'neither')
-    else:
-        data['GO_term'] = np.where(data['Gene ID'].isin(genes_from_term), term, data['GO_term'])
-
-    
-    return data

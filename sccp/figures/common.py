@@ -14,7 +14,7 @@ import scipy.cluster.hierarchy as sch
 from ..parafac2 import Pf2X
 from ..crossVal import CrossVal
 from ..decomposition import R2X
-from ..geneontology import addGOCol
+from ..geneontology import getGenesfromGO
 import os
 from os.path import join
 from pandas.plotting import parallel_coordinates as pc
@@ -614,25 +614,36 @@ def investigate_comp(comp: int, rank: int, obs, proj_B, obs_column, ax, threshol
     ax.set_title(obs_column + ' Percentages, Threshold: ' + str(threshold) + ' for comp ' + str(comp))
 
 
-def plotTopGenes(C_matrix, component: int, ax, top_n: int = 25, geneset = "GO_Biological_Process_2018", top_term = 1, bottom_term = 1, verbose = False):
-    """Plots the `top_n` genes that are upregulated AND downregulated for a certain component, with bars
-    showing their weights. Bars will be colored to represent inclusion in the top GO group in each group (top/bottom).
-    If `verbose = True`, the top 10 GO terms will be printed as the function runs, and can be selected by number
-    as `top_term` or `bottom_term` in order to visualize different GO groupings.
+def plotGenesFromGO(go_term, C_matrix, component, ax, accession = False):
+    """Plot the genes associated with a certain GO term, with bars corresponding to their
+    weights in `component`. 
 
-    Requires an input `C_matrix` which should be a pandas dataframe that is genes by components, with components labeled 'comp_#'
-
-    See also: geneontology.addGOCol
+    If accesssion == False (default), the function will expect a `go_term` in the format given by 
+    enrichr analysis with `runGO` (name + accesssion number in one string). If you want to input an 
+    accession number, send it in as the string go_term and then set `accesssion = TRUE`
     """
     comp_str = 'comp_' + str(component)
-    bottom = C_matrix.sort_values(by = comp_str)[comp_str].head(top_n)
-    top = C_matrix.sort_values(by = comp_str)[comp_str].tail(top_n)
-    bardata = pd.concat([bottom, top], axis = 0)
-    bardata = bardata.reset_index().rename({'index': 'Gene ID'}, axis = 1)
-    
-    bardata = addGOCol(top, bardata, geneset, term = top_term, verbose = verbose)
-    bardata = addGOCol(bottom, bardata, geneset, term = bottom_term, verbose = verbose)
 
-    sns.barplot(data = bardata, x = 'Gene ID', y = comp_str, hue = 'GO_term', palette = 'Dark2', dodge = False, ax = ax)
+    # get GO accession number from GO term
+    if accession == False:
+        go_ac = pd.Series(go_term).str.replace('.*\(', "", regex=True).str.replace('\)', "", regex=True)[0]
+    else:
+        go_ac = go_term
+    list_of_genes_in_go_term = getGenesfromGO(go_ac)
+    num_genes_in_go_term = len(list_of_genes_in_go_term)
+
+    alldata = C_matrix.sort_values(by = comp_str)[comp_str].reset_index().rename({'index': 'Gene ID'}, axis = 1)
+
+    top_value = alldata[comp_str].max()
+    bottom_value = alldata[comp_str].min()
+
+    # get only genes that are in that go term
+    genes_in_go = alldata[alldata['Gene ID'].isin(list_of_genes_in_go_term)]
+    genes_in_go['GO Term'] = go_term + '\n' + str(num_genes_in_go_term) + ' Genes in total' + '\n' + str(100*len(genes_in_go)/num_genes_in_go_term) + '% of genes in GO term shown here'
+
+    sns.barplot(data = genes_in_go, x = 'Gene ID', y = comp_str, hue = 'GO Term', ax = ax)
     ax.tick_params(axis="x", rotation=90)
-    ax.set_title('Genes with major variance contributing to component ' + str(component))
+    ax.set_title('Weights of genes from GO term contributing to component ' + str(component))
+    # make horizontal lines denoting where the top values are for comparison
+    ax.axhline(y = top_value, linestyle = '--', color = '#e76f51')
+    ax.axhline(y = bottom_value, linestyle = '--', color = '#e76f51')
