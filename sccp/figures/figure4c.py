@@ -49,7 +49,6 @@ def makeFigure():
     set3 = ["VPREB3", "CD79A", "FAM111B", "HOPX", "SLC30A3", "MS4A1"]
     set4 = ["CD163", "ADORA3", "MS4A6A", "RNASE1", "MTMR11"]
     
-    
     genes = [set1, set2, set3, set4]
     for i in range(len(genes)):
         data = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=genes[i]).rename(
