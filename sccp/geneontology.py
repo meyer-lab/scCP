@@ -82,6 +82,7 @@ def pvalueDF(enrichrGO, geneSet, geneValue, goTerms):
     return pvalDF
 
 def getGOFromTopGenes(C_matrix, component, top_n = 30, geneset = 'GO_Biological_Process_2023'):
+    """Gets """
     comp_str = 'comp_' + str(component)
 
     bottom = C_matrix.sort_values(by = comp_str)[comp_str].head(top_n)
