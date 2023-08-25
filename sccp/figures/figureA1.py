@@ -14,7 +14,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    combine_all_citeseq(saveAdata=True)
+    # combine_all_citeseq(saveAdata=True)
     
     data = import_citeseq()
     rank = 2

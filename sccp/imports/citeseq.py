@@ -19,31 +19,12 @@ def combine_all_citeseq(saveAdata = False):
     data["Expression Type"] = features.iloc[:, 2].values
     data["Expression Name"] = features.iloc[:, 1].values
     
-    print(data)
-    print(np.shape(data))
-
     # Keep only gene expression
     geneDF = data.loc[data["Expression Type"] == "Gene Expression"].drop(columns="Expression Type").reset_index(drop=True) 
     geneNames = geneDF["Expression Name"].values
     
-    print(geneDF)
-    # geneNames = features.iloc[:, 1].values # Save all gene names from first import
-    print(np.shape(geneNames))
-    print(len(geneNames))
-    print(len(np.unique(geneNames)))
-    
-    # import collections
-    # print([item for item, count in collections.Counter(geneNames).items() if count > 1])
-    
-    # a
-    
     genesAll = np.transpose(geneDF.drop(columns="Expression Name")).to_numpy()
-    print(np.shape(genesAll))
-    
-    # a
     numCells = [genesAll.shape[0]] # Save number of cells per experiment
-    
-    
     files = ["ic_pod1", "ic_pod7", "sc_pod1", "sc_pod1"]
     
     # Repeat process for all files and combine datasets
@@ -63,13 +44,7 @@ def combine_all_citeseq(saveAdata = False):
     # Save condition information in AnnData file
     files = ["control", "ic_pod1", "ic_pod7", "sc_pod1", "sc_pod7"]
     adata = anndata.AnnData(X = genesAll)
-    
-    print(len(geneNames))
-    print(len(np.unique(geneNames)))
     adata.var_names = geneNames
-    
-    print(len(adata.var_names))
-    print(len(np.unique(adata.var_names)))
     adata.obs["Condition"] = np.repeat(files, numCells)
     
     if saveAdata is False:
