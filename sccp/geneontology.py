@@ -1,9 +1,12 @@
 import numpy as np
 import gseapy as gp
 import pandas as pd
-import seaborn as sns
-from gseapy import Biomart
-bm = Biomart()
+# Biomart is an alternate option than mygene for getting a list of genes from a GO term
+# neither works inspiringly well imho -- sean
+#from gseapy import Biomart
+#bm = Biomart()
+import mygene
+mg = mygene.MyGeneInfo()
 
 def geneOntology(cmpNumb: int, geneAmount, goTerms, geneValue):
     """Plots top Gene Ontology terms for molecular function, 
@@ -96,13 +99,22 @@ def getGOFromTopGenes(C_matrix, component, top_n = 30, geneset = 'GO_Biological_
 def getGenesfromGO(go_accession):
     """Gets a list of the genes associated with a GO term, passed in by accesssion number
     in the format 'GO:########' (str)
-    Uses the Biomart API, which has "limited support"...
+    Option to use the Biomart API, which has "limited support" is commented out
     https://gseapy.readthedocs.io/en/latest/gseapy_example.html?highlight=biomart#Biomart-API
+    Instead using mygene; which also returns only some of the genes you'd expect it to
     """
-    queries ={'go': [go_accession]}
-    results = bm.query(dataset='hsapiens_gene_ensembl',
-             attributes=['ensembl_gene_id', 'external_gene_name'],
-             filters=queries)
-    list_of_genes_in_go_term = results['external_gene_name'].to_numpy()
+    #queries ={'go': [go_accession]}
+    #results = bm.query(dataset='hsapiens_gene_ensembl',
+    #         attributes=['ensembl_gene_id', 'external_gene_name'],
+    #         filters=queries)
+    #list_of_genes_in_go_term = results['external_gene_name'].to_numpy()
+
+    queery = mg.query(go_accession, species = "human", size=1000)
+    genes = queery.get('hits')
+
+    list_of_genes_in_go_term = []
+    for dict in genes:
+        list_of_genes_in_go_term.append(dict.get('symbol'))
+
     return list_of_genes_in_go_term
 
