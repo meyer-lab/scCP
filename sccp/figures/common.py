@@ -23,10 +23,6 @@ from matplotlib.patches import Patch
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import RocCurveDisplay, auc
 from sklearn.model_selection import StratifiedGroupKFold
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import RocCurveDisplay, auc
-from sklearn.model_selection import StratifiedGroupKFold
-
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -624,7 +620,6 @@ def investigate_comp(comp: int, rank: int, obs, proj_B, obs_column, ax, threshol
     sns.barplot(pcts, x = obs_column, y = 'percent', errorbar=None, ax=ax)
     ax.tick_params(axis="x", rotation=90)
     ax.set_title(obs_column + ' Percentages, Threshold: ' + str(threshold) + ' for comp ' + str(comp))
-
 
 def plotGenesFromGO(go_term, C_matrix, component, ax, accession = False):
     """Plot the genes associated with a certain GO term, with bars corresponding to their
