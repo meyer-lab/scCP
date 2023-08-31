@@ -126,7 +126,7 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
 
         if i in trim:
             max_weight = np.max(np.abs(X), axis=1)
-            kept_idxs = max_weight > 0.08
+            kept_idxs = max_weight > 0.04
             X = X[kept_idxs]
             yt = yt[kept_idxs]
             if i == 0 and not (cond_group_labels is None):
