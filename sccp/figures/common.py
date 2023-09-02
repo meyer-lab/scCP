@@ -278,15 +278,15 @@ def plotCmpUMAP(cmp, factors, pf2Points, allP, ax):
     weightedProjs = weightedProjs[:, cmp-1]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
-    subset = np.random.choice(a=[False, True], size=np.shape(weightedProjs)[0], p=[.9, .1])
+    subset = np.random.choice(a=[False, True], size=np.shape(weightedProjs)[0], p=[.75, .25])
     subset[np.argmax(np.abs(weightedProjs))] = True # Ensure largest value is -1 or 1
     psm = plt.pcolormesh([[-1, 1],[-1, 1]], cmap=cmap)
     plot = umap.plot.points(pf2Points, values=weightedProjs, cmap=cmap, subset_points=subset, ax=ax)
-    colorbar= plt.colorbar(psm, ax=plot)
+    colorbar= plt.colorbar(psm, ax=plot, label="Cell Specific Weight")
     ax.set(
         ylabel="UMAP2",
         xlabel="UMAP1",
-        title="Component:" + str(cmp))
+        title="Cmp. " + str(cmp))
     
 
 
@@ -543,6 +543,10 @@ def plotCmpPerCellType(weightedprojs, cmp, ax, outliers = True):
     """Boxplot of weighted projections for one component across cell types"""
     cmpName = "Cmp. "+str(cmp)
     sns.boxplot(data=weightedprojs[[cmpName, "Cell Type"]], x=cmpName, y="Cell Type", showfliers = outliers, ax=ax)
+    maxvalue = np.max(np.abs(ax.get_xticks()))
+    ax.set(xlim=(-maxvalue, maxvalue), xlabel="Cell Specific Weight")
+    ax.set_title(cmpName)
+
     
 def plotGenePerCellType(genes, dataDF, ax):
     """Plots average gene expression across cell types for all conditions"""
