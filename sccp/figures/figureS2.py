@@ -20,7 +20,7 @@ from ..imports.scRNA import load_lupus_data
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((15, 13), (2, 2))
+    ax, f = getSetup((15, 13), (4, 4))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -31,11 +31,11 @@ def makeFigure():
     # Import of data
     _, obs= load_lupus_data()
     
-    broad_type = obs["cell_type_broad"].reset_index(drop=True)
-    lympho_type = obs["cell_type_lympho"].reset_index(drop=True)
+    # broad_type = obs["cell_type_broad"].reset_index(drop=True)
+    # lympho_type = obs["cell_type_lympho"].reset_index(drop=True)
 
     # replace NaN with string
-    lympho_type = lympho_type.cat.add_categories('other').fillna('other')
+    # lympho_type = lympho_type.cat.add_categories('other').fillna('other')
 
     _, factors, projs, = openPf2(rank = rank, dataName = 'lupus', optProjs=True)
 
@@ -44,8 +44,13 @@ def makeFigure():
     pf2Points = openUMAP(40, 'lupus', opt = True)
 
 
-    plotCmpUMAP(cmp, factors, pf2Points, projs, ax[0])
-    plotUMAP_obslabel(broad_type, pf2Points, ax[1])
-    plotUMAP_obslabel(lympho_type, pf2Points, ax[2])
+    comps = [5, 5, 5, 12, 12, 12, 20, 20, 20, 30, 30, 30]
+    for i, comp in enumerate(comps):
+        # plotCmpUMAP(weightedProjDF, comps[i], ax[i+1])
+        plotCmpUMAP(comp, factors, pf2Points, projs, ax[i])
+        
+    # plotCmpUMAP(cmp, factors, pf2Points, projs, ax[0])
+    # plotUMAP_obslabel(broad_type, pf2Points, ax[1])
+    # plotUMAP_obslabel(lympho_type, pf2Points, ax[2])
 
     return f
