@@ -85,6 +85,36 @@ def ThompsonXA_SCGenes(offset: float = 1.0) -> anndata.AnnData:
     # Assign cells a count per-experiment so we can reindex
     return tensorFy(X, "Drugs")
 
+def ThompsonXA_SCGenesAD(offset: float = 1.0) -> anndata.AnnData:
+    """Import Thompson lab PBMC dataset as AnnData instead of Pf2X."""
+    X = import_thompson_drug()
+    scalingfactor = 1000
+
+    assert np.all(np.isfinite(X.X.data))
+
+    X = X[:, np.mean(X.X > 0, axis=0) > 0.001]
+    X.X /= np.sum(X.X, axis=0)
+
+    # Only operating on the data works because 0 ends up as 0 here
+    X.X = np.log10((scalingfactor * X.X) + 1)
+    means = np.mean(X.X, axis=0)
+    cv = np.std(X.X, axis=0) / means
+
+    logmean = np.log10(means + 1e-10)
+    logstd = np.log10(cv + 1e-10)
+
+    if offset != 1.0:
+        slope, intercept, _, _, _ = linregress(logmean, logstd)
+
+        above_idx = logstd > logmean * slope + intercept + np.log10(offset)
+        X = X[:, above_idx]
+
+    # Center the genes
+    X.X -= np.mean(X.X, axis=0)
+
+    # Assign cells a count per-experiment so we can reindex
+    return X
+
 
 def import_pancreas(tensor=True, method=str()):
     pancreas = anndata.read_h5ad(
