@@ -554,12 +554,11 @@ def plotCmpPerCellType(weightedprojs, cmp, ax, outliers = True):
     
 def plotGenePerCellType(genes, dataDF, ax):
     """Plots average gene expression across cell types for all conditions"""
-    for i in range(len(genes)):
-        data = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=genes[i]).rename(
-                columns={"variable": "Gene", "value": "Value"})
-        df = data.groupby(["Condition", "Cell Type", "Gene"]).mean()
-        df = df.rename(columns={"Value": "Average Gene Expression For Drugs"})
-        sns.stripplot(data=df, x="Gene", y="Average Gene Expression For Drugs", hue="Cell Type", dodge=True, jitter=False, ax=ax)
+    data = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=genes).rename(
+            columns={"variable": "Gene", "value": "Value"})
+    df = data.groupby(["Condition", "Cell Type", "Gene"]).mean()
+    df = df.rename(columns={"Value": "Average Gene Expression For Drugs"})
+    sns.stripplot(data=df, x="Gene", y="Average Gene Expression For Drugs", hue="Cell Type", dodge=True, jitter=False, ax=ax)
     
 
 def flattenWeightedProjs(data, factors, projs):
