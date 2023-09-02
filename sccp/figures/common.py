@@ -241,7 +241,7 @@ def flattenProjs(data, projs):
 def plotGeneUMAP(genes, decomp, points, dataDF, axs):
     """Scatterplot of UMAP visualization weighted by gene"""
     cmap = sns.color_palette("ch:s=-.2,r=.6", as_cmap=True)
-    subset = np.random.choice(a=[False, True], size=len(dataDF[genes[0]].values), p=[.9, .1])
+    subset = np.random.choice(a=[False, True], size=len(dataDF[genes[0]].values), p=[.75, .25])
     for i, genez in enumerate(genes):
         geneList = dataDF[genez].to_numpy()
         geneList = geneList / np.max(np.abs(geneList))
@@ -258,7 +258,7 @@ def plotGeneUMAP(genes, decomp, points, dataDF, axs):
 
 def plotDrugUMAP(drugs, decomp, totaldrugs, points, axs):
     """Scatterplot of UMAP visualization weighted by condition"""
-    subset = np.random.choice(a=[False, True], size=len(totaldrugs), p=[.9, .1])
+    subset = np.random.choice(a=[False, True], size=len(totaldrugs), p=[.75, .25])
     for i, drugz in enumerate(drugs):
         drugList = np.where(np.asarray(totaldrugs == drugz), drugz, "Z Other Drugs")
         umap.plot.points(
@@ -544,10 +544,14 @@ def plotCmpPerCellType(weightedprojs, cmp, ax, outliers = True):
     cmpName = "Cmp. "+str(cmp)
     sns.boxplot(data=weightedprojs[[cmpName, "Cell Type"]], x=cmpName, y="Cell Type", showfliers = outliers, ax=ax)
     
-    
-def plotGenePerCellType(data, gene, ax):
-    """Boxplot of genes for one across cell types"""
-    sns.stripplot(data=data[[gene, "Cell Type", "Condition"]], x=gene, y="Cell Type", hue="Condition", ax=ax)
+def plotGenePerCellType(genes, dataDF, ax):
+    """Plots average gene expression across cell types for all conditions"""
+    for i in range(len(genes)):
+        data = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=genes[i]).rename(
+                columns={"variable": "Gene", "value": "Value"})
+        df = data.groupby(["Condition", "Cell Type", "Gene"]).mean()
+        df = df.rename(columns={"Value": "Average Gene Expression For Drugs"})
+        sns.stripplot(data=df, x="Gene", y="Average Gene Expression For Drugs", hue="Cell Type", dodge=True, jitter=False, ax=ax)
     
 
 def flattenWeightedProjs(data, factors, projs):
