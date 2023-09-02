@@ -536,8 +536,11 @@ def plotCellTypePerExpPerc(dataDF, condition, ax):
     
 def plotCellTypeUMAP(points, data, ax):
     """Plots UMAP labeled by cell type"""
-    subset = np.random.choice(a=[False, True], size=len(data["Cell Type"].values), p=[.9, .1])
+    subset = np.random.choice(a=[False, True], size=len(data["Cell Type"].values), p=[.75, .25])
     umap.plot.points(points, labels=data["Cell Type"].values, subset_points=subset, ax=ax)
+    ax.set(
+        ylabel="UMAP2",
+        xlabel="UMAP1")
     
 def plotCmpPerCellType(weightedprojs, cmp, ax, outliers = True):
     """Boxplot of weighted projections for one component across cell types"""
@@ -546,6 +549,7 @@ def plotCmpPerCellType(weightedprojs, cmp, ax, outliers = True):
     maxvalue = np.max(np.abs(ax.get_xticks()))
     ax.set(xlim=(-maxvalue, maxvalue), xlabel="Cell Specific Weight")
     ax.set_title(cmpName)
+    
 
     
 def plotGenePerCellType(genes, dataDF, ax):
