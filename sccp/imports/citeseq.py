@@ -60,6 +60,7 @@ def import_citeseq():
     print(X.var_names)
     print(len(X.var_names))
     print(len(np.unique(X.var_names)))
+    print(np.shape(X.X))
     X.X = np.asarray(X.X, dtype=float)
 
     scalingfactor = 1000

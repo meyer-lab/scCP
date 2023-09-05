@@ -123,10 +123,11 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
             title = "Components by Gene"
 
         X = factors[i]
+        
 
         if i in trim:
             max_weight = np.max(np.abs(X), axis=1)
-            kept_idxs = max_weight > 0.08
+            kept_idxs = max_weight > 0.09
             X = X[kept_idxs]
             yt = yt[kept_idxs]
             if i == 0 and not (cond_group_labels is None):
@@ -137,6 +138,13 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
             yt = yt[ind]
             if i == 0 and not (cond_group_labels is None):
                 cond_group_labels = cond_group_labels[ind]
+                
+        X = X / np.max(np.abs(X))
+
+        if i == 0:
+            vmin=0
+        else:
+            vmin=-1
 
         sns.heatmap(
                 data=X,
@@ -145,7 +153,17 @@ def plotFactors(factors, data: Pf2X, axs, reorder=tuple(), trim=tuple(), saveGen
                 ax=axs[i],
                 center=0,
                 cmap=cmap,
-            )
+                vmin=vmin,
+                vmax=1)
+
+        # sns.heatmap(
+        #         data=X,
+        #         xticklabels=xticks,
+        #         yticklabels=yt,
+        #         ax=axs[i],
+        #         center=0,
+        #         cmap=cmap,
+        #     )
 
         if i == 0 and not (cond_group_labels is None):
             # add little boxes to denote SLE/healthy rows
@@ -205,6 +223,8 @@ def flattenData(data):
     for i in range(len(data.X_list)):
         cellCount = np.append(cellCount, data.X_list[i].shape[0])
 
+    print(cellCount)
+    print(np.mean(cellCount))
     condNames = []
 
     for i in range(len(data.X_list)):

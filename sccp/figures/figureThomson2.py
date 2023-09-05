@@ -24,6 +24,7 @@ def makeFigure():
 
     # Add subplot labels
     subplotLabel(ax)
+    
 
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes()
@@ -32,20 +33,20 @@ def makeFigure():
     rank = 30
     dataDF["Cell Type"] = gateThomsonCells(rank=rank, saveCellTypes=False)
 
-    _, factors, projs = openPf2(rank, "Thomson")
-    pf2Points = openUMAP(rank, "Thomson", opt=False)
+    # _, factors, projs = openPf2(rank, "Thomson")
+    # pf2Points = openUMAP(rank, "Thomson", opt=False)
 
-    plotCellTypeUMAP(pf2Points, dataDF, ax[0])
+    # plotCellTypeUMAP(pf2Points, dataDF, ax[0])
 
-    weightedProjDF = flattenWeightedProjs(data, factors, projs)
-    weightedProjDF["Cell Type"] = dataDF["Cell Type"].values
-    weightedProjDF.sort_values(by=["Condition", "Cell Type"], inplace=True)
-    dataDF.sort_values(by=["Condition", "Cell Type"], inplace=True)
+    # weightedProjDF = flattenWeightedProjs(data, factors, projs)
+    # weightedProjDF["Cell Type"] = dataDF["Cell Type"].values
+    # weightedProjDF.sort_values(by=["Condition", "Cell Type"], inplace=True)
+    # dataDF.sort_values(by=["Condition", "Cell Type"], inplace=True)
 
-    comps = [5, 12, 20, 30]
-    for i, comp in enumerate(comps):
-        plotCmpPerCellType(weightedProjDF, comps[i], ax[(2 * i) + 1], outliers=False)
-        plotCmpUMAP(comps[i], factors, pf2Points, projs, ax[(2 * i) + 2])
+    # comps = [5, 12, 20, 30]
+    # for i, comp in enumerate(comps):
+    #     plotCmpPerCellType(weightedProjDF, comps[i], ax[(2 * i) + 1], outliers=False)
+    #     plotCmpUMAP(comps[i], factors, pf2Points, projs, ax[(2 * i) + 2])
 
     set1 = ["NKG7", "GNLY", "GZMB", "GZMH", "PRF1"]
     set2 = ["MS4A1", "CD79A", "CD79B", "TNFRSF13B", "BANK1"]
