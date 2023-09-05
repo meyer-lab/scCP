@@ -242,7 +242,7 @@ def flattenProjs(data, projs):
 def plotGeneUMAP(genes, decomp, points, dataDF, axs):
     """Scatterplot of UMAP visualization weighted by gene"""
     cmap = sns.color_palette("ch:s=-.2,r=.6", as_cmap=True)
-    subset = np.random.choice(a=[False, True], size=len(dataDF[genes[0]].values), p=[.9, .1])
+    subset = np.random.choice(a=[False, True], size=len(dataDF[genes[0]].values), p=[.75, .25])
     for i, genez in enumerate(genes):
         geneList = dataDF[genez].to_numpy()
         geneList = geneList / np.max(np.abs(geneList))
@@ -259,7 +259,7 @@ def plotGeneUMAP(genes, decomp, points, dataDF, axs):
 
 def plotDrugUMAP(drugs, decomp, totaldrugs, points, axs):
     """Scatterplot of UMAP visualization weighted by condition"""
-    subset = np.random.choice(a=[False, True], size=len(totaldrugs), p=[.9, .1])
+    subset = np.random.choice(a=[False, True], size=len(totaldrugs), p=[.75, .25])
     for i, drugz in enumerate(drugs):
         drugList = np.where(np.asarray(totaldrugs == drugz), drugz, "Z Other Drugs")
         umap.plot.points(
@@ -279,15 +279,15 @@ def plotCmpUMAP(cmp, factors, pf2Points, allP, ax):
     weightedProjs = weightedProjs[:, cmp-1]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
-    subset = np.random.choice(a=[False, True], size=np.shape(weightedProjs)[0], p=[.9, .1])
+    subset = np.random.choice(a=[False, True], size=np.shape(weightedProjs)[0], p=[.75, .25])
     subset[np.argmax(np.abs(weightedProjs))] = True # Ensure largest value is -1 or 1
     psm = plt.pcolormesh([[-1, 1],[-1, 1]], cmap=cmap)
     plot = umap.plot.points(pf2Points, values=weightedProjs, cmap=cmap, subset_points=subset, ax=ax)
-    colorbar= plt.colorbar(psm, ax=plot)
+    colorbar= plt.colorbar(psm, ax=plot, label="Cell Specific Weight")
     ax.set(
         ylabel="UMAP2",
         xlabel="UMAP1",
-        title="Component:" + str(cmp))
+        title="Cmp. " + str(cmp))
     
 
 
@@ -537,18 +537,29 @@ def plotCellTypePerExpPerc(dataDF, condition, ax):
     
 def plotCellTypeUMAP(points, data, ax):
     """Plots UMAP labeled by cell type"""
-    subset = np.random.choice(a=[False, True], size=len(data["Cell Type"].values), p=[.9, .1])
+    subset = np.random.choice(a=[False, True], size=len(data["Cell Type"].values), p=[.75, .25])
     umap.plot.points(points, labels=data["Cell Type"].values, subset_points=subset, ax=ax)
+    ax.set(
+        ylabel="UMAP2",
+        xlabel="UMAP1")
     
 def plotCmpPerCellType(weightedprojs, cmp, ax, outliers = True):
     """Boxplot of weighted projections for one component across cell types"""
     cmpName = "Cmp. "+str(cmp)
     sns.boxplot(data=weightedprojs[[cmpName, "Cell Type"]], x=cmpName, y="Cell Type", showfliers = outliers, ax=ax)
+    maxvalue = np.max(np.abs(ax.get_xticks()))
+    ax.set(xlim=(-maxvalue, maxvalue), xlabel="Cell Specific Weight")
+    ax.set_title(cmpName)
     
+
     
-def plotGenePerCellType(data, gene, ax):
-    """Boxplot of genes for one across cell types"""
-    sns.stripplot(data=data[[gene, "Cell Type", "Condition"]], x=gene, y="Cell Type", hue="Condition", ax=ax)
+def plotGenePerCellType(genes, dataDF, ax):
+    """Plots average gene expression across cell types for all conditions"""
+    data = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=genes).rename(
+            columns={"variable": "Gene", "value": "Value"})
+    df = data.groupby(["Condition", "Cell Type", "Gene"]).mean()
+    df = df.rename(columns={"Value": "Average Gene Expression For Drugs"})
+    sns.stripplot(data=df, x="Gene", y="Average Gene Expression For Drugs", hue="Cell Type", dodge=True, jitter=False, ax=ax)
     
 
 def flattenWeightedProjs(data, factors, projs):
@@ -621,6 +632,7 @@ def investigate_comp(comp: int, rank: int, obs, proj_B, obs_column, ax, threshol
     ax.tick_params(axis="x", rotation=90)
     ax.set_title(obs_column + ' Percentages, Threshold: ' + str(threshold) + ' for comp ' + str(comp))
 
+
 def plotGenesFromGO(go_term, C_matrix, component, ax, accession = False):
     """Plot the genes associated with a certain GO term, with bars corresponding to their
     weights in `component`. 
@@ -655,6 +667,15 @@ def plotGenesFromGO(go_term, C_matrix, component, ax, accession = False):
     ax.axhline(y = top_value, linestyle = '--', color = '#e76f51')
     ax.axhline(y = bottom_value, linestyle = '--', color = '#e76f51')
     
+def plot2DSeparationByComp(merged_data, x_y: tuple, hue, ax):
+    """
+    Plots the separation of some observation variable (hue) that is contained in
+    the input merged dataframe across two components, passed as two strings in a tuple (x_y)
+    that denote the names of the columns to be used for the x and y axes.   
+    """
+    sns.scatterplot(data = merged_data, x = x_y[0], y = x_y[1], hue = hue, ax = ax)
+
+
 def plotROCAcrossGroups(A_matrix, group_labs, ax, 
                         pred_group = 'SLE_status',
                         cv_group = 'Processing_Cohort',
@@ -684,6 +705,11 @@ def plotROCAcrossGroups(A_matrix, group_labs, ax,
     mean_fpr = np.linspace(0, 1, 100)
 
     for fold, (train, test) in enumerate(sgkf.split(A_matrix, condition_labels.to_numpy(), group_cond_labels.to_numpy())):
+        # adding escape option for the second fold (@ index 1) because it has no SLE cases.
+        # otherwise we just get NA for our mean and NA for that fold. which isn't super helpful
+        # this if statement shouldn't be used with other data
+        if fold == 1:
+            continue
         log_reg.fit(A_matrix[train], condition_labels.to_numpy()[train])
         viz = RocCurveDisplay.from_estimator(
             log_reg,
@@ -695,10 +721,10 @@ def plotROCAcrossGroups(A_matrix, group_labs, ax,
             ax=ax,
             plot_chance_level=(fold == n_splits - 1),
         )
-    interp_tpr = np.interp(mean_fpr, viz.fpr, viz.tpr)
-    interp_tpr[0] = 0.0
-    tprs.append(interp_tpr)
-    aucs.append(viz.roc_auc)
+        interp_tpr = np.interp(mean_fpr, viz.fpr, viz.tpr)
+        interp_tpr[0] = 0.0
+        tprs.append(interp_tpr)
+        aucs.append(viz.roc_auc)
 
     mean_tpr = np.mean(tprs, axis=0)
     mean_tpr[-1] = 1.0
