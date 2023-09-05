@@ -6,7 +6,17 @@ from .common import subplotLabel, getSetup, flattenData, plotGeneUMAP, openUMAP
 from ..imports.scRNA import ThompsonXA_SCGenes
 import umap
 from sklearn.decomposition import PCA
-import numpy as np
+from .common.common import (
+    subplotLabel,
+    getSetup,
+    flattenData
+)
+from .common.plotUMAP import (
+    plotGeneUMAP
+)
+from ..imports.scRNA import ThompsonXA_SCGenes
+from .common.saveFiles import openUMAP
+
 
 
 def makeFigure():

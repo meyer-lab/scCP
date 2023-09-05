@@ -1,5 +1,12 @@
 """Gene ontology for gene factors of Pf2"""
-from .common import subplotLabel, getSetup, plotCombGO, plotPvalGO
+from .common.common import (
+    subplotLabel,
+    getSetup,
+)
+from .common.plotGeneOntology import (
+    plotCombGO,
+    plotPvalGO
+)
 from ..geneontology import geneOntology
 
 

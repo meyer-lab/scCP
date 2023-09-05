@@ -5,15 +5,15 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 """
 
 # GOAL: visualize the cell state compostition by cell type/UMAP
-
-from .common import (
+from .common.common import (
     subplotLabel,
     getSetup,
-    plotCmpUMAP,
-    plotUMAP_obslabel,
-    openPf2,
-    openUMAP,
 )
+from .common.plotUMAP import (
+    plotCmpUMAP,
+    plotUMAP_obslabel
+)
+from .common.saveFiles import openPf2, openUMAP
 from ..imports.scRNA import load_lupus_data
 
 

@@ -1,7 +1,15 @@
 """
 Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs
 """
-from .common import subplotLabel, getSetup, plotCmpUMAP, openUMAP, openPf2
+from .common.common import (
+    subplotLabel,
+    getSetup,
+)
+from .common.plotUMAP import (
+    plotCmpUMAP,
+)
+from .common.saveFiles import openPf2, openUMAP
+
 import numpy as np
 
 

@@ -1,18 +1,20 @@
 """
 Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs
 """
-from .common import (
+from .common.common import (
     subplotLabel,
     getSetup,
-    plotCmpUMAP,
-    openPf2,
-    openUMAP,
     flattenData,
     flattenWeightedProjs,
+    plotGenePerCellType
+)
+from .common.plotUMAP import (
     plotCellTypeUMAP,
     plotCmpPerCellType,
-    plotGenePerCellType,
+    plotCmpUMAP
 )
+from .common.saveFiles import openPf2, openUMAP
+from ..imports.scRNA import ThompsonXA_SCGenes
 from ..imports.scRNA import ThompsonXA_SCGenes
 from ..imports.gating import gateThomsonCells
 

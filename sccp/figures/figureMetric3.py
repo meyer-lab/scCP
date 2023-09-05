@@ -1,6 +1,12 @@
 """Investigating metrics for datasets"""
-from .common import (subplotLabel, getSetup, 
-   plotMetricSCIB, plotMetricNormSCIB)
+from .common.common import (
+    subplotLabel,
+    getSetup,
+)
+from .common.plotMetrics import (
+    plotMetricNormSCIB,
+    plotMetricSCIB
+)
 from ..imports.scib import  import_scib_metrics, normalize_scib
 
 

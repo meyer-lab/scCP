@@ -1,15 +1,17 @@
 """
 Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs: investigating UMAP
 """
-import numpy as np
-from .common import (
+from .common.common import (
     subplotLabel,
     getSetup,
-    flattenData,
-    plotDrugUMAP,
-    plotGeneUMAP,
-    openUMAP,
+    flattenData
 )
+from .common.plotUMAP import (
+    plotDrugUMAP,
+    plotGeneUMAP
+)
+from ..imports.scRNA import ThompsonXA_SCGenes
+from .common.saveFiles import openUMAP
 from ..imports.scRNA import ThompsonXA_SCGenes
 import umap
 from sklearn.decomposition import PCA

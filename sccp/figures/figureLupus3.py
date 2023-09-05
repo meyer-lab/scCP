@@ -5,14 +5,15 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 """
 
 # GOAL: visualize the component compostition by cell type
-
-from .common import (
+from .common.common import (
     subplotLabel,
     getSetup,
-    plotCmpPerCellType,
     flattenWeightedProjs,
-    openPf2,
 )
+from .common.plotUMAP import (
+    plotCmpPerCellType
+)
+from .common.saveFiles import openPf2
 from ..imports.scRNA import load_lupus_data
 
 
