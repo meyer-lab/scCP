@@ -13,7 +13,11 @@ from .common.plotUMAP import (
     plotCmpUMAP,
     plotUMAP_obslabel
 )
-from .common.saveFiles import openPf2, openUMAP
+from .common.saveFiles import (
+    openPf2,
+    openUMAP
+)
+
 from ..imports.scRNA import load_lupus_data
 
 
