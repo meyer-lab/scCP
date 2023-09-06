@@ -4,16 +4,14 @@ Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs: investiga
 from .common import (
     subplotLabel,
     getSetup,
-)
-from .commonFuncs.plotGeneral import(
-    flattenData,
+    openUMAP,
+    flattenData
 )
 from .commonFuncs.plotUMAP import(
     plotGeneUMAP,
     plotDrugUMAP
 )
 from ..imports.scRNA import ThompsonXA_SCGenes
-from .commonFuncs.saveFiles import openUMAP
 from ..imports.scRNA import ThompsonXA_SCGenes
 import umap
 from sklearn.decomposition import PCA

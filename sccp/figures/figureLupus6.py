@@ -11,9 +11,9 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 from .common import (
     subplotLabel,
     getSetup,
+    openPf2
 )
 
-from .commonFuncs.saveFiles import openPf2
 from ..imports.scRNA import load_lupus_data
 from ..logisticReg import getPf2ROC
 from sklearn.metrics import RocCurveDisplay

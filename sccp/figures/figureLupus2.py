@@ -8,16 +8,13 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 from .common import (
     subplotLabel,
     getSetup,
+    openPf2,
+    openUMAP
 )
 from .commonFuncs.plotUMAP import (
     plotCmpUMAP,
     plotUMAP_obslabel
 )
-from .commonFuncs.saveFiles import (
-    openPf2,
-    openUMAP
-)
-
 from ..imports.scRNA import load_lupus_data
 
 

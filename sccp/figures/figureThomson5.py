@@ -9,6 +9,7 @@ from sklearn.decomposition import PCA
 from .common import (
     subplotLabel,
     getSetup,
+    openUMAP
 )
 from .commonFuncs.plotGeneral import(
     flattenData,
@@ -17,7 +18,6 @@ from .commonFuncs.plotUMAP import (
     plotGeneUMAP
 )
 from ..imports.scRNA import ThompsonXA_SCGenes
-from .commonFuncs.saveFiles import openUMAP
 
 
 

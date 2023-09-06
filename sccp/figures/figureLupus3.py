@@ -9,11 +9,11 @@ from .common import (
     subplotLabel,
     getSetup,
     flattenWeightedProjs,
+    openPf2
 )
 from .commonFuncs.plotUMAP import (
     plotCmpPerCellType
 )
-from .commonFuncs.saveFiles import openPf2
 from ..imports.scRNA import load_lupus_data
 
 

@@ -4,6 +4,7 @@ Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs
 from .common import (
     subplotLabel,
     getSetup,
+    openPf2
 )
 from .commonFuncs.plotGeneral import(
     plotCV,
@@ -13,7 +14,6 @@ from .commonFuncs.plotFactors import (
     plotFactors,
     plotWeight,
 )
-from .commonFuncs.saveFiles import openPf2
 from ..imports.scRNA import ThompsonXA_SCGenes
 from parafac2 import parafac2_nd
 

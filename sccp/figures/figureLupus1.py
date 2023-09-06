@@ -10,12 +10,12 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 from .common import (
     subplotLabel,
     getSetup,
+    openPf2
 )
 from .commonFuncs.plotFactors import (
     plotFactors,
     plotWeight,
 )
-from .commonFuncs.saveFiles import openPf2
 from ..imports.scRNA import load_lupus_data
 
 
@@ -43,7 +43,7 @@ def makeFigure():
 
     group_labs = status.set_index("sample_ID")[group_to_label]
 
-    weights, factors, _ = openPf2(rank=rank, dataName="lupus", optProjs=False)
+    weights, factors, _ = openPf2(rank=rank, dataName="lupus", optProjs=True)
 
     plotFactors(
         factors,
