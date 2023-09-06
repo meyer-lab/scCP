@@ -8,12 +8,12 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 # comparison to Perez et al (linked above) fig 4C
 
 # load functions/modules ----
-from .common.common import (
+from .common import (
     subplotLabel,
     getSetup,
 )
 
-from .common.saveFiles import openPf2
+from .commonFuncs.saveFiles import openPf2
 from ..imports.scRNA import load_lupus_data
 from ..logisticReg import getPf2ROC
 from sklearn.metrics import RocCurveDisplay

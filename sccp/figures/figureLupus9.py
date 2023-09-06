@@ -8,14 +8,14 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 # (they can, at least when you do 13 and 26)
 
 # load functions/modules ----
-from .common.common import (
+from .common import (
     subplotLabel,
     getSetup,
 )
-from .common.plotLupus import (
+from .commonFuncs.plotLupus import (
     plot2DSeparationByComp
 )
-from .common.saveFiles import openPf2
+from .commonFuncs.saveFiles import openPf2
 from ..imports.scRNA import load_lupus_data
 import numpy as np
 import pandas as pd

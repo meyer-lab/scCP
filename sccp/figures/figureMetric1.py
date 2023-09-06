@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from itertools import groupby
 
-from .common.common import (
+from .common import (
     subplotLabel,
     getSetup,
 )

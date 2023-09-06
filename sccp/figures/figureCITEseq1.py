@@ -1,11 +1,11 @@
 """
 Hamad CITEseq dataset
 """
-from .common.common import (
+from .common import (
     subplotLabel,
     getSetup,
 )
-from .common.plotFactors import (
+from .commonFuncs.plotFactors import (
     plotFactors,
     plotWeight,
 )

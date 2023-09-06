@@ -1,9 +1,9 @@
 """Investigating metrics for datasets"""
-from .common.common import (
+from .common import (
     subplotLabel,
     getSetup,
 )
-from .common.plotMetrics import (
+from .commonFuncs.plotMetrics import (
     plotMetricNormSCIB,
     plotMetricSCIB
 )

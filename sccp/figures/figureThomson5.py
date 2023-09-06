@@ -6,16 +6,18 @@ from .common import subplotLabel, getSetup, flattenData, plotGeneUMAP, openUMAP
 from ..imports.scRNA import ThompsonXA_SCGenes
 import umap
 from sklearn.decomposition import PCA
-from .common.common import (
+from .common import (
     subplotLabel,
     getSetup,
-    flattenData
 )
-from .common.plotUMAP import (
+from .commonFuncs.plotGeneral import(
+    flattenData,
+)
+from .commonFuncs.plotUMAP import (
     plotGeneUMAP
 )
 from ..imports.scRNA import ThompsonXA_SCGenes
-from .common.saveFiles import openUMAP
+from .commonFuncs.saveFiles import openUMAP
 
 
 

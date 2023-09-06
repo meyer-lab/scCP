@@ -3,15 +3,15 @@ import numpy as np
 from ..imports.scib import import_scib_data
 from parafac2 import parafac2_nd
 import umap
-from .common.common import (
+from .common import (
     subplotLabel,
     getSetup,
     flattenData
 )
-from .common.plotUMAP import (
+from .commonFuncs.plotUMAP import (
     plotLabelAllUMAP
 )
-from .common.plotFactors import (
+from .commonFuncs.plotFactors import (
     plotFactors
 )
 
