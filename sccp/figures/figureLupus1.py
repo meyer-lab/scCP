@@ -43,7 +43,7 @@ def makeFigure():
 
     group_labs = status.set_index("sample_ID")[group_to_label]
 
-    weights, factors, _ = openPf2(rank=rank, dataName="lupus", optProjs=True)
+    weights, factors, _ = openPf2(rank=rank, dataName="lupus", optProjs=False)
 
     plotFactors(
         factors,
