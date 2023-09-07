@@ -87,6 +87,21 @@ def plotGenePerCellType(genes, dataDF, ax):
     data = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=genes).rename(
             columns={"variable": "Gene", "value": "Value"})
     df = data.groupby(["Condition", "Cell Type", "Gene"]).mean()
-    df = df.rename(columns={"Value": "Average Gene Expression For Drugs"})
+    
+    df = df.rename(columns={"Value": "Average Gene Expression For Drugs"}).reset_index()
+    print(df)
+    # df = df.loc[df["Cell Type"] == "B Cells"]
+    drug = "Dexrazoxane HCl (ICRF-187, ADR-529"
+    drugA = "Dex HCl"
+    df["Condition"]= df["Condition"].where(df["Condition"] == drug, "Oth")
+    
+    
+    print(np.unique(df["Condition"]))
+    print(df)
+    a
+    # df["Condition"]= df["Condition"].where(df["Condition"] == drug, drug).where(df["Condition"] < 60, 'Pass')
+    # df["Condition"]= df['score'].where(df['score']  60, "Dexrazoxane HCl (ICRF-187, ADR-529").where(df['score'] < 60, 'Pass')
     sns.stripplot(data=df, x="Gene", y="Average Gene Expression For Drugs", hue="Cell Type", dodge=True, jitter=False, ax=ax)
     
+
+ 
