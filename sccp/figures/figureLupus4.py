@@ -41,7 +41,7 @@ def makeFigure():
         ranks_to_test,
         cv_group="Processing_Cohort",
     )
-    print(results)
+
     plotPf2RankTest(results, ax[0])
 
     return f
