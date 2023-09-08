@@ -4,13 +4,6 @@ Hamad CITEseq dataset
 from .common import (
     subplotLabel,
     getSetup,
-    flattenData,
-)
-from .commonFuncs.plotFactors import (
-    plotFactors,
-)
-from .commonFuncs.plotUMAP import (
-    plotCondUMAP
 )
 import umap
 from ..imports.citeseq import import_citeseq, combine_all_citeseq
@@ -30,7 +23,7 @@ def makeFigure():
     data = import_citeseq()
     rank = 40
 
-    weight, factors, projs, _ = parafac2_nd(
+    _, factors, projs, _ = parafac2_nd(
         data,
         rank=rank,
         random_state=1,
