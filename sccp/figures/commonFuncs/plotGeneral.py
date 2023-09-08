@@ -91,17 +91,20 @@ def plotGenePerCellType(genes, dataDF, ax):
     df = df.rename(columns={"Value": "Average Gene Expression For Drugs"}).reset_index()
     print(df)
     # df = df.loc[df["Cell Type"] == "B Cells"]
-    drug = "Dexrazoxane HCl (ICRF-187, ADR-529"
+    drug = "Dexrazoxane HCl (ICRF-187, ADR-529)"
     drugA = "Dex HCl"
-    df["Condition"]= df["Condition"].where(df["Condition"] == drug, "Oth")
+    # df["Condition"]= df["Condition"].where(df["Condition"] == drug, drugA).where(df["Condition"] != drug, "Oth")
+    # df["Condition"]= df["Condition"].where(df["Condition"] == drug, "Oth")
     
+
+    df["Condition"] = np.where(df["Condition"].isin([drug]), df["Condition"], "Other")
+    df = df.replace({"Condition": {drug: drugA}})
     
     print(np.unique(df["Condition"]))
     print(df)
-    a
     # df["Condition"]= df["Condition"].where(df["Condition"] == drug, drug).where(df["Condition"] < 60, 'Pass')
     # df["Condition"]= df['score'].where(df['score']  60, "Dexrazoxane HCl (ICRF-187, ADR-529").where(df['score'] < 60, 'Pass')
-    sns.stripplot(data=df, x="Gene", y="Average Gene Expression For Drugs", hue="Cell Type", dodge=True, jitter=False, ax=ax)
+    sns.stripplot(data=df, x="Gene", y="Average Gene Expression For Drugs", hue="Cell Type", style = "Condition", dodge=True, jitter=False, ax=ax)
     
 
  
