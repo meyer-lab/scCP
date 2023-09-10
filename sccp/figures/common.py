@@ -88,41 +88,78 @@ def genFigure():
     ff.savefig(fdir + nameOut + ".png", dpi=300, bbox_inches="tight", pad_inches=0)
 
     print(f"Figure {sys.argv[1]} is done after {time.time() - start} seconds.\n")
-    
-    
+
 
 def savePf2(weight, factors, projs, dataName: str):
     """Saves weight factors and projections for one dataset for a component"""
     rank = len(weight)
-    np.save(("./"+dataName+"/"+dataName+"_WeightCmp"+str(rank)+".npy"), weight)
+    np.save(
+        ("./" + dataName + "/" + dataName + "_WeightCmp" + str(rank) + ".npy"), weight
+    )
     factor = ["A", "B", "C"]
     for i in range(3):
-        np.save(("./"+dataName+"/"+dataName+"_Factor"+str(factor[i])+"Cmp"+str(rank)+ ".npy"), factors[i])
-    np.save(("./"+dataName+"/"+dataName+"_ProjCmp"+str(rank)+".npy"), np.concatenate(projs, axis=0))
+        np.save(
+            (
+                "./"
+                + dataName
+                + "/"
+                + dataName
+                + "_Factor"
+                + str(factor[i])
+                + "Cmp"
+                + str(rank)
+                + ".npy"
+            ),
+            factors[i],
+        )
+    np.save(
+        ("./" + dataName + "/" + dataName + "_ProjCmp" + str(rank) + ".npy"),
+        np.concatenate(projs, axis=0),
+    )
 
-    
-def openPf2(rank: int, dataName: str, optProjs = False):
+
+def openPf2(rank: int, dataName: str, optProjs=False):
     """Opens weight factors and projections for one dataset for a component as numpy arrays"""
-    weight = np.load(("./"+dataName+"/"+dataName+"_WeightCmp"+str(rank)+".npy"), allow_pickle=True)
-    factors = [np.load(("./"+dataName+"/"+dataName+"_FactorACmp"+str(rank)+ ".npy"), allow_pickle=True),
-               np.load(("./"+dataName+"/"+dataName+"_FactorBCmp"+str(rank)+ ".npy"), allow_pickle=True),
-               np.load(("./"+dataName+"/"+dataName+"_FactorCCmp"+str(rank)+ ".npy"), allow_pickle=True)]
+    weight = np.load(
+        ("./" + dataName + "/" + dataName + "_WeightCmp" + str(rank) + ".npy"),
+        allow_pickle=True,
+    )
+    factors = [
+        np.load(
+            ("./" + dataName + "/" + dataName + "_FactorACmp" + str(rank) + ".npy"),
+            allow_pickle=True,
+        ),
+        np.load(
+            ("./" + dataName + "/" + dataName + "_FactorBCmp" + str(rank) + ".npy"),
+            allow_pickle=True,
+        ),
+        np.load(
+            ("./" + dataName + "/" + dataName + "_FactorCCmp" + str(rank) + ".npy"),
+            allow_pickle=True,
+        ),
+    ]
 
     if optProjs is False:
-        projs = np.load(("./"+dataName+"/"+dataName+"_ProjCmp"+str(rank)+".npy"), allow_pickle=True)
+        projs = np.load(
+            ("./" + dataName + "/" + dataName + "_ProjCmp" + str(rank) + ".npy"),
+            allow_pickle=True,
+        )
     else:
-        projs = np.load(f"/opt/andrew/{dataName}/{dataName}_ProjCmp{str(rank)}.npy", allow_pickle=True)
+        projs = np.load(
+            f"/opt/andrew/{dataName}/{dataName}_ProjCmp{str(rank)}.npy",
+            allow_pickle=True,
+        )
 
     return weight, factors, projs
 
 
-def saveUMAP(fit_points, rank:int, dataName: str):
+def saveUMAP(fit_points, rank: int, dataName: str):
     """Saves UMAP points locally, large files uploaded manually to opt"""
-    f_name = "./data/"+dataName+"/"+dataName+"_UMAPCmp"+str(rank)+".sav"
-    pickle.dump(fit_points, open(f_name, 'wb'))
+    f_name = "./data/" + dataName + "/" + dataName + "_UMAPCmp" + str(rank) + ".sav"
+    pickle.dump(fit_points, open(f_name, "wb"))
 
 
-def openUMAP(rank: int, dataName: str, opt = True):
+def openUMAP(rank: int, dataName: str, opt=True):
     """Opens UMAP points for plotting, defaults to using the opt folder (for big files)"""
     if opt == True:
         f_name = "/opt/andrew/"
@@ -130,7 +167,7 @@ def openUMAP(rank: int, dataName: str, opt = True):
         f_name = "./"
 
     f_name = f_name + dataName + f"/{dataName}_UMAPCmp{str(rank)}.sav"
-    return pickle.load((open(f_name, 'rb')))
+    return pickle.load((open(f_name, "rb")))
 
 
 def flattenData(data):
@@ -167,7 +204,7 @@ def flattenWeightedProjs(data, factors, projs):
 
     weightedProjs = projs @ factors[1]
 
-    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs),axis=0)
+    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs), axis=0)
 
     cmpNames = [f"Cmp. {i}" for i in np.arange(1, weightedProjs.shape[1] + 1)]
     dataDF = pd.DataFrame(data=weightedProjs, columns=cmpNames)
