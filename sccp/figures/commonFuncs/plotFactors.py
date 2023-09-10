@@ -5,11 +5,6 @@ import numpy as np
 import scipy.cluster.hierarchy as sch
 from ...parafac2 import Pf2X
 from matplotlib.patches import Patch
-import os
-import pandas as pd
-
-
-path_here = os.path.dirname(os.path.dirname(__file__))
 
 
 

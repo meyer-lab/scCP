@@ -1,12 +1,9 @@
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import scipy.io
 import anndata
-import os
-from os.path import join
 from .scRNA import tensorFy
-
-path_here = os.path.dirname(os.path.dirname(__file__))
 
 
 def combine_all_citeseq(saveAdata = False):
@@ -51,7 +48,7 @@ def combine_all_citeseq(saveAdata = False):
         return adata
     
     else:
-        adata.write_h5ad(join(path_here, "data/HamadCITEseq.h5ad"))
+        adata.write_h5ad(Path("./data/HamadCITEseq.h5ad"))
     
 
 def import_citeseq():
@@ -61,7 +58,7 @@ def import_citeseq():
     # A 32-bit float is high enough precision and uses 50% of the memory
     X.X = np.asarray(X.X, dtype=np.float32)
 
-    scalingfactor = 1000
+    scalingfactor = 1000.0
 
     assert np.all(np.isfinite(X.X.data))
 
