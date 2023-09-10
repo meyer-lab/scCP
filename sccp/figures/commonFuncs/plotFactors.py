@@ -27,7 +27,7 @@ def plotFactors(
             yt = data.condition_labels
             title = "Components by Condition"
         elif i == 1:
-            yt = [f"Cell State {i}" for i in np.arange(1, rank + 1)]
+            yt = np.array([f"Cell State {i}" for i in np.arange(1, rank + 1)], dtype=object)
             title = "Components by Cell State"
         else:
             yt = data.variable_labels

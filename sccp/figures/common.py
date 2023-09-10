@@ -10,6 +10,7 @@ from matplotlib import gridspec, pyplot as plt
 import numpy as np
 import pickle
 import pandas as pd
+from ..parafac2 import Pf2X
 
 
 matplotlib.use("AGG")
@@ -90,7 +91,7 @@ def genFigure():
     print(f"Figure {sys.argv[1]} is done after {time.time() - start} seconds.\n")
 
 
-def savePf2(weight, factors, projs, dataName: str):
+def savePf2(weight: np.ndarray, factors: list[np.ndarray], projs, dataName: str):
     """Saves weight factors and projections for one dataset for a component"""
     rank = len(weight)
     np.save(
@@ -170,22 +171,17 @@ def openUMAP(rank: int, dataName: str, opt=True):
     return pickle.load((open(f_name, "rb")))
 
 
-def flattenData(data):
-    """Flattens tensor into dataframe"""
-    cellCount = []
-    for i in range(len(data.X_list)):
-        cellCount = np.append(cellCount, data.X_list[i].shape[0])
+def flattenData(data: Pf2X) -> pd.DataFrame:
+    """Flattens tensor into dataframe."""
+    dataDF = pd.DataFrame(data=data.unfold(), columns=data.variable_labels)
 
-    condNames = []
-
-    for i in range(len(data.X_list)):
+    condNames = np.array([])
+    for i, xx in enumerate(data.X_list):
         condNames = np.append(
-            condNames, np.repeat(data.condition_labels[i], cellCount[i])
+            condNames, np.repeat(data.condition_labels[i], xx.shape[0])
         )
-    flatData = np.concatenate(data.X_list, axis=0)
-    dataDF = pd.DataFrame(data=flatData, columns=data.variable_labels)
+    
     dataDF["Condition"] = condNames
-
     return dataDF
 
 

@@ -25,9 +25,7 @@ def makeFigure():
     data = import_citeseq()
     rank = 40
 
-    return f
-
-    weight, factors, projs, _ = parafac2_nd(
+    _, factors, projs, _ = parafac2_nd(
         data,
         rank=rank,
         random_state=1,
