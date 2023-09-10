@@ -118,7 +118,7 @@ def openPf2(rank: int, dataName: str, optProjs = False):
 
 def saveUMAP(fit_points, rank:int, dataName: str):
     """Saves UMAP points locally, large files uploaded manually to opt"""
-    f_name = "./data/"+dataName+"/"+dataName+"_UMAPCmp"+str(rank)+".sav")
+    f_name = "./data/"+dataName+"/"+dataName+"_UMAPCmp"+str(rank)+".sav"
     pickle.dump(fit_points, open(f_name, 'wb'))
 
 
