@@ -1,12 +1,8 @@
-from os.path import dirname
 import numpy as np
 import pandas as pd
 from scipy.stats import linregress
 import anndata
 from ..parafac2 import Pf2X
-
-
-path_here = dirname(dirname(__file__))
 
 
 def tensorFy(annD: anndata.AnnData, obsName: str) -> Pf2X:

@@ -32,7 +32,7 @@ def makeFigure():
     dataDF = flattenData(data)
 
     rank = 30
-    dataDF["Cell Type"] = gateThomsonCells(rank=rank, saveCellTypes=False)
+    dataDF["Cell Type"] = gateThomsonCells(rank=rank)
 
     _, factors, projs = openPf2(rank, "Thomson")
     pf2Points = openUMAP(rank, "Thomson", opt=False)
