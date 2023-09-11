@@ -66,7 +66,8 @@ def makeFigure():
     geneSet3 = ["CD163", "ADORA3"]
     plotGenePerCategCond(glucs, "Gluco", geneSet3, dataDF, ax[11:13])
 
-    geneSet4 =["VPREB3", "FAM111B"] 
-    plotGenePerCategCond(["Dexrazoxane HCl (ICRF-187, ADR-529)"], "Dex HCl", geneSet4, dataDF, ax[13:15])
+    # geneSet4 =["VPREB3", "CD79A", "FAM111B", "HOPX", "SLC30A3", "CCNB1", "GADD45A", "SLC40A1", "CDC20", "ITIH3"]
+    # plotGenePerCategCond(["Dexrazoxane HCl (ICRF-187, ADR-529)"], "Dex HCl", geneSet4, dataDF, ax[0:len(geneSet4)])
    
     return f
+
