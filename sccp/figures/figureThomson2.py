@@ -28,7 +28,7 @@ import seaborn as sns
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((20, 20), (2, 3))
+    ax, f = getSetup((16, 16), (3, 4))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -42,32 +42,48 @@ def makeFigure():
     dataDF["Cell Type"] = gateThomsonCells(rank=rank, saveCellTypes=False)
 
     _, factors, projs = openPf2(rank, "Thomson")
-    # pf2Points = openUMAP(rank, "Thomson", opt=False)
+    pf2Points = openUMAP(rank, "Thomson", opt=False)
+    
+    weightedProjDF = flattenWeightedProjs(data, factors, projs)
+    weightedProjDF["Cell Type"] = dataDF["Cell Type"].values
+    weightedProjDF.sort_values(by=["Condition", "Cell Type"], inplace=True)
+    dataDF.sort_values(by=["Condition", "Cell Type"], inplace=True)
+
+    cmp=20
+    comps = [cmp]
+    for i, comp in enumerate(comps):
+        # plotCmpPerCellType(weightedProjDF, comps[i], ax[(2 * i) +1], outliers=False)
+        # plotCmpUMAP(comps[i], factors, pf2Points, projs, ax[(2 * i) + 2])
+        b = plotCmpUMAP(comps[i], factors, pf2Points, projs, ax[i])
+
     
     pf2Points = umap.UMAP(random_state=1).fit_transform(projs)
-    cmp=20
-    cellSkip = 3
+    
+    cellSkip = 10
     umap1 = pf2Points[::cellSkip, 0]
     umap2 = pf2Points[::cellSkip, 1]
     weightedProjs = projs @ factors[1]
+    a = weightedProjs[:, cmp-1]
     weightedProjs = weightedProjs[:, cmp-1]
+
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
     weightedProjs = weightedProjs[::cellSkip]
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
     psm = plt.pcolormesh([[-1, 1],[-1, 1]], cmap=cmap)
 
-    ax[0].scatter(
+    ax[1].scatter(
             umap1,
             umap2,
             c=weightedProjs,
             cmap=cmap,
             s=0.2,
+            alpha=1
         )
-    plt.colorbar(psm, ax=ax[0])
+    plt.colorbar(psm, ax=ax[1])
 
     # plot = umap.plot.points(pf2Points, values=weightedProjs, cmap=cmap, subset_points= subset, ax=ax)
     # colorbar= plt.colorbar(psm, ax=plot)
-    ax[0].set(
+    ax[1].set(
         ylabel="UMAP2",
         xlabel="UMAP1",
         title="Component:" + str(cmp),
@@ -75,8 +91,8 @@ def makeFigure():
         yticks=np.linspace(np.min(umap2), np.max(umap2), num=5),
     )
 
-    ax[0].axes.xaxis.set_ticklabels([])
-    ax[0].axes.yaxis.set_ticklabels([])
+    ax[1].axes.xaxis.set_ticklabels([])
+    ax[1].axes.yaxis.set_ticklabels([])
  
     # subset = np.random.choice(a=[False, True], size=len(dataDF["Cell Type"].values), p=[.75, .25])
     # umap.plot.points(pf2Points,subset_points=subset, ax=ax[0])
@@ -98,16 +114,9 @@ def makeFigure():
 
     # # plotCellTypeUMAP(pf2Points, dataDF, ax[0])
 
-    # weightedProjDF = flattenWeightedProjs(data, factors, projs)
-    # weightedProjDF["Cell Type"] = dataDF["Cell Type"].values
-    # weightedProjDF.sort_values(by=["Condition", "Cell Type"], inplace=True)
-    # dataDF.sort_values(by=["Condition", "Cell Type"], inplace=True)
 
-    # comps = [5, 12 , 30, 20]
-    # for i, comp in enumerate(comps):
-        # plotCmpPerCellType(weightedProjDF, comps[i], ax[(2 * i) +1], outliers=False)
-        # plotCmpUMAP(comps[i], factors, pf2Points, projs, ax[(2 * i) + 2])
-        # plotCmpUMAP(comps[i], factors, pf2Points, projs, ax[i])
+    np.testing.assert_allclose(a,b)
+
 
     # geneSet1 = ["NKG7", "GNLY", "GZMB", "GZMH", "PRF1"]
     # geneSet2 = ["MS4A1", "CD79A", "CD79B", "TNFRSF13B", "BANK1"]
