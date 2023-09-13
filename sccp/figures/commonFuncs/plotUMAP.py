@@ -43,10 +43,10 @@ def plotCmpUMAP(cmp, factors, pf2Points, allP, ax):
     weightedProjs = weightedProjs[:, cmp-1]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
-    subset = np.random.choice(a=[False, True], size=np.shape(weightedProjs)[0], p=[.75, .25])
-    subset[np.argmax(np.abs(weightedProjs))] = True # Ensure largest value is -1 or 1
+    # subset = np.random.choice(a=[False, True], size=np.shape(weightedProjs)[0], p=[.75, .25])
+    # subset[np.argmax(np.abs(weightedProjs))] = True # Ensure largest value is -1 or 1
     psm = plt.pcolormesh([[-1, 1],[-1, 1]], cmap=cmap)
-    plot = umap.plot.points(pf2Points, values=weightedProjs, cmap=cmap, subset_points=subset, ax=ax)
+    plot = umap.plot.points(pf2Points, values=weightedProjs, cmap=cmap, ax=ax)
     colorbar= plt.colorbar(psm, ax=plot, label="Cell Specific Weight")
     ax.set(
         ylabel="UMAP2",

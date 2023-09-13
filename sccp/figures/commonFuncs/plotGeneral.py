@@ -102,7 +102,12 @@ def plotGenePerCategCond(conds, categoryCond, genes, dataDF, axs):
     for i in conds:
         df = df.replace({"Condition": {i: categoryCond}})
 
+    print(np.unique(df["Condition"]))
     for i, gene in enumerate(genes):
-        sns.boxplot(data=df.loc[df["Gene"] == gene], x="Cell Type", y="Average Gene Expression For Drugs", hue="Condition", ax=axs[i])
+        print(df.loc[df["Gene"] == gene])
+        print(np.shape(df.loc[df["Gene"] == gene]))
+        l = df.loc[df["Gene"] == gene]
+        print(df.loc[df["Condition"] == "Dex HCl"])
+        sns.swarmplot(data=df.loc[df["Gene"] == gene], x="Cell Type", y="Average Gene Expression For Drugs", hue="Condition", ax=axs[i])
         axs[i].set(title=gene)
 
