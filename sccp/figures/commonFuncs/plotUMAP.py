@@ -42,17 +42,20 @@ def plotCmpUMAP(cmp, factors, pf2Points, allP, ax):
     projections for a component and cell state"""
     weightedProjs = allP @ factors[1]
     weightedProjs = weightedProjs[:, cmp-1]
+    b = weightedProjs
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
-    subset = np.random.choice(a=[False, True], size=np.shape(weightedProjs)[0], p=[.75, .25])
-    subset[np.argmax(np.abs(weightedProjs))] = True # Ensure largest value is -1 or 1
+    # subset = np.random.choice(a=[False, True], size=np.shape(weightedProjs)[0], p=[.75, .25])
+    # subset[np.argmax(np.abs(weightedProjs))] = True # Ensure largest value is -1 or 1
     psm = plt.pcolormesh([[-1, 1],[-1, 1]], cmap=cmap)
-    plot = umap.plot.points(pf2Points, values=weightedProjs, cmap=cmap, subset_points=subset, ax=ax)
+    plot = umap.plot.points(pf2Points, values=weightedProjs, cmap=cmap, ax=ax)
     colorbar= plt.colorbar(psm, ax=plot, label="Cell Specific Weight")
     ax.set(
         ylabel="UMAP2",
         xlabel="UMAP1",
         title="Cmp. " + str(cmp))
+    
+    return b
     
 def plotCmpUMAP2(cmp, factors, pf2Points, allP, ax, cellPerc=25):
     # subset = np.random.choice(a=[False, True], size=np.shape(allP)[0], p=[1-(cellPerc/100), cellPerc/100])
@@ -61,6 +64,7 @@ def plotCmpUMAP2(cmp, factors, pf2Points, allP, ax, cellPerc=25):
     weightedProjs = allP @ factors[1]
     weightedProjs = weightedProjs[:, cmp-1]
     weightedProjs = weightedProjs
+    a = weightedProjs
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
     
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
@@ -83,6 +87,59 @@ def plotCmpUMAP2(cmp, factors, pf2Points, allP, ax, cellPerc=25):
     )
     ax.axes.xaxis.set_ticklabels([])
     ax.axes.yaxis.set_ticklabels([])
+    
+    return a
+
+
+def plotCmpUMAP3(cmp, factors, pf2Points, allP, ax, cellPerc=25):
+    # subset = np.random.choice(a=[False, True], size=np.shape(allP)[0], p=[1-(cellPerc/100), cellPerc/100])
+    umap1 = pf2Points[:, 0]
+    umap2 = pf2Points[:, 1]
+    weightedProjs = allP @ factors[1]
+    weightedProjs = weightedProjs[:, cmp-1]
+    weightedProjs = weightedProjs
+    a = weightedProjs
+    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
+    
+    cmap = sns.diverging_palette(240, 10, as_cmap=True)
+    psm = plt.pcolormesh([[-1, 1],[-1, 1]], cmap=cmap)
+
+    # ax.scatter(
+    #         umap1,
+    #         umap2,
+    #         c=weightedProjs,
+    #         cmap=cmap,
+    #         s=0.01,
+    #     )
+    
+    sns.scatterplot(
+    y=umap2,
+    x=umap1,
+    c=weightedProjs,
+    cmap=cmap,
+    s=.5,
+    ax=ax,
+    )
+    plt.colorbar(psm, ax=ax)
+    ax.set(
+        ylabel="UMAP2",
+        xlabel="UMAP1",
+        title="Cmp:" + str(cmp),
+        xticks=np.linspace(np.min(umap1), np.max(umap1), num=5),
+        yticks=np.linspace(np.min(umap2), np.max(umap2), num=5),
+    )
+    ax.axes.xaxis.set_ticklabels([])
+    ax.axes.yaxis.set_ticklabels([])
+    
+    return a
+# =sns.scatterplot(
+#     y=y,
+#     x=x,
+#     c=y,
+#     norm=normalize,
+#     cmap=colormap,
+#     ax=ax,
+# )
     
 def plotUMAP_obslabel(labels, pf2Points, ax):
     """Scatterplot of UMAP visualization labeled by cell type or other obs column"""

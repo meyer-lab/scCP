@@ -81,6 +81,7 @@ def subplotLabel(axs):
             fontweight="bold",
             va="top",
         )
+        
 
 
 def genFigure():
@@ -183,7 +184,7 @@ def flattenWeightedProjs(data, factors, projs):
 
     weightedProjs = projs @ factors[1]
 
-    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
+    # weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
 
     cmpNames = [f"Cmp. {i}" for i in np.arange(1, weightedProjs.shape[1] + 1)]
     dataDF = pd.DataFrame(data=weightedProjs, columns=cmpNames)
