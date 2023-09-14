@@ -122,11 +122,16 @@ def openPf2(rank: int, dataName: str, optProjs = False):
         
     return weight, factors, projs
 
-
+    
 def saveUMAP(fit_points, rank:int, dataName: str):
     """Saves UMAP points locally, large files uploaded manually to opt"""
-    f_name = join(path_here, "data/"+dataName+"/"+dataName+"_UMAPCmp"+str(rank)+".sav")
+    f_name = join(path_here, "data/"+dataName+"/"+dataName+"_UMAPCmp"+str(rank)+".npy")
     pickle.dump(fit_points, open(f_name, 'wb'))
+    
+    
+def saveUMAP2(fit_points, rank:int, dataName: str):
+    """Saves UMAP points locally, large files uploaded manually to opt"""
+    np.save(join(path_here, "data/"+dataName+"/"+dataName+"_UMAP2Cmp"+str(rank)+".npy"), fit_points[:, 0:2])
 
 
 def openUMAP(rank: int, dataName: str, opt = True):
@@ -136,6 +141,12 @@ def openUMAP(rank: int, dataName: str, opt = True):
     else:
         f_name = join(path_here, "data/"+dataName+"/"+dataName+"_UMAPCmp"+str(rank)+".sav")
     return pickle.load((open(f_name, 'rb')))
+
+def openUMAP2(rank: int, dataName: str):
+    """Saves UMAP points locally, large files uploaded manually to opt"""
+    umapPoints = np.load(join(path_here, "data/"+dataName+"/"+dataName+"_UMAP2Cmp"+str(rank)+".npy"), allow_pickle=True)
+        
+    return umapPoints
 
 
 def flattenData(data):
@@ -172,7 +183,7 @@ def flattenWeightedProjs(data, factors, projs):
 
     weightedProjs = projs @ factors[1]
 
-    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs),axis=0)
+    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
 
     cmpNames = [f"Cmp. {i}" for i in np.arange(1, weightedProjs.shape[1] + 1)]
     dataDF = pd.DataFrame(data=weightedProjs, columns=cmpNames)

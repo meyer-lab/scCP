@@ -2,6 +2,7 @@ import seaborn as sns
 from matplotlib import gridspec, pyplot as plt
 import umap.plot
 import numpy as np
+import random
 
 
 def plotCondUMAP(conds, decomp, totalconds, points, axs):
@@ -52,6 +53,36 @@ def plotCmpUMAP(cmp, factors, pf2Points, allP, ax):
         ylabel="UMAP2",
         xlabel="UMAP1",
         title="Cmp. " + str(cmp))
+    
+def plotCmpUMAP2(cmp, factors, pf2Points, allP, ax, cellPerc=25):
+    # subset = np.random.choice(a=[False, True], size=np.shape(allP)[0], p=[1-(cellPerc/100), cellPerc/100])
+    umap1 = pf2Points[:, 0]
+    umap2 = pf2Points[:, 1]
+    weightedProjs = allP @ factors[1]
+    weightedProjs = weightedProjs[:, cmp-1]
+    weightedProjs = weightedProjs
+    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
+    
+    cmap = sns.diverging_palette(240, 10, as_cmap=True)
+    psm = plt.pcolormesh([[-1, 1],[-1, 1]], cmap=cmap)
+
+    ax.scatter(
+            umap1,
+            umap2,
+            c=weightedProjs,
+            cmap=cmap,
+            s=0.01,
+        )
+    plt.colorbar(psm, ax=ax)
+    ax.set(
+        ylabel="UMAP2",
+        xlabel="UMAP1",
+        title="Cmp:" + str(cmp),
+        xticks=np.linspace(np.min(umap1), np.max(umap1), num=5),
+        yticks=np.linspace(np.min(umap2), np.max(umap2), num=5),
+    )
+    ax.axes.xaxis.set_ticklabels([])
+    ax.axes.yaxis.set_ticklabels([])
     
 def plotUMAP_obslabel(labels, pf2Points, ax):
     """Scatterplot of UMAP visualization labeled by cell type or other obs column"""
