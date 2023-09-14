@@ -12,6 +12,7 @@ import os
 from os.path import join
 import pickle
 import pandas as pd
+from commonFuncs.plotFactors import reorder_table
 
 
 path_here = os.path.dirname(os.path.dirname(__file__))
@@ -179,3 +180,42 @@ def flattenWeightedProjs(data, factors, projs):
     dataDF["Condition"] = condNames
 
     return dataDF
+
+
+
+def plotFactors(factors, data, dataName):
+    """Saves genes factors based on weight."""
+    rank = factors[0].shape[1]
+    yt = data.variable_labels
+    X = factors[2]
+
+    max_weight = np.max(np.abs(X), axis=1)
+    kept_idxs = max_weight > 0.08
+    X = X[kept_idxs]
+    yt = yt[kept_idxs]
+
+
+    X, ind = reorder_table(X)
+    yt = yt[ind]
+
+    X = X / np.max(np.abs(X))
+
+    if len(yt) > 40:
+        df = pd.DataFrame(data=X, index=yt, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+        df.to_csv("sccp/data/"+dataName+"/TopBotGenes_Cmp"+str(rank)+".csv")
+
+        geneAmount=20
+        genesTop = np.empty((geneAmount, X.shape[1]), dtype="<U10")
+        genesBottom = np.empty((geneAmount, X.shape[1]), dtype="<U10")
+        sort_idx = np.argsort(X, axis=0)
+
+        for j in range(rank):
+            sortGenes = yt[sort_idx[:, j]]
+            genesTop[:, j] = np.flip(sortGenes[-geneAmount:])  
+            genesBottom[:, j] = sortGenes[:geneAmount]
+
+        dfTop = pd.DataFrame(data=genesTop, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+        dfBot = pd.DataFrame(data=genesBottom, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+
+        dfTop.to_csv("sccp/data/"+dataName+"TopGenes_Cmp"+str(rank)+".csv")
+        dfBot.to_csv("sccp/data/"+dataName+"BotGenes_Cmp"+str(rank)+".csv")
