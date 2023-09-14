@@ -18,9 +18,11 @@ def makeFigure():
     # value = "Underexpressed"
     value = "Overexpressed"
 
-    # combDF, pvalDF = geneOntology(cmpNumb=26, geneAmount=30, goTerms=5, geneValue=value)
 
-    # plotCombGO(combDF, geneValue=value, axs=ax[0:3])
-    # plotPvalGO(pvalDF, geneValue=value, axs=ax[3:6])
+    combDF, pvalDF = geneOntology(cmpNumb=20, geneAmount=30, goTerms=5, geneValue=value)
+
+    plotCombGO(combDF, geneValue=value, axs=ax[0:3])
+    plotPvalGO(pvalDF, geneValue=value, axs=ax[3:6])
+
 
     return f
