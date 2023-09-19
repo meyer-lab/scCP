@@ -8,6 +8,7 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 from .common import subplotLabel, getSetup, flattenData
 from ..imports.scRNA import load_lupus_data
 from .commonFuncs.plotGeneral import plotGenePerCategStatus
+import numpy as np
 
 
 def makeFigure():

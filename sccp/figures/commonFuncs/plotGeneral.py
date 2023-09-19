@@ -114,7 +114,7 @@ def plotGenePerCategStatus(genes, dataDF, axs):
     df = df.rename(columns={"Value": "Average Gene Expression For Drugs"}).reset_index()
     
     for i, gene in enumerate(genes):
-        sns.boxplot(data=df.loc[df["Gene"] == gene], x="Cell Type", y="Average Gene Expression For Drugs", hue="Condition", showflier=False, ax=axs[i])
+        sns.boxplot(data=df.loc[df["Gene"] == gene], x="Cell Type", y="Average Gene Expression For Drugs", hue="Condition", showfliers=False, ax=axs[i])
         axs[i].set(title=gene)
         
 def plotGeneFactors(cmp, rank, dataName, axs, geneAmount=20):
