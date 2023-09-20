@@ -13,7 +13,7 @@ def plotR2X(data, rank, ax):
     rank_vec = np.arange(1, rank + 1)
     labelNames = ["Fit: Pf2", "Fit: PCA"]
     colorDecomp = ["r", "b"]
-    markerShape = ["|", "_"]
+    markerShape = ["o", "o"]
 
     for i in range(2):
         ax.scatter(
@@ -93,18 +93,27 @@ def plotGenePerCellType(genes, dataDF, ax):
 
 def plotGenePerCategCond(conds, categoryCond, genes, dataDF, axs):
     """Plots average gene expression across cell types for a category of drugs"""
+    
+    # print(dataDF.loc[dataDF["Gene"] == gene])
     df = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=genes).rename(
             columns={"variable": "Gene", "value": "Value"})
-    df = df.groupby(["Condition", "Cell Type", "Gene"]).mean()
+    # df = df.groupby(["Condition", "Cell Type", "Gene"]).mean()
+    print(df)
     df = df.rename(columns={"Value": "Average Gene Expression For Drugs"}).reset_index()
     
     df["Condition"] = np.where(df["Condition"].isin(conds), df["Condition"], "Other")
     for i in conds:
         df = df.replace({"Condition": {i: categoryCond}})
 
+    print(df)
+    numb = 0
     for i, gene in enumerate(genes):
-        sns.boxplot(data=df.loc[df["Gene"] == gene], x="Cell Type", y="Average Gene Expression For Drugs", hue="Condition", ax=axs[i])
-        axs[i].set(title=gene)
+        for j, celltypes in enumerate(np.unique(df["Cell Type"])):
+        
+            data = df.loc[df["Cell Type"] == celltypes]
+            sns.boxplot(data=data.loc[data["Gene"] == gene], x="Cell Type", y="Average Gene Expression For Drugs", showfliers=False, hue="Condition", ax=axs[numb])
+            axs[numb].set(title=gene)
+            numb +=1
         
 def plotGenePerCategStatus(genes, dataDF, axs):
     """Plots average gene expression across cell types for a category of drugs"""

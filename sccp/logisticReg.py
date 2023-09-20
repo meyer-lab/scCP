@@ -82,7 +82,7 @@ def getCompContribs(A_matrix, target, penalty_amt=50):
     log_fit = log_reg.fit(A_matrix, target)
 
     coefs = pd.DataFrame(
-        log_fit.densify().coef_, columns=[f"comp_{i}" for i in np.arange(1, rank + 1)]
+        log_fit.densify().coef_, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)]
     ).melt(var_name="Component", value_name="Weight")
     return coefs
 

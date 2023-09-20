@@ -39,5 +39,6 @@ def makeFigure():
         pred_group="SLE_status",
         cv_group="Processing_Cohort",
     )
+    
 
     return f

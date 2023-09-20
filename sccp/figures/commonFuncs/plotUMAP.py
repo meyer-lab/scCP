@@ -78,7 +78,7 @@ def plotLabelAllUMAP(conditions, points, ax):
 def plotCellTypeUMAP(points, data, ax):
     """Plots UMAP labeled by cell type"""
     subset = np.random.choice(a=[False, True], size=len(data["Cell Type"].values), p=[.75, .25])
-    umap.plot.points(points, labels=data["Cell Type"].values, subset_points=subset, ax=ax)
+    umap.plot.points(points, labels=data["Cell Type"].values, subset_points=subset, color_key_cmap='Paired', ax=ax)
     ax.set(
         ylabel="UMAP2",
         xlabel="UMAP1")

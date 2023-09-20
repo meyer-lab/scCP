@@ -8,6 +8,7 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 
 # load functions/modules ----
 from .common import subplotLabel, getSetup, openPf2
+from .commonFuncs.plotGeneral import plotR2X
 from .commonFuncs.plotFactors import (
     plotFactors,
     plotWeight,
@@ -24,33 +25,35 @@ def makeFigure():
     subplotLabel(ax)
 
     rank = 40
-    group_to_label = "SLE_status"  # group to label on left side of factor A plot
+    # group_to_label = "SLE_status"  # group to label on left side of factor A plot
 
     (
-        lupus_tensor,
+        data,
         obs,
     ) = load_lupus_data()
+    
+    plotR2X(data, rank+3, ax=ax[0])
 
-    status = obs[["sample_ID", group_to_label]].drop_duplicates("sample_ID")
+    # status = obs[["sample_ID", group_to_label]].drop_duplicates("sample_ID")
 
-    # make sure that these two are in the same order
-    bool = status["sample_ID"] == lupus_tensor.condition_labels
-    assert bool.mean() == 1.0
+    # # make sure that these two are in the same order
+    # bool = status["sample_ID"] == lupus_tensor.condition_labels
+    # assert bool.mean() == 1.0
 
-    group_labs = status.set_index("sample_ID")[group_to_label]
+    # group_labs = status.set_index("sample_ID")[group_to_label]
 
-    weights, factors, _ = openPf2(rank=rank, dataName="lupus", optProjs=True)
+    # weights, factors, _ = openPf2(rank=rank, dataName="lupus", optProjs=True)
 
-    plotFactors(
-        factors,
-        lupus_tensor,
-        ax[0:3],
-        reorder=(0, 2),
-        trim=(2,),
-        cond_group_labels=group_labs,
-    )
+    # plotFactors(
+    #     factors,
+    #     lupus_tensor,
+    #     ax[0:3],
+    #     reorder=(0, 2),
+    #     trim=(2,),
+    #     cond_group_labels=group_labs,
+    # )
 
-    plotWeight(weights, ax[3])
-    ax[3].set_title("Weight of Each Component")
+    # plotWeight(weights, ax[3])
+    # ax[3].set_title("Weight of Each Component")
 
     return f

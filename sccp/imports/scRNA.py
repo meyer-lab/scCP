@@ -145,7 +145,7 @@ def load_lupus_data():
 
     # reorder X so that all of the patients are in alphanumeric order. this is important
     # so that we can steal cell typings at this point
-    obsV = X.obs_vector("sample_ID")
+    obsV = X.obs_vector("patient")
     sgUnique, sgIndex = np.unique(obsV, return_inverse=True)
 
     ann_data_objects = [X[sgIndex == sgi, :] for sgi in range(len(sgUnique))]
@@ -153,5 +153,8 @@ def load_lupus_data():
     X = anndata.concat(ann_data_objects, axis=0)
 
     assert np.all(np.isfinite(X.X.data))  # this should be true
+    
+    # a = tensorFy(X, "ind_cov")
+    # print(len(a.condition_labels))
 
-    return tensorFy(X, "sample_ID"), X.obs
+    return tensorFy(X, "patient"), X.obs

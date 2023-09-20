@@ -22,17 +22,25 @@ def makeFigure():
     # Import of data
     data, annData = load_lupus_data()
     
-    condLabels = annData[["sample_ID", "SLE_status"]].drop_duplicates("sample_ID")
+    condLabels = annData[["patient", "SLE_status"]].drop_duplicates("patient")
     data.condition_labels = np.asarray(condLabels["SLE_status"])
     
-    dataDF = flattenData(data)
-    cell_types = annData[["cell_type_broad", "SLE_status"]].reset_index(drop=True)
-    dataDF["Cell Type"] = cell_types["cell_type_broad"].values
+    a, b = np.unique(data.condition_labels, return_counts=True)
+    
+    print(a)
+    print(b)
+    
+    
+    #  "ind_cov"
+    
+    # dataDF = flattenData(data)
+    # cell_types = annData[["cell_type_broad", "SLE_status"]].reset_index(drop=True)
+    # dataDF["Cell Type"] = cell_types["cell_type_broad"].values
 
-    geneSet1 = ["HIST1H2AC", "PPBP", "CLU", "PF4", "TUBB1", "NRGN", "FCER1A", "CLEC10A", "HLA-DPA1", "HLA-DPB1", "HLA-DRB1", "HLA-DRA"]
-    geneSet2 = ["IFI6", "MT2A", "LY6E", "ISG15", "TNFAIP3", "DUSP6", "ATP2B1", "KLF6", "SGK1", "EGR1"]
+    # geneSet1 = ["HIST1H2AC", "PPBP", "CLU", "PF4", "TUBB1", "NRGN", "FCER1A", "CLEC10A", "HLA-DPA1", "HLA-DPB1", "HLA-DRB1", "HLA-DRA"]
+    # geneSet2 = ["IFI6", "MT2A", "LY6E", "ISG15", "TNFAIP3", "DUSP6", "ATP2B1", "KLF6", "SGK1", "EGR1"]
  
-    plotGenePerCategStatus(geneSet1, dataDF, ax[0:13])
-    plotGenePerCategStatus(geneSet2, dataDF, ax[13:24])
+    # plotGenePerCategStatus(geneSet1, dataDF, ax[0:13])
+    # plotGenePerCategStatus(geneSet2, dataDF, ax[13:24])
 
     return f

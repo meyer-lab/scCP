@@ -21,6 +21,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
+
     rank = 40
     group_to_predict = "SLE_status"  # group to predict in logistic regression
 
@@ -39,7 +40,9 @@ def makeFigure():
     A_matrix = factors[0]
 
     contribs = getCompContribs(A_matrix, group_labs.to_numpy(), penalty_amt=50)
+    print(contribs)
 
     plotCmpRegContributions(contribs, group_to_predict, ax[0])
+
 
     return f

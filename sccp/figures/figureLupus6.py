@@ -53,6 +53,7 @@ def makeFigure():
     RocCurveDisplay.from_predictions(
         y_test, sle_decisions, pos_label="SLE", plot_chance_level=True, ax=ax[0]
     )
+    
 
     ax[0].set_title("OOS ROC for Cases/Controls: " + str(rank) + " Component LASSO")
 
