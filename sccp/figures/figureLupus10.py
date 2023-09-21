@@ -7,7 +7,7 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 # GOAL: visualize the component compostition by cell type
 from .common import subplotLabel, getSetup, flattenData
 from ..imports.scRNA import load_lupus_data
-from .commonFuncs.plotGeneral import plotGenePerCategStatus
+from .commonFuncs.plotGeneral import plotGenePerCategCond
 import numpy as np
 
 
@@ -32,7 +32,7 @@ def makeFigure():
     geneSet1 = ["HIST1H2AC", "PPBP", "CLU", "PF4", "TUBB1", "NRGN", "FCER1A", "CLEC10A", "HLA-DPA1", "HLA-DPB1", "HLA-DRB1", "HLA-DRA"]
     geneSet2 = ["IFI6", "MT2A", "LY6E", "ISG15", "TNFAIP3", "DUSP6", "ATP2B1", "KLF6", "SGK1", "EGR1"]
  
-    plotGenePerCategStatus(geneSet1, dataDF, ax[0:13])
-    plotGenePerCategStatus(geneSet2, dataDF, ax[13:24])
+    # plotGenePerCategCond(geneSet1, dataDF, ax[0:13])
+    # plotGenePerCategCond(geneSet2, dataDF, ax[13:24])
 
     return f
