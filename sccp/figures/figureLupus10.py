@@ -22,8 +22,8 @@ def makeFigure():
     # Import of data
     data, annData = load_lupus_data()
     
-    condLabels = annData[["patient", "SLE_status"]].drop_duplicates("patient")
-    data.condition_labels = np.asarray(condLabels["SLE_status"])
+    # condLabels = annData[["patient", "SLE_status"]].drop_duplicates("patient")
+    # data.condition_labels = np.asarray(condLabels["SLE_status"])
     
     dataDF = flattenData(data)
     cell_types = annData[["cell_type_broad", "SLE_status"]].reset_index(drop=True)
