@@ -61,7 +61,7 @@ def testPf2Ranks(
 
         # grab fit results as a pandas dataframe, indicate which rank these are from
         initial_results = pd.DataFrame(
-            {"penalty": log_fit.Cs_, error_metric: log_fit.scores_["SLE"].mean()}
+            {"penalty": log_fit.Cs_, error_metric: log_fit.scores_["SLE"].mean(axis=0)}
         )
         initial_results["rank"] = rank
 
