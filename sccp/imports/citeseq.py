@@ -121,9 +121,9 @@ def combine_all_citeseqProt(saveData = False):
         return df
 
     else:
-        np.save(join(path_here, "data/HamadCITEseqProt.npy"), protAll)
-        np.save(join(path_here, "data/HamadCITEseqProtNames.npy"), protNames) 
-        np.save(join(path_here, "data/HamadCITEseqCondNames.npy"), condNames) 
+        np.save(join(path_here, "data/CITEseq/HamadCITEseqProt.npy"), protAll)
+        np.save(join(path_here, "data/CITEseq/HamadCITEseqProtNames.npy"), protNames) 
+        np.save(join(path_here, "data/CITEseq/HamadCITEseqCondNames.npy"), condNames) 
         
         return
 
@@ -132,16 +132,9 @@ def combine_all_citeseqProt(saveData = False):
 
 def import_citeseqProt():
     """Normalizes 5 datasets from Hamad CITEseq and imports as tensory"""
-    protAll = np.load(join(path_here, "data/HamadCITEseqProt.npy"), allow_pickle=True)
-    protNames = np.load(join(path_here, "data/HamadCITEseqProtNames.npy"), allow_pickle=True)
-    condNames = np.load(join(path_here, "data/HamadCITEseqCondNames.npy"), allow_pickle=True)
-
-
-    # pd.DataFrame(data=protAll, columns=protNames)
-
-
-    # # # Save condition information in AnnData file
-    # files = ["control", "ic_pod1", "ic_pod7", "sc_pod1", "sc_pod7"]
+    protAll = np.load(join(path_here, "data/CITEseq/HamadCITEseqProt.npy"), allow_pickle=True)
+    protNames = np.load(join(path_here, "data/CITEseq/HamadCITEseqProtNames.npy"), allow_pickle=True)
+    condNames = np.load(join(path_here, "data/CITEseq/HamadCITEseqCondNames.npy"), allow_pickle=True)
 
     df = pd.DataFrame(data=protAll, columns=protNames)
     df["Condition"]= condNames
