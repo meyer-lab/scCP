@@ -52,6 +52,137 @@ def combine_all_citeseq(saveAdata = False):
     
     else:
         adata.write_h5ad(join(path_here, "data/HamadCITEseq.h5ad"))
+        
+
+
+def combine_all_citeseqProt(saveAdata = False):
+    """Imports 5 datasets from Hamad CITEseq """
+    # Initiates import for control 
+    features = pd.read_csv("/opt/andrew/HamadCITEseq/control/features.tsv.gz", sep="\t", header=None)
+    data = pd.DataFrame(scipy.io.mmread("/opt/andrew/HamadCITEseq/control/matrix.mtx.gz").todense())
+
+    # Keep information about type of expression
+    data["Expression Type"] = features.iloc[:, 2].values
+    data["Expression Name"] = features.iloc[:, 1].values
+    
+    # Keep only gene expression
+    
+    print(data)
+    # a
+    protDF = data.loc[data["Expression Type"] == "Antibody Capture"].drop(columns="Expression Type").reset_index(drop=True) 
+    protNames = protDF["Expression Name"].values
+    
+    protAll = np.transpose(protDF.drop(columns="Expression Name")).to_numpy()
+    numCells = [protAll.shape[0]] # Save number of cells per experiment
+    files = ["ic_pod1", "ic_pod7", "sc_pod1", "sc_pod1"]
+    
+    # Repeat process for all files and combine datasets
+    for i in range(len(files)):
+        features = pd.read_csv("/opt/andrew/HamadCITEseq/"+files[i]+"/features.tsv.gz", sep="\t", header=None)
+        data = pd.DataFrame(scipy.io.mmread("/opt/andrew/HamadCITEseq/"+files[i]+"/matrix.mtx.gz").todense())
+    
+        data["Expression Type"] = features.iloc[:, 2].values
+        
+        protDF = data.loc[data["Expression Type"] == "Antibody Capture"].drop(columns="Expression Type").reset_index(drop=True) 
+        protMatrix = np.transpose(protDF).to_numpy()
+        
+        # Combines datasets and save number of cells per exp
+        protAll = np.vstack((protAll, protMatrix))
+        numCells = np.append(numCells, protMatrix.shape[0])
+        
+    allFiles = ["control", "ic_pod1", "ic_pod7", "sc_pod1", "sc_pod7"]
+    
+    np.save(join(path_here, "data/HamadCITEseqProt.npy"), protAll)
+    np.save(join(path_here, "data/HamadCITEseqProtNames.npy"), protNames) 
+    np.save(join(path_here, "data/HamadCITEseqCondNames.npy"), np.repeat(allFiles, numCells)) 
+    
+    # np.repeat(files, numCells)
+    # pd.DataFrame(data=protAll, columns=protNames)
+    
+        
+    # # # Save condition information in AnnData file
+    # files = ["control", "ic_pod1", "ic_pod7", "sc_pod1", "sc_pod7"]
+    
+    # df = pd.DataFrame(data=protAll, columns=protNames)
+    # df["Condition"]= np.repeat(files, numCells)
+    
+    return  
+    
+    
+    
+
+def import_citeseqProt():
+    """Normalizes 5 datasets from Hamad CITEseq and imports as tensory"""
+    # X = anndata.read_h5ad("/opt/andrew/HamadCITEseq/CITEseqCombinedProt.npy")
+    protAll = np.load(join(path_here, "data/HamadCITEseqProt.npy"), allow_pickle=True)
+    protNames = np.load(join(path_here, "data/HamadCITEseqProtNames.npy"), allow_pickle=True)
+    condNames = np.load(join(path_here, "data/HamadCITEseqCondNames.npy"), allow_pickle=True)
+    
+    
+    # pd.DataFrame(data=protAll, columns=protNames)
+    
+        
+    # # # Save condition information in AnnData file
+    # files = ["control", "ic_pod1", "ic_pod7", "sc_pod1", "sc_pod7"]
+    
+    df = pd.DataFrame(data=protAll, columns=protNames)
+    df["Condition"]= condNames
+    
+    return df
+    
+    
+    
+    # print(data)
+    # # a
+    # protDF = data.loc[data["Expression Type"] == "Antibody Capture"].drop(columns="Expression Type").reset_index(drop=True) 
+    # protNames = protDF["Expression Name"].values
+    
+    
+
+    # # A 32-bit float is high enough precision and uses 50% of the memory
+    # X.X = np.asarray(X.X, dtype=np.float32)
+
+    # scalingfactor = 1000
+
+    # assert np.all(np.isfinite(X.X.data))
+
+    # X = X[:, np.mean(X.X > 0, axis=0) > 0.001]
+    # X.X /= np.sum(X.X, axis=0)
+    # X.X = np.log10((scalingfactor * X.X) + 1)
+
+    # # Center the genes
+    # X.X -= np.mean(X.X, axis=0)
+
+    # # Assign cells a count per-experiment so we can reindex
+    # return tensorFy(X, "Condition")
+    
+        
+        
+    
+        
+    # # # Save condition information in AnnData file
+    # files = ["control", "ic_pod1", "ic_pod7", "sc_pod1", "sc_pod7"]
+    
+    # df = pd.DataFrame(data=protAll, columns=protNames)
+    # df["Condition"]= np.repeat(files, numCells)
+    
+    
+     
+    # # np.save(join(path_here, "data/HamadCITEseqProt.npy"), protAll)
+    
+    #     #  adata.write_h5ad(join(path_here, "data/HamadCITEseq.h5ad"))
+    
+    # print(df)
+    # a
+    # adata = anndata.AnnData(X = genesAll)
+    # adata.var_names = geneNames
+    # adata.obs["Condition"] = np.repeat(files, numCells)
+    
+    # if saveAdata is False:
+    #     return adata
+    
+    # else:
+    #     adata.write_h5ad(join(path_here, "data/HamadCITEseq.h5ad"))
     
 
 def import_citeseq():
