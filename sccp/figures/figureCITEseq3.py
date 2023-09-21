@@ -8,6 +8,8 @@ from parafac2 import parafac2_nd
 from .common import (
     subplotLabel,
     getSetup,
+    saveUMAP,
+    openUMAP
 )
 from ..imports.citeseq import import_citeseq, import_citeseqProt, combine_all_citeseqProt
 from .commonFuncs.plotUMAP import (
@@ -25,22 +27,35 @@ def makeFigure():
     # data = combine_all_citeseqProt()
     # rank = 40
 
-    data = import_citeseq()
+    # data = import_citeseq()
     dataDF = import_citeseqProt()
     
-    genes = ["MsRt.CD29"]
+   
     rank=40
     
     
-    _, factors, projs, _ = parafac2_nd(
-        data,
-        rank=rank,
-        random_state=1,
-    )
+    # weight, factors, projs, _ = parafac2_nd(
+    #     data,
+    #     rank=rank,
+    #     random_state=1,
+    # )
 
-    pf2Points = umap.UMAP(random_state=1).fit(np.concatenate(projs, axis=0))
+    # pf2Points = umap.UMAP(random_state=1).fit(np.concatenate(projs, axis=0))
+    # saveUMAP(pf2Points, rank, "CITEseq")
     
-    plotGeneUMAP(genes, "Pf2", pf2Points, dataDF, ax[0:2])
+    print(dataDF)
+    pf2Points = openUMAP(rank, "CITEseq", opt=False)
+    
+    genes = np.unique(dataDF.drop(columns="Condition").columns)
+    
+    # genes = genes[0:24]
+    # genes = genes[24:48]
+    # genes = genes[50:75]
+    # genes = genes[75:100]
+    genes = genes[100:]
+    
+    
+    plotGeneUMAP(genes, "Pf2", pf2Points, dataDF, ax[0:25])
 
     # _, factors, projs, _ = parafac2_nd(
     #     data,

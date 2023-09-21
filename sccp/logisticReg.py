@@ -58,15 +58,24 @@ def testPf2Ranks(
         )
 
         log_fit = log_reg.fit(A_matrix, condition_labels.to_numpy())
+        print(log_fit)
+        print(log_fit.Cs_)
+        print(log_fit.scores_["SLE"])
+        print(np.shape(log_fit.scores_["SLE"]))
+        print(log_fit.scores_["SLE"].mean(axis=0))
+        
 
         # grab fit results as a pandas dataframe, indicate which rank these are from
         initial_results = pd.DataFrame(
-            {"penalty": log_fit.Cs_, error_metric: log_fit.scores_["SLE"].mean()}
+            {"penalty": log_fit.Cs_, error_metric: log_fit.scores_["SLE"].mean(axis=0)}
         )
         initial_results["rank"] = rank
 
         # save best results into results list
         results.append(initial_results)
+     
+    print(results)   
+    print(pd.concat(results, ignore_index=True))
 
     # concatenate all the results into one frame for viewing:
     return pd.concat(results, ignore_index=True)

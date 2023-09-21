@@ -16,6 +16,8 @@ from .common import (
 from .commonFuncs.plotLupus import plotPf2RankTest
 
 
+
+
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
@@ -30,7 +32,10 @@ def makeFigure():
 
     group_labs = status.set_index("sample_ID")[["SLE_status", "Processing_Cohort"]]
 
-    ranks_to_test = [2, 3]  # set to 2,3 for github test
+    ranks_to_test = [40]  # set to 2,3 for github test
+
+
+
 
     results = testPf2Ranks(
         lupus_tensor,
