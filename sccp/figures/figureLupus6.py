@@ -46,8 +46,8 @@ def makeFigure():
 
     # get test data, and decisions made by the trained model corresponding to those test data
     y_test, sle_decisions = getPf2ROC(
-        A_matrix, group_labs, rank, penalties_to_test=penalties_to_test
-    )
+        A_matrix, group_labs, rank, penalties_to_test=penalties_to_test,  cv_group="Processing_Cohort")
+
 
     # make plot of ROC AUC
     RocCurveDisplay.from_predictions(
