@@ -18,7 +18,7 @@ import pandas as pd
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((12, 12), (2, 2))  # fig size  # grid size
+    ax, f = getSetup((8, 8), (2, 2))  # fig size  # grid size
 
     # Add subplot labels
     subplotLabel(ax)
@@ -52,7 +52,7 @@ def makeFigure():
     comps_to_test = [
         ("Cmp. 13", "Cmp. 26"),
         ("Cmp. 32", "Cmp. 26"),
-        ("Cmp. 13", "Cmp. 32"),
+        ("Cmp. 16", "Cmp. 32"),
         ("Cmp. 13", "Cmp. 29"),
     ]
 
