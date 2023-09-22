@@ -49,7 +49,7 @@ def investigate_comp(comp: int, rank: int, obs, proj_B, obs_column, ax, threshol
     pcts = pd.concat((counts[obs_column], counts['count']/counts_all['count']), axis = 1).rename({'count': 'percent'}, axis = 1)
     pcts['percent'] = pcts['percent'] * 100
 
-    sns.barplot(pcts, x = obs_column, y = 'percent', c='k', errorbar=None, ax=ax)
+    sns.barplot(pcts, x = obs_column, y = 'percent', color = 'k', errorbar=None, ax=ax)
     ax.tick_params(axis="x", rotation=90)
     ax.set_title(obs_column + ' Percentages, Threshold: ' + str(threshold) + ' for comp ' + str(comp))
 
