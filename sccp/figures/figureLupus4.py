@@ -19,7 +19,7 @@ from .commonFuncs.plotLupus import plotPf2RankTest
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8, 8), (1, 1))  # fig size  # grid size
+    ax, f = getSetup((5, 5), (1, 1))  # fig size  # grid size
 
     # Add subplot labels
     subplotLabel(ax)
@@ -30,15 +30,26 @@ def makeFigure():
 
     group_labs = status.set_index("sample_ID")[["SLE_status", "Processing_Cohort"]]
 
-    ranks_to_test = [2, 3]  # set to 2,3 for github test
+    ranks_to_test = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]  # set to 2,3 for github test
 
-    results = testPf2Ranks(
-        lupus_tensor,
-        group_labs,
-        ranks_to_test,
-        cv_group="Processing_Cohort",
-    )
 
+    # results = testPf2Ranks(
+    #     lupus_tensor,
+    #     group_labs,
+    #     ranks_to_test,
+    #     cv_group="Processing_Cohort",
+    # )
+
+
+
+    # ranks_to_test = [2, 3] # set to 2,3 for github test
+    penalties_to_test = [.01, 1, 10, 25, 50, 100, 200, 500]
+
+    results = testPf2Ranks(lupus_tensor, group_labs, ranks_to_test, 
+                           penalties_to_test=penalties_to_test,
+                           cv_group='Processing_Cohort')
+    print(results)
+    # plotPf2RankTest(results, ax[0])
     plotPf2RankTest(results, ax[0])
 
     return f

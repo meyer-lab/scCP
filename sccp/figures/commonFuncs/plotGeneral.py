@@ -10,20 +10,29 @@ def plotR2X(data, rank, ax):
     """Creates R2X plot for parafac2 tensor decomposition"""
     r2xError = R2X(data, rank)
 
-    rank_vec = np.arange(1, rank + 1)
+    rank_vec = np.arange(1, rank + 1, 4)
     labelNames = ["Fit: Pf2", "Fit: PCA"]
     colorDecomp = ["r", "b"]
     markerShape = ["o", "o"]
 
-    for i in range(2):
-        ax.scatter(
-            rank_vec,
-            r2xError[i],
-            label=labelNames[i],
-            marker=markerShape[i],
-            c=colorDecomp[i],
-            s=30.0,
-        )
+    ax.scatter(
+        rank_vec,
+        r2xError[0],
+        label=labelNames[0],
+        marker=markerShape[0],
+        c=colorDecomp[0],
+        s=30.0,
+    )
+    
+    rank_vec = np.arange(1, rank + 1)
+    ax.scatter(
+        rank_vec,
+        r2xError[1],
+        label=labelNames[1],
+        marker=markerShape[1],
+        c=colorDecomp[1],
+        s=30.0,
+    )
 
     ax.set(
         ylabel="Variance Explained",
