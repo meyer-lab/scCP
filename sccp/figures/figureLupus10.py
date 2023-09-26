@@ -7,14 +7,14 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 # GOAL: visualize the component compostition by cell type
 from .common import subplotLabel, getSetup, flattenData
 from ..imports.scRNA import load_lupus_data
-from .commonFuncs.plotGeneral import plotGenePerCategCond, plotGenePerCategStatus
+from .commonFuncs.plotGeneral import plotGenePerCategCond, plotGenePerCategStatus, plotGenePerCategStatus2
 import numpy as np
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((22, 25), (4, 5))
+    ax, f = getSetup((30, 30), (4, 5))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -51,7 +51,7 @@ def makeFigure():
     cell_types = annData[["cell_type_broad", "SLE_status"]].reset_index(drop=True)
     dataDF["Cell Type"] = cell_types["cell_type_broad"].values
 
-    # geneSet1 = ["HIST1H2AC", "PPBP"]
+    geneSet1 = ["HIST1H2AC", "PPBP"]
     # geneSet1 = ["HIST1H2AC", "PPBP", "CLU", "PF4", "TUBB1", "NRGN", "FCER1A", "CLEC10A", "HLA-DPA1", "HLA-DPB1"]
     # geneSet2 = ["IFI6", "MT2A", "LY6E", "ISG15", "TNFAIP3", "DUSP6", "ATP2B1", "KLF6", "SGK1", "EGR1"]
     
@@ -64,13 +64,14 @@ def makeFigure():
     # geneSet2 = ["FHIT", "RPL21", "CCR7", "TSHZ2", "PIK3IP1", "ADTRP", "PRKCQ-AS1", "CD40LG", "ITM2A"]
     
     
-    geneSet1 = ["ISG15", "IFI6", "LY6E", "IFI44L", "IFIT3", "IFITM3", "IFIT1", "APOBEC3A", "IFIT2"]
-    geneSet2 = ["RPL21", "S100A12", "IRS2", "VCAN", "MGST1", "AHNAK", "NRGN", "CSF3R", "IRAK3"]
+    # geneSet1 = ["ISG15", "IFI6", "LY6E", "IFI44L", "IFIT3", "IFITM3", "IFIT1", "APOBEC3A", "IFIT2"]
+    # geneSet2 = ["RPL21", "S100A12", "IRS2", "VCAN", "MGST1", "AHNAK", "NRGN", "CSF3R", "IRAK3"]
     a = ["SLE"]
     
     
     
-    plotGenePerCategCond(a, "Lupus", geneSet1, dataDF, ax[0:10])
-    plotGenePerCategCond(a, "Lupus", geneSet2, dataDF, ax[10:20])
+    plotGenePerCategStatus2(26, dataDF, 40, "lupus", ax[0:10], geneAmount=3)
+    # plotGenePerCategCond(a, "Lupus", geneSet1, dataDF, ax[0:10])
+    # plotGenePerCategCond(a, "Lupus", geneSet2, dataDF, ax[10:20])
 
     return f

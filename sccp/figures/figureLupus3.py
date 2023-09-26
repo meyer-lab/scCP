@@ -13,7 +13,7 @@ from ..imports.scRNA import load_lupus_data
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((18, 18), (4, 4))
+    ax, f = getSetup((12, 12), (3, 3))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -22,7 +22,7 @@ def makeFigure():
     lupus_tensor, obs = load_lupus_data()
     rank = 40
     
-    dataDF = flattenData(lupus_tensor)
+    # dataDF = flattenData(lupus_tensor)
 
     # get cell types
     cell_types = obs[["cell_type_broad", "SLE_status"]].reset_index(drop=True)
@@ -36,15 +36,15 @@ def makeFigure():
 
     weightedProjDF = flattenWeightedProjs(lupus_tensor, factors, projs)
     weightedProjDF["Cell Type"] = cell_types["cell_type_broad"].values
-    dataDF["Cell Type"] = cell_types["cell_type_broad"].values
+    # dataDF["Cell Type"] = cell_types["cell_type_broad"].values
 
-    comps = [13, 14, 16, 26, 29, 32]
+    comps = [13, 13, 13, 13, 13, 26, 26, 26, 26]
     for i, comp in enumerate(comps):
-        plotCmpPerCellType(weightedProjDF, comp, ax[(2*i)], outliers=False)
-        plotCmpUMAP(comp, factors, pf2Points, projs, ax[(2*i)+1])
+        # plotCmpPerCellType(weightedProjDF, comp, ax[(2*i)], outliers=False)
+        plotCmpUMAP(comp, factors, pf2Points, projs, ax[i])
     
 
-    plotCellTypeUMAP(pf2Points, dataDF, ax[14])
+    # plotCellTypeUMAP(pf2Points, dataDF, ax[14])
 
 
     return f
