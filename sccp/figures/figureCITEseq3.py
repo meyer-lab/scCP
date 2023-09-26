@@ -22,8 +22,8 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    # data = import_citeseq()
-    dataDF = import_citeseqProt()
+    data = import_citeseq()
+    # dataDF = import_citeseqProt()
     rank=40
     
     
