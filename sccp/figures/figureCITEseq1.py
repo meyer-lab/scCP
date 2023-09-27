@@ -7,7 +7,7 @@ from .commonFuncs.plotFactors import (
 )
 from .commonFuncs.plotUMAP import plotCondUMAP
 import umap
-from ..imports.citeseq import import_citeseq, combine_all_citeseq
+from ..imports.citeseq import import_citeseq
 from parafac2 import parafac2_nd
 import numpy as np
 
@@ -20,7 +20,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    combine_all_citeseq(saveAdata=False)
+    import_citeseq()
 
     # data = import_citeseq()
     # rank = 40
