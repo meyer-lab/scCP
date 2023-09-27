@@ -5,6 +5,7 @@ import anndata
 import os
 from os.path import join
 from .scRNA import tensorFy
+import scanpy
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -12,40 +13,64 @@ path_here = os.path.dirname(os.path.dirname(__file__))
 def combine_all_citeseq(saveAdata = False):
     """Imports 5 datasets from Hamad CITEseq """
     # Initiates import for control 
-    features = pd.read_csv("/opt/andrew/HamadCITEseq/control/features.tsv.gz", sep="\t", header=None)
-    data = pd.DataFrame(scipy.io.mmread("/opt/andrew/HamadCITEseq/control/matrix.mtx.gz").todense())
+    # features = pd.read_csv("/opt/andrew/HamadCITEseq/control/features.tsv.gz", sep="\t", header=None)
+    # print(features)
+    # df = scipy.io.mmread("/opt/andrew/HamadCITEseq/control/matrix.mtx.gz").todense()
+    
+    # print(df)
+    
+    df = scanpy.read_10x_mtx("/opt/andrew/HamadCITEseq/control", gex_only=False)
+    print(len(df.var_names))
+    print(df)
+    print(np.shape(df))
+       
+    df = scanpy.read_10x_mtx("/opt/andrew/HamadCITEseq/control")
+    print(len(df.var_names))
+    print(df)
+    print(np.shape(df))
+    
+    
+    
+    protein = pbmc[:, pbmc.var["feature_types"] == "Antibody Capture"].copy()
+    rna = pbmc[:, pbmc.var["feature_types"] == "Gene Expression"].copy()
+    # adata[:, adata.var["highly_variable"]]
+    # print(df[:, df.var["feature_types"]])
 
-    # Keep information about type of expression
-    data["Expression Type"] = features.iloc[:, 2].values
-    data["Expression Name"] = features.iloc[:, 1].values
+    a
     
-    # Keep only gene expression
-    geneDF = data.loc[data["Expression Type"] == "Gene Expression"].drop(columns="Expression Type").reset_index(drop=True) 
-    geneNames = geneDF["Expression Name"].values
     
-    genesAll = np.transpose(geneDF.drop(columns="Expression Name")).to_numpy()
-    numCells = [genesAll.shape[0]] # Save number of cells per experiment
-    files = ["ic_pod1", "ic_pod7", "sc_pod1", "sc_pod1"]
+
+    # # Keep information about type of expression
+    # data["Expression Type"] = features.iloc[:, 2].values
+    # data["Expression Name"] = features.iloc[:, 1].values
     
-    # Repeat process for all files and combine datasets
-    for i in range(len(files)):
-        features = pd.read_csv("/opt/andrew/HamadCITEseq/"+files[i]+"/features.tsv.gz", sep="\t", header=None)
-        data = pd.DataFrame(scipy.io.mmread("/opt/andrew/HamadCITEseq/"+files[i]+"/matrix.mtx.gz").todense())
+    # # Keep only gene expression
+    # geneDF = data.loc[data["Expression Type"] == "Gene Expression"].drop(columns="Expression Type").reset_index(drop=True) 
+    # geneNames = geneDF["Expression Name"].values
     
-        data["Expression Type"] = features.iloc[:, 2].values
+    # genesAll = np.transpose(geneDF.drop(columns="Expression Name")).to_numpy()
+    # numCells = [genesAll.shape[0]] # Save number of cells per experiment
+    # files = ["ic_pod1", "ic_pod7", "sc_pod1", "sc_pod1"]
+    
+    # # Repeat process for all files and combine datasets
+    # for i in range(len(files)):
+    #     features = pd.read_csv("/opt/andrew/HamadCITEseq/"+files[i]+"/features.tsv.gz", sep="\t", header=None)
+    #     data = pd.DataFrame(scipy.io.mmread("/opt/andrew/HamadCITEseq/"+files[i]+"/matrix.mtx.gz").todense())
+    
+    #     data["Expression Type"] = features.iloc[:, 2].values
         
-        geneDF = data.loc[data["Expression Type"] == "Gene Expression"].drop(columns="Expression Type").reset_index(drop=True)
-        geneMatrix = np.transpose(geneDF).to_numpy()
+    #     geneDF = data.loc[data["Expression Type"] == "Gene Expression"].drop(columns="Expression Type").reset_index(drop=True)
+    #     geneMatrix = np.transpose(geneDF).to_numpy()
         
-        # Combines datasets and save number of cells per exp
-        genesAll = np.vstack((genesAll,geneMatrix))
-        numCells = np.append(numCells, geneMatrix.shape[0])
+    #     # Combines datasets and save number of cells per exp
+    #     genesAll = np.vstack((genesAll,geneMatrix))
+    #     numCells = np.append(numCells, geneMatrix.shape[0])
         
-    # Save condition information in AnnData file
-    files = ["control", "ic_pod1", "ic_pod7", "sc_pod1", "sc_pod7"]
-    adata = anndata.AnnData(X = genesAll)
-    adata.var_names = geneNames
-    adata.obs["Condition"] = np.repeat(files, numCells)
+    # # Save condition information in AnnData file
+    # files = ["control", "ic_pod1", "ic_pod7", "sc_pod1", "sc_pod7"]
+    # adata = anndata.AnnData(X = genesAll)
+    # adata.var_names = geneNames
+    # adata.obs["Condition"] = np.repeat(files, numCells)
     
     if saveAdata is False:
         return adata

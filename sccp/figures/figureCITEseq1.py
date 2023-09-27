@@ -20,24 +20,24 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    # combine_all_citeseq(saveAdata=True)
+    combine_all_citeseq(saveAdata=False)
 
-    data = import_citeseq()
-    rank = 40
+    # data = import_citeseq()
+    # rank = 40
 
-    return f
+    # return f
 
-    weight, factors, projs, _ = parafac2_nd(
-        data,
-        rank=rank,
-        random_state=1,
-    )
+    # weight, factors, projs, _ = parafac2_nd(
+    #     data,
+    #     rank=rank,
+    #     random_state=1,
+    # )
 
-    plotFactors(factors, data, ax[0:3], reorder=(0, 2), trim=(2,))
+    # plotFactors(factors, data, ax[0:3], reorder=(0, 2), trim=(2,))
 
-    pf2Points = umap.UMAP(random_state=1).fit(np.concatenate(projs, axis=0))
-    dataDF = flattenData(data)
-    cond = ["control", "sc_pod1", "sc_pod7", "ic_pod1", "ic_pod7"]
-    plotCondUMAP(cond, "Pf2", dataDF["Condition"].values, pf2Points, ax[3:9])
+    # pf2Points = umap.UMAP(random_state=1).fit(np.concatenate(projs, axis=0))
+    # dataDF = flattenData(data)
+    # cond = ["control", "sc_pod1", "sc_pod7", "ic_pod1", "ic_pod7"]
+    # plotCondUMAP(cond, "Pf2", dataDF["Condition"].values, pf2Points, ax[3:9])
 
     return f
