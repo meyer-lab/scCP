@@ -19,20 +19,23 @@ def combine_all_citeseq(saveAdata = False):
     
     # print(df)
     
-    df = scanpy.read_10x_mtx("/opt/andrew/HamadCITEseq/control", gex_only=False)
+    data = scanpy.read_10x_mtx("/opt/andrew/HamadCITEseq/control", gex_only=False)
     print(len(df.var_names))
     print(df)
     print(np.shape(df))
+    
+    # files = ["control", "ic_pod1", "ic_pod7", "sc_pod1", "sc_pod7"]
+    
+    for i in range(files)
+    X = X[X.obs["Condition"] != "I
+          
+    gi
        
-    df = scanpy.read_10x_mtx("/opt/andrew/HamadCITEseq/control")
-    print(len(df.var_names))
-    print(df)
-    print(np.shape(df))
     
     
     
-    protein = pbmc[:, pbmc.var["feature_types"] == "Antibody Capture"].copy()
-    rna = pbmc[:, pbmc.var["feature_types"] == "Gene Expression"].copy()
+    annProtein = data[:, data.var["feature_types"] == "Antibody Capture"].copy()
+    annGene = data[:, data.var["feature_types"] == "Gene Expression"].copy()
     # adata[:, adata.var["highly_variable"]]
     # print(df[:, df.var["feature_types"]])
 
