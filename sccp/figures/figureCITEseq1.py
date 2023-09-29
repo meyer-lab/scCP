@@ -21,9 +21,9 @@ def makeFigure():
     subplotLabel(ax)
 
     data, protDF = import_citeseq()
-    rank = 2
-
-    return f
+    rank = 40
+    
+    # return f
 
     # _, factors, projs, _ = parafac2_nd(
     #     data,
@@ -34,7 +34,6 @@ def makeFigure():
     # plotFactors(factors, data, ax[0:3], reorder=(0, 2), trim=(2,))
 
     # pf2Points = umap.UMAP(random_state=1).fit(np.concatenate(projs, axis=0))
-    # dataDF = flattenData(data)
     # cond = ["control", "sc_pod1", "sc_pod7", "ic_pod1", "ic_pod7"]
     # plotCondUMAP(cond, "Pf2", protDF["Condition"].values, pf2Points, ax[3:9])
 

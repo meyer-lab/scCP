@@ -13,8 +13,7 @@ path_here = os.path.dirname(os.path.dirname(__file__))
 
 def import_citeseq():
     """Imports 5 datasets from Hamad CITEseq"""
-    # files = ["control", "ic_pod1", "ic_pod7", "sc_pod1", "sc_pod7"]
-    files = ["control", "ic_pod1"]
+    files = ["control", "ic_pod1", "ic_pod7", "sc_pod1", "sc_pod7"]
     for i in range(len(files)):
         if i == 0:
             totalAnn = sc.read_10x_mtx("/opt/andrew/HamadCITEseq/"+files[i], gex_only=False)
@@ -41,17 +40,14 @@ def import_citeseq():
     # Center the genes
     annGene.X -= np.mean(annGene.X, axis=0)
     
-    print(annGene)
     
     annProtein = totalAnn[:, totalAnn.var["feature_types"] == "Antibody Capture"]
     # A 32-bit float is high enough precision and uses 50% of the memory
     annProtein.X.data = np.asarray(annProtein.X.data, dtype=np.float32)
     annProtein.X.data -= np.nanmean(annProtein.X.data, axis=0)
-    annProtein.X.data -= np.nanstd(annProtein.X.data, axis=0)
+    annProtein.X.data /= np.nanstd(annProtein.X.data, axis=0)
     protDF = annProtein.to_df().reset_index(drop=True)
     protDF["Condition"] = annProtein.obs["Condition"].values
-    
-    print(protDF)
     
     return tensorFy(annGene, "Condition"),  protDF
 
