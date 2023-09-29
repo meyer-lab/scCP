@@ -23,18 +23,18 @@ def makeFigure():
     subplotLabel(ax)
 
     data, protDF = import_citeseq()
-    rank=40
+    rank=2
     
-    # weight, factors, projs, _ = parafac2_nd(
-    #     data,
-    #     rank=rank,
-    #     random_state=1,
-    # )
+    weight, factors, projs, _ = parafac2_nd(
+        data,
+        rank=rank,
+        random_state=1,
+    )
 
-    # pf2Points = umap.UMAP(random_state=1).fit(np.concatenate(projs, axis=0))
+    pf2Points = umap.UMAP(random_state=1).fit(np.concatenate(projs, axis=0))
     # saveUMAP(pf2Points, rank, "CITEseq")
  
-    pf2Points = openUMAP(rank, "CITEseq", opt=False)
+    # pf2Points = openUMAP(rank, "CITEseq", opt=False)
     
     protNames = np.unique(protDF.drop(columns="Condition").columns)
     
