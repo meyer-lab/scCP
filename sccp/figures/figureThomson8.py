@@ -50,6 +50,9 @@ def makeFigure():
     dataDF.sort_values(by=["Condition", "Cell Type"], inplace=True)
 
     comps = [5, 12, 20, 30]
+    
+    
+    # -.3 for b cells that are more greater
 
 
     return f
