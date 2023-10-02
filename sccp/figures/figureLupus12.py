@@ -80,7 +80,6 @@ def Lupus_comp_scan_plot(ax, patient_facs, status_DF):
                     ),
                 ]
             )
-            print(Acc_DF)
 
     Acc_DF = Acc_DF.pivot_table(
         index="Component 1", columns="Component 2", values="Accuracy", sort=False
