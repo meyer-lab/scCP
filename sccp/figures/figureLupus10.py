@@ -14,7 +14,7 @@ import numpy as np
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((20, 20), (4, 6))
+    ax, f = getSetup((8, 8), (2, 2))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -31,10 +31,8 @@ def makeFigure():
     cell_types = annData[["cell_type_broad", "SLE_status"]].reset_index(drop=True)
     dataDF["Cell Type"] = cell_types["cell_type_broad"].values
     
-    comp = 13
+    comp = 26
     rank = 40
-    plotGenePerCategStatus(comp, dataDF, rank, "lupus", ax[0:24], geneAmount=12)
-    
-    
+    plotGenePerCategStatus(comp, dataDF, rank, "lupus", ax[0:4], geneAmount=2)
 
     return f
