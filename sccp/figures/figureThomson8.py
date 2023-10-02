@@ -72,8 +72,10 @@ def Wass_KL_Dist(threshold, cmp, data, dataDF, weightedProjDF):
         print(cmpWeights)
         if threshold > 0: 
             idxCells = np.argwhere(cmpWeights["Cmp. "+str(cmp)] > threshold)
+            idxOpp = np.argwhere(cmpWeights["Cmp. "+str(cmp)] < threshold)
         else:
             idxCells = np.argwhere(cmpWeights["Cmp. "+str(cmp)] < threshold)
+            idxOpp = np.argwhere(cmpWeights["Cmp. "+str(cmp)] > threshold)
         
         geneDF = dataDF[["Cell Type", "Condition", gene]]
         
@@ -83,7 +85,13 @@ def Wass_KL_Dist(threshold, cmp, data, dataDF, weightedProjDF):
         
         targCells = geneDF.iloc[idxCells.flatten(), :] 
         targCells[gene] /= geneAvg
-        offCells = geneDFf[geneDF.index.difference(idxCells), ["Cell Type", "Condition", gene]] / geneAvg
+        offCells = geneDF.iloc[idxOpp.flatten(), :] 
+        offCells[gene] /= geneAvg
+        
+        targCells = targCells[gene].values
+        offCells = offCells[gene].values
+        
+        # geneDFf[geneDF.index.difference(idxCells), ["Cell Type", "Condition", gene]] / geneAvg
         
         print(targCells)
         print(offCells)
@@ -91,17 +99,23 @@ def Wass_KL_Dist(threshold, cmp, data, dataDF, weightedProjDF):
         # geneDF[(geneDF < weight).any(1)] / geneAvg
         
         # if np.mean(targCells) > np.mean(offCells):
+        
+        print(np.shape(targCells))
+        print(np.shape(offCells))
+        
+        offCells = offCells[0:5]
             
-        #         kdeTarg = KernelDensity(kernel='gaussian').fit(targCellMark.reshape(-1, 1))
-        #         kdeOffTarg = KernelDensity(kernel='gaussian').fit(offTargCellMark.reshape(-1, 1))
-        #         minVal = np.minimum(targCellMark.min(), offTargCellMark.min()) - 10
-        #         maxVal = np.maximum(targCellMark.max(), offTargCellMark.max()) + 10
-        #         outcomes = np.arange(minVal, maxVal + 1).reshape(-1, 1)
-        #         distTarg = np.exp(kdeTarg.score_samples(outcomes))
-        #         distOffTarg = np.exp(kdeOffTarg.score_samples(outcomes))
-        #         KL_div = stats.entropy(distOffTarg.flatten() + 1e-200, distTarg.flatten() + 1e-200, base=2)
-        #         markerDF = pd.concat([markerDF, pd.DataFrame({"Marker": [marker], "Wasserstein Distance": stats.wasserstein_distance(targCellMark, offTargCellMark), "KL Divergence": KL_div})])
-            
+        kdeTarg = KernelDensity(kernel='gaussian').fit(np.reshape(targCells, (-1, 1)))
+        kdeOffTarg = KernelDensity(kernel='gaussian').fit(np.reshape(offCells, (-1, 1)))
+        minVal = np.minimum(np.min(targCells), np.min(offCells)) - 10
+        maxVal = np.maximum(np.max(targCells), np.max(offCells)) + 10
+        outcomes = np.arange(minVal, maxVal + 1).reshape(-1, 1)
+        distTarg = np.exp(kdeTarg.score_samples(outcomes))
+        distOffTarg = np.exp(kdeOffTarg.score_samples(outcomes))
+        KL_div = stats.entropy(distOffTarg.flatten() + 1e-200, distTarg.flatten() + 1e-200, base=2)
+        markerDF = pd.concat([markerDF, pd.DataFrame({"Marker": [gene], "Wasserstein Distance": stats.wasserstein_distance(targCellMark, offTargCellMark), "KL Divergence": KL_div})])
+        print(markerDF)
+        
         
     #     cmpWeights 
         
