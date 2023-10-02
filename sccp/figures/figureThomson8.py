@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 from sklearn.neighbors import KernelDensity
 from scipy import stats
+import seaborn as sns
 
 
 
@@ -51,7 +52,7 @@ def makeFigure():
     
     threshold = -.3
     cmp = 30
-    Wass_KL_Dist(threshold, cmp, data, dataDF, weightedProjDF)
+    Wass_KL_Dist(threshold, cmp, data, dataDF, weightedProjDF, ax[0:2])
 
     comps = [5, 12, 20, 30]
     
@@ -64,9 +65,10 @@ def makeFigure():
 
 
 
-def Wass_KL_Dist(threshold, cmp, data, dataDF, weightedProjDF):
+def Wass_KL_Dist(threshold, cmp, data, dataDF, weightedProjDF, ax, numFactors=5):
     """Finds markers which have average greatest difference from other cells"""
-    for gene in data.variable_labels:
+    markerDF = pd.DataFrame(columns=["Marker", "Cell Type", "Amount"])
+    for i, gene in enumerate(data.variable_labels):
         geneAvg = np.mean(dataDF[gene])   
         cmpWeights = weightedProjDF[["Cell Type", "Cmp. "+str(cmp)]]
         print(cmpWeights)
@@ -109,12 +111,29 @@ def Wass_KL_Dist(threshold, cmp, data, dataDF, weightedProjDF):
         kdeOffTarg = KernelDensity(kernel='gaussian').fit(np.reshape(offCells, (-1, 1)))
         minVal = np.minimum(np.min(targCells), np.min(offCells)) - 10
         maxVal = np.maximum(np.max(targCells), np.max(offCells)) + 10
-        outcomes = np.arange(minVal, maxVal + 1).reshape(-1, 1)
+        outcomes = np.reshape(np.arange(minVal, maxVal + 1), (-1, 1))
         distTarg = np.exp(kdeTarg.score_samples(outcomes))
         distOffTarg = np.exp(kdeOffTarg.score_samples(outcomes))
         KL_div = stats.entropy(distOffTarg.flatten() + 1e-200, distTarg.flatten() + 1e-200, base=2)
-        markerDF = pd.concat([markerDF, pd.DataFrame({"Marker": [gene], "Wasserstein Distance": stats.wasserstein_distance(targCellMark, offTargCellMark), "KL Divergence": KL_div})])
-        print(markerDF)
+        markerDF = pd.concat([markerDF, pd.DataFrame({"Marker": [gene], "Wasserstein Distance": stats.wasserstein_distance(targCells, offCells), "KL Divergence": KL_div})])
+        if i == 2:
+            break
+        
+    print(markerDF)
+        
+    corrsDF = pd.DataFrame()
+    for i, distance in enumerate(["Wasserstein Distance", "KL Divergence"]):
+        ratioDF = markerDF.sort_values(by=distance)
+        posCorrs = ratioDF.tail(numFactors).Marker.values
+        corrsDF = pd.concat([corrsDF, pd.DataFrame({"Distance": distance, "Marker": posCorrs})])
+        markerDF = markerDF.loc[markerDF["Marker"].isin(posCorrs)]
+        sns.barplot(data=ratioDF.tail(numFactors), y="Marker", x=distance, ax=ax[i], color='k')
+        ax[i].set(xscale="log")
+        ax[0].set(title="Wasserstein Distance - RNA")
+        ax[1].set(title="KL Divergence - RNA")
+        ax[0].set(title="Wasserstein Distance - Surface Markers")
+        ax[1].set(title="KL Divergence - Surface Markers")
+    return corrsDF
         
         
     #     cmpWeights 
