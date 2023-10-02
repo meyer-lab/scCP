@@ -53,31 +53,36 @@ def Lupus_comp_scan_plot(ax, patient_facs, status_DF):
     mode_facs = patient_facs
 
     Lupus_y = preprocessing.label_binarize(status_DF.SLE_status, classes=["Healthy", "SLE"]).flatten()
-    print(mode_facs.shape)
     all_comps = np.arange(0, mode_facs.shape[1])
     Acc_DF = pd.DataFrame()
+    all_comps = np.arange(0, 2)
 
     for comps in itertools.product(all_comps, all_comps):
-        if comps[0] == comps[1]:
-            compFacs = mode_facs[:, comps[0]][:, np.newaxis]
+        print(comps)
+        if comps[0] > comps[1]:
+            acc = Acc_DF.loc[(Acc_DF["Component 1"] == "Comp. " + str(comps[1] + 1)) & (Acc_DF["Component 2"]== "Comp. " + str(comps[0] + 1))].Accuracy.values[0]
+            Acc_DF = pd.concat([Acc_DF,pd.DataFrame({"Component 1": "Comp. " + str(comps[0] + 1),"Component 2": "Comp. " + str(comps[1] + 1), "Accuracy": [acc]})])
         else:
-            compFacs = mode_facs[:, [comps[0], comps[1]]]
+            if comps[0] == comps[1]:
+                compFacs = mode_facs[:, comps[0]][:, np.newaxis]
+            else:
+                compFacs = mode_facs[:, [comps[0], comps[1]]]
 
-        LR_CoH = lrmodel.fit(compFacs, Lupus_y)
-        acc = LR_CoH.score(compFacs, Lupus_y)
-        Acc_DF = pd.concat(
-            [
-                Acc_DF,
-                pd.DataFrame(
-                    {
-                        "Component 1": "Comp. " + str(comps[0] + 1),
-                        "Component 2": "Comp. " + str(comps[1] + 1),
-                        "Accuracy": [acc],
-                    }
-                ),
-            ]
-        )
-        print(Acc_DF)
+            LR_CoH = lrmodel.fit(compFacs, Lupus_y)
+            acc = LR_CoH.score(compFacs, Lupus_y)
+            Acc_DF = pd.concat(
+                [
+                    Acc_DF,
+                    pd.DataFrame(
+                        {
+                            "Component 1": "Comp. " + str(comps[0] + 1),
+                            "Component 2": "Comp. " + str(comps[1] + 1),
+                            "Accuracy": [acc],
+                        }
+                    ),
+                ]
+            )
+            print(Acc_DF)
 
     Acc_DF = Acc_DF.pivot_table(
         index="Component 1", columns="Component 2", values="Accuracy", sort=False
