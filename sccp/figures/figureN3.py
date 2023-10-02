@@ -51,9 +51,14 @@ def makeFigure():
     k = 0
     for i in large_comps:
         ax[k].set_title(f"Component {i+1} most upregulated and downregulated genes")
-        t_ten_genes = np.argpartition(np.absolute(gene_factors_T[i]), -10)[-10:]
-        gene_names = dataDF.variable_labels[t_ten_genes]
-        gene_values = gene_factors_T[i][t_ten_genes]
+        t_five_genes = np.argpartition(gene_factors_T[i], -5)[-5:]
+        b_five_genes = np.argpartition(gene_factors_T[i], 5)[:5]
+        gene_names = np.concatenate(
+            (dataDF.variable_labels[t_five_genes], dataDF.variable_labels[b_five_genes])
+        )
+        gene_values = np.concatenate(
+            (gene_factors_T[i][t_five_genes], gene_factors_T[i][b_five_genes])
+        )
         gene_values, gene_names = np.transpose(sorted(zip(gene_values, gene_names)))
         sns.barplot(x=gene_names, y=gene_values.astype(float), ax=ax[k], color="gray")
         k += 1
