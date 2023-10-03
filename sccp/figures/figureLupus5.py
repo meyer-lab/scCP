@@ -11,12 +11,14 @@ from .common import subplotLabel, getSetup, openPf2
 from .commonFuncs.plotLupus import plotCmpRegContributions
 from ..imports.scRNA import load_lupus_data
 from ..logisticReg import getCompContribs
+import numpy as np
+import pandas as pd
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (1, 1))  # fig size  # grid size
+    ax, f = getSetup((9, 6), (1, 1))  # fig size  # grid size
 
     # Add subplot labels
     subplotLabel(ax)
@@ -39,7 +41,42 @@ def makeFigure():
     A_matrix = factors[0]
 
     contribs = getCompContribs(A_matrix, group_labs.to_numpy(), penalty_amt=50)
+    
+    contribs["Predicting"] = np.repeat("SLE Status", contribs.shape[0])
+    
+    print(contribs)
+    
+    
+    group_to_predict = "ancestry"  # group to predict in logistic regression
 
-    plotCmpRegContributions(contribs, group_to_predict, ax[0])
+
+
+    status = obs[["sample_ID", group_to_predict]].drop_duplicates()
+    print(status)
+  
+
+    group_labs = status.set_index("sample_ID")
+    print(group_labs)
+    group_labs[group_to_predict] = np.where(group_labs[group_to_predict].isin(["European"]), group_labs[group_to_predict], "Other")
+    print(group_labs)
+    group_labs = group_labs[group_to_predict]
+    print(group_labs)
+    group_labs.to_numpy()
+    print(group_labs)
+    
+
+
+    A_matrix = factors[0]
+
+    contribs2 = getCompContribs(A_matrix, group_labs.to_numpy(), penalty_amt=50)
+    contribs2["Predicting"] = np.repeat("Euro-Ancestry", contribs2.shape[0])
+    
+    print(contribs2)
+    
+    
+    
+    df = contribs.merge(contribs2)
+
+    plotCmpRegContributions(df, group_to_predict, 'k', ax[0])
 
     return f

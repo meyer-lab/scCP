@@ -10,6 +10,7 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 from .common import subplotLabel, getSetup, openPf2
 from .commonFuncs.plotLupus import plotROCAcrossGroups
 from ..imports.scRNA import load_lupus_data
+import numpy as np
 
 
 def makeFigure():
@@ -26,9 +27,16 @@ def makeFigure():
 
     _, obs = load_lupus_data()
 
-    status = obs[["sample_ID", "SLE_status", "Processing_Cohort"]].drop_duplicates()
+    status = obs[["sample_ID", "ancestry", "Processing_Cohort"]].drop_duplicates()
+    
+    print(status)
+    
+    
 
-    group_labs = status.set_index("sample_ID")[["SLE_status", "Processing_Cohort"]]
+    group_labs = status.set_index("sample_ID")[["ancestry", "Processing_Cohort"]]
+    print(np.unique(group_labs["ancestry"]))
+    # a
+    group_labs["ancestry"] = np.where(group_labs["ancestry"].isin( ["European"]), group_labs["ancestry"], "Other")
 
     A_matrix = factors[0]
 
@@ -36,7 +44,7 @@ def makeFigure():
         A_matrix,
         group_labs,
         ax[0],
-        pred_group="SLE_status",
+        pred_group="ancestry",
         cv_group="Processing_Cohort",
     )
 
