@@ -1757,8 +1757,8 @@ tqdm = "^4.65.0"
 [package.source]
 type = "git"
 url = "https://github.com/meyer-lab/parafac2.git"
-reference = "81de3749330fede88c3f93c069532e438c98b1f7"
-resolved_reference = "81de3749330fede88c3f93c069532e438c98b1f7"
+reference = "eb55e918cfcd52d0cedc4e359f54d267e112d89a"
+resolved_reference = "eb55e918cfcd52d0cedc4e359f54d267e112d89a"
 
 [[package]]
 name = "param"
@@ -2819,4 +2819,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "a9337e0a873c3e7786f9e7164276b6a012af32c9ebf59fa259df5141d9187dfa"
+content-hash = "0091d7fe28136a6f8c96626e0007647c2d36119cac428590900b914fefd086a2"
