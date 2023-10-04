@@ -42,7 +42,7 @@ def getSetup(figsize, gridd) -> tuple[list, Figure]:
 
     # Setup plotting space and grid
     f = plt.figure(figsize=figsize, layout="constrained")
-    gs1 = gridspec.GridSpec(*gridd, figure=f)
+    gs1 = gridspec.GridSpec(gridd[0], gridd[1], figure=f)
 
     # Get list of axis objects
     ax = [f.add_subplot(gs1[x]) for x in range(gridd[0] * gridd[1])]
