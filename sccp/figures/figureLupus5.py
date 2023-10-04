@@ -18,7 +18,7 @@ import pandas as pd
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((9, 6), (1, 1))  # fig size  # grid size
+    ax, f = getSetup((7, 6), (1, 1))  # fig size  # grid size
 
     # Add subplot labels
     subplotLabel(ax)
@@ -31,6 +31,7 @@ def makeFigure():
     status = obs[["sample_ID", group_to_predict]].drop_duplicates()
 
     group_labs = status.set_index("sample_ID")[group_to_predict]
+
 
     (
         _,
@@ -75,8 +76,9 @@ def makeFigure():
     
     
     
-    df = contribs.merge(contribs2)
+    # df = pd.concat([contribs,contribs2])
+    # print(df)
 
-    plotCmpRegContributions(df, group_to_predict, 'k', ax[0])
+    # plotCmpRegContributions(df, group_to_predict, 'k', ax[0])
 
     return f
