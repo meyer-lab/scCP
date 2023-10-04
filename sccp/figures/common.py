@@ -84,11 +84,13 @@ def savePf2(weight, factors, projs, dataName: str):
     factor = ["A", "B", "C"]
     for i in range(3):
         np.save(
-            f"./sccp/data/{dataName}/{dataName}_Factor{factor[i]}Cmp{rank}.npy", factors[i]
+            f"./sccp/data/{dataName}/{dataName}_Factor{factor[i]}Cmp{rank}.npy",
+            factors[i],
         )
 
     np.save(
-        f"./sccp/data/{dataName}/{dataName}_ProjCmp{rank}.npy", np.concatenate(projs, axis=0)
+        f"./sccp/data/{dataName}/{dataName}_ProjCmp{rank}.npy",
+        np.concatenate(projs, axis=0),
     )
 
 
@@ -205,15 +207,7 @@ def saveGeneFactors(factors, data, dataName):
         df = pd.DataFrame(
             data=X, index=yt, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)]
         )
-        df.to_csv(
-            "sccp/data/"
-            + dataName
-            + "/"
-            + dataName
-            + "TopBotGenes_Cmp"
-            + str(rank)
-            + ".csv"
-        )
+        df.to_csv(f"/opt/andrew/{dataName}/{dataName}TopBotGenes_Cmp{rank}.csv")
 
         geneAmount = 20
         genesTop = np.empty((geneAmount, X.shape[1]), dtype="<U10")
@@ -232,24 +226,8 @@ def saveGeneFactors(factors, data, dataName):
             data=genesBottom, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)]
         )
 
-        dfTop.to_csv(
-            "sccp/data/"
-            + dataName
-            + "/"
-            + dataName
-            + "TopGenes_Cmp"
-            + str(rank)
-            + ".csv"
-        )
-        dfBot.to_csv(
-            "sccp/data/"
-            + dataName
-            + "/"
-            + dataName
-            + "BotGenes_Cmp"
-            + str(rank)
-            + ".csv"
-        )
+        dfTop.to_csv(f"/opt/andrew/{dataName}/{dataName}TopGenes_Cmp{rank}.csv")
+        dfBot.to_csv(f"/opt/andrew/{dataName}/{dataName}BotGenes_Cmp{rank}.csv")
 
 
 def repeatLabels(condLabels, data, dataDF):
