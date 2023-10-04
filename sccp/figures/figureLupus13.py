@@ -1,5 +1,5 @@
 """
-Plots all top and bottom genes for Thomson dataset
+Plots all top and bottom genes for Lupus dataset
 """
 from .common import subplotLabel, getSetup, flattenData
 from .commonFuncs.plotGeneral import plotGenePerCategStatus, plotGeneFactors
