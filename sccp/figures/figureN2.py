@@ -30,12 +30,13 @@ def makeFigure():
 
     data.obs["cell_type"] = gateThomsonCells(rank)
 
-    cell_type = data.obs.cell_type.unique()[1]
-    drug = data.obs.Drugs.unique()[0]
-    print(cell_type)
-    print(len(data))
-    print(drug)
-    data_subset = data[(data.obs.cell_type != cell_type) | (data.obs.Drugs != drug)]
+    # cell_type = data.obs.cell_type.unique()[1]
+    # drug = data.obs.Drugs.unique()[0]
+    # print(cell_type)
+    # print(len(data))
+    # print(drug)
+    # data_subset = data[(data.obs.cell_type != cell_type) | (data.obs.Drugs != drug)]
+    data_subset = data
     print(len(data_subset))
     dataDF = tensorFy(data_subset, "Drugs")
     weight, factors, projs, r2x = parafac2_nd(
@@ -52,7 +53,7 @@ def makeFigure():
     )
 
     f.suptitle(
-        f"Pf2 results + UMAP when dropping {cell_type} from {drug} treatment",
+        f"Pf2 results + UMAP when dropping {None} from {None} treatment",
         fontsize=35,
     )
 

@@ -28,14 +28,15 @@ def makeFigure():
     rank = 30
     data.obs["cell_type"] = gateThomsonCells(rank)
     sampled_data = data.copy()
+    prev = len(sampled_data)
     for drug in data.obs.Drugs.unique():
         for cell_type in data.obs.cell_type.unique():
             filt = (sampled_data.obs.cell_type != cell_type) | (
-                sampled_data.obs.Drugs != drug
-            )
-            filt.loc[
-                np.random.choice(filt[~filt].index, int(len(filt[~filt].index) * 0.99))
-            ] = True
+                    sampled_data.obs.Drugs != drug
+                )
+            filt[
+                    np.random.choice(filt[~filt].index, int(len(filt[~filt].index) * 1), replace=False)
+                ] = True
             sampled_data = sampled_data[filt]
     dataDF = tensorFy(sampled_data, "Drugs")
     weight, factors, projs, r2x = parafac2_nd(
@@ -45,6 +46,7 @@ def makeFigure():
     )
     dataDF_flat = flattenData(dataDF)
     dataDF_flat["Cell Type"] = sampled_data.obs["cell_type"].values
+    print(dataDF_flat)
     plotCellTypeUMAP(
         umap.UMAP(random_state=1).fit(np.concatenate(projs, axis=0)), dataDF_flat, ax[0]
     )
