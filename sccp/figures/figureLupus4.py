@@ -30,8 +30,8 @@ def makeFigure():
 
     group_labs = status.set_index("sample_ID")[["SLE_status", "Processing_Cohort"]]
 
-    ranks_to_test = [2, 3]  # set to 2,3 for github test
-
+    # ranks_to_test = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60] # set to 2,3 for github test
+    # ranks_to_test = [1]
     results = testPf2Ranks(
         lupus_tensor,
         group_labs,

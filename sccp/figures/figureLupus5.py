@@ -72,6 +72,7 @@ def makeFigure():
     contribs2 = getCompContribs(A_matrix, group_labs.to_numpy(), penalty_amt=50)
     contribs2["Predicting"] = np.repeat("Euro-Ancestry", contribs2.shape[0])
     
+    print(contribs2.sort_values(by=['Weight']))
     print(contribs2)
     
     

@@ -20,6 +20,7 @@ def plotPf2RankTest(rank_test_results, ax, error_metric = "accuracy", palette = 
                     legend=False,
                     ax = ax)
     ax.set_title(error_metric + ' by Hyperparameter input')
+    ax.set(ylim=[-0.05, 1.05])
 
 def plotCmpRegContributions(contribs, predicting: str, col,  ax):  
     """Plots weights of components in logistic regression from `getCompContribs`"""

@@ -24,13 +24,19 @@ def makeFigure():
     subplotLabel(ax)
 
     rank = 40
-    group_to_predict = "SLE_status"  # group to predict
+    group_to_predict = "ancestry"  # group to predict
 
     lupus_tensor, obs = load_lupus_data()
 
     group_labs = obs[["sample_ID", group_to_predict]].drop_duplicates()
+    
+    
 
     group_labs = group_labs.set_index("sample_ID")
+
+    group_labs[group_to_predict] = np.where(group_labs[group_to_predict].isin(["European"]), group_labs[group_to_predict], "Other")
+
+    
 
     (
         _,
@@ -50,10 +56,10 @@ def makeFigure():
     # to have high weights in logistic regression, as do 32 and 29. 32 and 13 both
     # had positive weights while 26 and 29 were negative
     comps_to_test = [
-        ("Cmp. 13", "Cmp. 26"),
-        ("Cmp. 32", "Cmp. 26"),
-        ("Cmp. 13", "Cmp. 32"),
-        ("Cmp. 13", "Cmp. 29"),
+        ("Cmp. 26", "Cmp. 21"),
+        ("Cmp. 27", "Cmp. 14"),
+        # ("Cmp. 13", "Cmp. 32"),
+        # ("Cmp. 13", "Cmp. 29"),
     ]
 
     for i, pair in enumerate(comps_to_test):
