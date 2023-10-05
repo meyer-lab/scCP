@@ -120,10 +120,7 @@ def openPf2(rank: int, dataName: str, optProjs=False):
             allow_pickle=True,
         )
     else:
-        projs = np.load(
-            f"./sccp/data/{dataName}/{dataName}_ProjCmp" + str(rank) + ".npy",
-            allow_pickle=True,
-        )
+          projs = np.load(f"/opt/andrew/{dataName}/{dataName}_ProjCmp"+str(rank)+".npy", allow_pickle=True)
 
     return weight, factors, projs
 
@@ -233,4 +230,11 @@ def saveGeneFactors(factors, data, dataName):
 def repeatLabels(condLabels, data, dataDF):
     """Repeats a label in original AnnData file"""
     cellCount = dataDF.groupby(["Condition"]).size().values
-    return [np.repeat(condLabels[i], cellCount[i]) for i in range(len(data.X_list))]
+    condNames=[]
+
+    for i in range(len(data.X_list)):
+        condNames = np.append(
+            condNames, np.repeat(condLabels[i], cellCount[i]))
+
+    return condNames
+

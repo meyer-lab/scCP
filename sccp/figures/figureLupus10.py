@@ -14,7 +14,7 @@ import numpy as np
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8, 8), (2, 2))
+    ax, f = getSetup((10, 10), (3, 3))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -25,14 +25,16 @@ def makeFigure():
     
     condLabels = annData[["sample_ID", "SLE_status"]].drop_duplicates("sample_ID")
     condLabels = np.asarray(condLabels["SLE_status"])
+    print(condLabels)
+    print(repeatLabels(condLabels, data, dataDF))
  
-    dataDF["Status"] = repeatLabels(condLabels, data, dataDF)
+    dataDF["Status"] = repeatLabels(condLabels, data, dataDF).flatten()
     
     cell_types = annData[["cell_type_broad", "SLE_status"]].reset_index(drop=True)
     dataDF["Cell Type"] = cell_types["cell_type_broad"].values
     
-    comp = 26
+    comp = 13
     rank = 40
-    plotGenePerCategStatus(comp, dataDF, rank, "lupus", ax[0:4], geneAmount=2)
+    plotGenePerCategStatus(comp, dataDF, rank, "lupus", ax[0:8], geneAmount=4)
 
     return f

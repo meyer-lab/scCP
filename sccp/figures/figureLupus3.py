@@ -25,7 +25,7 @@ def makeFigure():
     dataDF = flattenData(lupus_tensor)
 
     # get cell types
-    cell_types = obs[["cell_type_broad", "SLE_status"]].reset_index(drop=True)
+    cell_types = obs[["louvain", "SLE_status"]].reset_index(drop=True)
     (
         _,
         factors,
@@ -35,8 +35,8 @@ def makeFigure():
     pf2Points = openUMAP(rank, "lupus", opt=True)
 
     weightedProjDF = flattenWeightedProjs(lupus_tensor, factors, projs)
-    weightedProjDF["Cell Type"] = cell_types["cell_type_broad"].values
-    dataDF["Cell Type"] = cell_types["cell_type_broad"].values
+    weightedProjDF["Cell Type"] = cell_types["louvain"].values
+    dataDF["Cell Type"] = cell_types["louvain"].values
 
     comps = [13, 14, 16, 26, 29, 32]
     for i, comp in enumerate(comps):
@@ -44,7 +44,7 @@ def makeFigure():
         plotCmpUMAP(comp, factors[1], pf2Points, projs, ax[(2*i)+1])
     
 
-    plotCellTypeUMAP(pf2Points, dataDF, ax[14])
+    # plotCellTypeUMAP(pf2Points, dataDF, ax[14])
 
 
     return f

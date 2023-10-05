@@ -4,6 +4,7 @@ import umap
 import numpy as np
 import pandas as pd
 from umap.plot import _get_embedding, _select_font_color, _datashade_points, _get_metric
+import umap.plot
 
 
 def points(
@@ -13,8 +14,8 @@ def points(
     cmap="Blues",
     color_key=None,
     color_key_cmap="Spectral",
-    width=1200,
-    height=1200,
+    width=600,
+    height=600,
     show_legend=True,
     ax=None,
     alpha=None,
@@ -122,12 +123,26 @@ def plotCmpUMAP(
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs)) * 2.0
 
     cmap = sns.diverging_palette(240, 10, as_cmap=True, s=100)
-    plot = points(pf2Points, values=weightedProjs, cmap=cmap, ax=ax)
+    plot = points(pf2Points, values=weightedProjs, cmap=cmap, ax=ax, alpha=.1)
+
+    psm = plt.pcolormesh([[-1, 1], [-1, 1]], cmap=cmap)
+    
+    
+    
+def plotCmpCellsUMAP(cmp: int, weightedProjDF, pf2Points: umap.UMAP, projs: np.ndarray, ax: plt.Axes):
+    """Scatterplot of UMAP visualization weighted by
+    projections for a component and cell state for a specific cset of cells"""
+    weightedProjs = weightedProjDF["Cmp. " + str(cmp)]
+    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs)) * 2.0
+
+    cmap = sns.diverging_palette(240, 10, as_cmap=True, s=100)
+    plot = umap.plot.points(pf2Points, values=weightedProjs, cmap=cmap, ax=ax)
 
     psm = plt.pcolormesh([[-1, 1], [-1, 1]], cmap=cmap)
     plt.colorbar(psm, ax=plot, label="Cell Specific Weight")
 
     ax.set(ylabel="UMAP2", xlabel="UMAP1", title="Cmp. " + str(cmp))
+
 
 
 def plotUMAP_obslabel(labels, pf2Points, ax: plt.Axes):
@@ -153,6 +168,20 @@ def plotCellTypeUMAP(points, data, ax):
 
 
 def plotCmpPerCellType(weightedprojs, cmp, ax: plt.Axes, outliers=True):
+    """Boxplot of weighted projections for one component across cell types"""
+    cmpName = "Cmp. " + str(cmp)
+    sns.boxplot(
+        data=weightedprojs[[cmpName, "Cell Type"]],
+        x=cmpName,
+        y="Cell Type",
+        showfliers=outliers,
+        ax=ax,
+    )
+    maxvalue = np.max(np.abs(ax.get_xticks()))
+    ax.set(xlim=(-maxvalue, maxvalue), xlabel="Cell Specific Weight")
+    ax.set_title(cmpName)
+    
+def plotCmpSubsetPerCellType(weightedprojs, cmp, ax: plt.Axes, outliers=True):
     """Boxplot of weighted projections for one component across cell types"""
     cmpName = "Cmp. " + str(cmp)
     sns.boxplot(
