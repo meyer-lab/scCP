@@ -147,15 +147,11 @@ def openUMAP(rank: int, dataName: str, opt=True):
 
 def flattenData(data: Pf2X) -> pd.DataFrame:
     """Flattens tensor into dataframe"""
-    cellCount = []
-    for i in range(len(data.X_list)):
-        cellCount = np.append(cellCount, data.X_list[i].shape[0])
-
-    condNames = []
+    condNames = np.empty([])
 
     for i in range(len(data.X_list)):
         condNames = np.append(
-            condNames, np.repeat(data.condition_labels[i], cellCount[i])
+            condNames, np.repeat(data.condition_labels[i], data.X_list[i].shape[0])
         )
     flatData = np.concatenate(data.X_list, axis=0)
     dataDF = pd.DataFrame(data=flatData, columns=data.variable_labels)
@@ -164,17 +160,13 @@ def flattenData(data: Pf2X) -> pd.DataFrame:
     return dataDF
 
 
-def flattenWeightedProjs(data: Pf2X, factors: np.ndarray, projs: np.ndarray):
+def flattenWeightedProjs(data: Pf2X, factors: np.ndarray, projs: np.ndarray) -> pd.DataFrame:
     """Flattens tensor into dataframe"""
-    cellCount = []
-    for i in range(len(data.X_list)):
-        cellCount = np.append(cellCount, data.X_list[i].shape[0])
-
-    condNames = []
+    condNames = np.empty([])
 
     for i in range(len(data.X_list)):
         condNames = np.append(
-            condNames, np.repeat(data.condition_labels[i], cellCount[i])
+            condNames, np.repeat(data.condition_labels[i], data.X_list[i].shape[0])
         )
 
     weightedProjs = projs @ factors
