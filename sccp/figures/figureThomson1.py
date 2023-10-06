@@ -1,13 +1,13 @@
 """
 Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs
 """
-from .common import subplotLabel, getSetup, openPf2
+from .common import subplotLabel, getSetup
 from .commonFuncs.plotGeneral import plotCV, plotR2X
 from .commonFuncs.plotFactors import (
     plotFactors,
     plotWeight,
 )
-from ..imports.scRNA import ThompsonXA_SCGenes
+from ..imports.scRNA import ThompsonXA_SCGenes, tensorFy
 from parafac2 import parafac2_nd
 
 
@@ -21,16 +21,13 @@ def makeFigure():
 
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes()
-    rank = 30
+    data = tensorFy(data, "Drugs")
 
-    # weight, factors, projs, _ = parafac2_nd(
-    #     data,
-    #     rank=rank,
-    #     random_state=1,
-    # )
-
-    # savePf2(weight, factors, projs, "Thomson")
-    weight, factors, _ = openPf2(rank, "Thomson")
+    weight, factors, _, _ = parafac2_nd(
+        data,
+        rank=30,
+        random_state=1,
+    )
 
     plotFactors(factors, data, ax[0:3], reorder=(0, 2), trim=(2,))
     plotWeight(weight, ax[3])

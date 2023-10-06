@@ -15,7 +15,7 @@ from .commonFuncs.plotUMAP import (
     plotCmpPerCellType,
     plotCmpUMAP,
 )
-from ..imports.scRNA import ThompsonXA_SCGenes
+from ..imports.scRNA import ThompsonXA_SCGenes, tensorFy
 from ..imports.gating import gateThomsonCells
 
 
@@ -30,17 +30,18 @@ def makeFigure():
 
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes()
+    data = tensorFy(data, "Drugs")
     dataDF = flattenData(data)
 
     rank = 30
     dataDF["Cell Type"] = gateThomsonCells()
 
     _, factors, projs = openPf2(rank, "Thomson")
-    pf2Points = umap.UMAP(random_state=1).fit(projs)
+    pf2Points = umap.UMAP(random_state=1, min_dist=0.2).fit(projs)
 
     plotCellTypeUMAP(pf2Points, dataDF, ax[0])
 
-    weightedProjDF = flattenWeightedProjs(data, factors, projs)
+    weightedProjDF = flattenWeightedProjs(data, factors[1], projs)
     weightedProjDF["Cell Type"] = dataDF["Cell Type"].values
     weightedProjDF.sort_values(by=["Condition", "Cell Type"], inplace=True)
     dataDF.sort_values(by=["Condition", "Cell Type"], inplace=True)

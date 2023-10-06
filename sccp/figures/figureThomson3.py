@@ -20,7 +20,6 @@ def makeFigure():
     _, factors, projs = openPf2(rank, "Thomson")
 
     # UMAP dimension reduction
-    _, _, projs = openPf2(rank, "Thomson")
     pf2Points = umap.UMAP(random_state=1).fit(projs)
 
     component = np.arange(17, 25, 1)

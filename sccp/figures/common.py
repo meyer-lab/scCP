@@ -12,6 +12,7 @@ import numpy as np
 import pickle
 import pandas as pd
 from .commonFuncs.plotFactors import reorder_table
+from ..parafac2 import Pf2X
 
 
 matplotlib.use("AGG")
@@ -144,26 +145,7 @@ def openUMAP(rank: int, dataName: str, opt=True):
     return pickle.load((open(f_name, "rb")))
 
 
-def flattenData(data):
-    """Flattens tensor into dataframe"""
-    cellCount = []
-    for i in range(len(data.X_list)):
-        cellCount = np.append(cellCount, data.X_list[i].shape[0])
-
-    condNames = []
-
-    for i in range(len(data.X_list)):
-        condNames = np.append(
-            condNames, np.repeat(data.condition_labels[i], cellCount[i])
-        )
-    flatData = np.concatenate(data.X_list, axis=0)
-    dataDF = pd.DataFrame(data=flatData, columns=data.variable_labels)
-    dataDF["Condition"] = condNames
-
-    return dataDF
-
-
-def flattenWeightedProjs(data, factors, projs):
+def flattenWeightedProjs(data: Pf2X, factors: np.ndarray, projs: np.ndarray):
     """Flattens tensor into dataframe"""
     cellCount = []
     for i in range(len(data.X_list)):
@@ -176,7 +158,7 @@ def flattenWeightedProjs(data, factors, projs):
             condNames, np.repeat(data.condition_labels[i], cellCount[i])
         )
 
-    weightedProjs = projs @ factors[1]
+    weightedProjs = projs @ factors
 
     weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
 
