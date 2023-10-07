@@ -17,13 +17,13 @@ def plotFactors(factors, data, axs, reorder=tuple(), trim=tuple(), cond_group_la
     for i in range(3):
         # The single cell mode has a square factors matrix
         if i == 0:
-            yt = data.condition_labels
+            yt = data.condition_labels.tolist()
             title = "Components by Condition"
         elif i == 1:
             yt = [f"Cell State {i}" for i in np.arange(1, rank + 1)]
             title = "Components by Cell State"
         else:
-            yt = data.variable_labels
+            yt = data.variable_labels.tolist()
             title = "Components by Gene"
 
         X = factors[i]
@@ -32,11 +32,11 @@ def plotFactors(factors, data, axs, reorder=tuple(), trim=tuple(), cond_group_la
             max_weight = np.max(np.abs(X), axis=1)
             kept_idxs = max_weight > 0.08
             X = X[kept_idxs]
-            yt = yt[kept_idxs]
+            yt = [yt[ii] for ii in kept_idxs]
 
         if i in reorder:
             X, ind = reorder_table(X)
-            yt = yt[ind]
+            yt = [yt[ii] for ii in ind]
             if i == 0 and not (cond_group_labels is None):
                 cond_group_labels = cond_group_labels[ind]
                 

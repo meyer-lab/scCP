@@ -148,7 +148,7 @@ def plotLabelAllUMAP(conditions, umappoints, ax: plt.Axes):
     ax.set(title="Pf2-Based Decomposition", ylabel="UMAP2", xlabel="UMAP1")
 
 
-def plotCellTypeUMAP(umappoints, data, ax):
+def plotCellTypeUMAP(umappoints, data, ax: plt.Axes):
     """Plots UMAP labeled by cell type"""
     points(umappoints, labels=data["Cell Type"].values, ax=ax)
     ax.set(ylabel="UMAP2", xlabel="UMAP1")
