@@ -2,12 +2,11 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 import umap
 import numpy as np
-import pandas as pd
 from umap.plot import _get_embedding, _select_font_color, _datashade_points, _get_metric
 
 
 def points(
-    umap_object: umap.UMAP,
+    umap_object,
     labels=None,
     values=None,
     cmap="Blues",
@@ -29,7 +28,10 @@ def points(
         if not 0.0 <= alpha <= 1.0:
             raise ValueError("Alpha must be between 0 and 1 inclusive")
 
-    points = _get_embedding(umap_object)
+    if isinstance(umap_object, umap.UMAP):
+        points = _get_embedding(umap_object)
+    else:
+        points = umap_object
 
     if points.shape[1] != 2:
         raise ValueError("Plotting is currently only implemented for 2D embeddings")
@@ -92,22 +94,22 @@ def plotCondUMAP(conds, decomp, totalconds, umappoints, axs: list[plt.Axes]):
 
 def plotGeneUMAP(
     genes: list[str],
-    decomp,
-    umappoints: umap.UMAP,
-    dataDF: pd.DataFrame,
-    axs
+    decomp: str,
+    umappoints,
+    dataDF,
+    axs: list[plt.Axes]
 ):
     """Scatterplot of UMAP visualization weighted by gene"""
     cmap = sns.color_palette("ch:s=-.2,r=.6", as_cmap=True)
 
-    for i, genez in enumerate(genes):
-        geneList = dataDF[genez].to_numpy()
+    for i, ax in enumerate(axs):
+        geneList = dataDF[:, genes[i]].X
         geneList = geneList / np.max(np.abs(geneList))
         psm = plt.pcolormesh([[0, 1], [0, 1]], cmap=cmap)
-        plot = points(umappoints, values=geneList, cmap=cmap, ax=axs[i])
-        colorbar = plt.colorbar(psm, ax=plot)
+        plot = points(umappoints, values=geneList, cmap=cmap, ax=ax)
+        plt.colorbar(psm, ax=plot)
         axs[i].set(
-            title=genez + "-" + decomp + "-Based Decomposition",
+            title=f"{genes[i]}-{decomp}-Based Decomposition",
             ylabel="UMAP2",
             xlabel="UMAP1",
         )

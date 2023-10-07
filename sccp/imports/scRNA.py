@@ -1,19 +1,9 @@
 import numpy as np
 import pandas as pd
 import anndata
-from ..parafac2 import Pf2X
 
 
-def tensorFy(annD: anndata.AnnData, obsName: str) -> Pf2X:
-    obsV = annD.obs_vector(obsName)
-    sgUnique, sgIndex = np.unique(obsV, return_inverse=True)
-
-    data = [annD[sgIndex == sgi, :].X.toarray() for sgi in range(len(sgUnique))]
-
-    return Pf2X(data, sgUnique, annD.var_names)
-
-
-def ThompsonXA_SCGenes() -> Pf2X:
+def ThompsonXA_SCGenes() -> anndata.AnnData:
     """Import Thompson lab PBMC dataset."""
     # Cell barcodes, sample id of treatment and sample number (33482, 3)
     metafile = pd.read_csv("sccp/data/Thomson/meta.csv")
@@ -38,8 +28,6 @@ def ThompsonXA_SCGenes() -> Pf2X:
 
     X.obs["Drugs"] = pd.Categorical(metafile["sample_id"])
 
-    assert np.all(np.isfinite(X.X.data))
-
     X.X /= np.sum(X.X, axis=0)
 
     # Only operating on the data works because 0 ends up as 0 here
@@ -48,14 +36,11 @@ def ThompsonXA_SCGenes() -> Pf2X:
     # Center the genes
     X.X -= np.mean(X.X, axis=0)
 
-    return tensorFy(X, "Drugs")
+    return X
 
 
-def load_lupus_data():
+def load_lupus_data() -> anndata.AnnData:
     """Import Lupus PBMC dataset.
-
-    *NOTE*: This function has two outputs, not one. The first is the data in tensor format,
-    the second is the 'observations' anndata associated data (a pandas DataFrame)
 
     -- columns from observation data:
     {'batch_cov': POOL (1-23) cell was processed in,
@@ -94,15 +79,7 @@ def load_lupus_data():
     # get rid of IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831 (only 3 cells)
     X = X[X.obs["sample_ID"] != "IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831"]
 
-    # reorder X so that all of the patients are in alphanumeric order. this is important
-    # so that we can steal cell typings at this point
-    obsV = X.obs_vector("sample_ID")
-    sgUnique, sgIndex = np.unique(obsV, return_inverse=True)
+    # Reorder X so that all of the patients are in alphanumeric order.
+    ptIDX = np.argsort(X.obs_vector("sample_ID"))
 
-    ann_data_objects = [X[sgIndex == sgi, :] for sgi in range(len(sgUnique))]
-
-    X = anndata.concat(ann_data_objects, axis=0)
-
-    assert np.all(np.isfinite(X.X.data))  # this should be true
-
-    return tensorFy(X, "sample_ID"), X.obs
+    return X[ptIDX, :]

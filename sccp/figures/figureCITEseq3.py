@@ -1,16 +1,13 @@
 """
 Hamad CITEseq dataset
 """
-import numpy as np
-import umap
-
 from .common import (
     subplotLabel,
     getSetup,
-    openPf2,
 )
 from ..imports.citeseq import import_citeseq
 from .commonFuncs.plotUMAP import plotGeneUMAP
+from ..parafac2 import pf2
 
 
 def makeFigure():
@@ -21,21 +18,11 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    _, protDF = import_citeseq()
-    rank = 80
+    X = import_citeseq()
+    X = pf2(X, "Condition", rank=3)
 
-    _, _, projs = openPf2(rank=rank, dataName="CITEseq")
+    names = X.var_names[X.var["feature_types"] == "Antibody Capture"]
 
-    pf2Points = umap.UMAP(random_state=1).fit(projs)
-
-    protNames = np.unique(protDF.drop(columns="Condition").columns)
-
-    # protNames = protNames[0:24]
-    # protNames = protNames[24:48]
-    # protNames = protNames[50:75]
-    # protNames = protNames[75:100]
-    protNames = protNames[100:]
-
-    plotGeneUMAP(protNames, "Pf2", pf2Points, protDF, ax[0:25])
+    plotGeneUMAP(names, "Pf2", X.obsm["umap"], X, ax[0:25])
 
     return f
