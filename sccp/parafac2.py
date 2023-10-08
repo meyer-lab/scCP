@@ -23,5 +23,6 @@ def pf2(X: anndata.AnnData, condition_name: str, rank: int, random_state=1):
     X.uns["Pf2_weights"] = weight
     X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"] = factors
     X.obsm["projections"] = np.concatenate(projs, axis=0)
+    X.obsm["weighted_projections"] = X.obsm["projections"] @ X.uns["Pf2_B"]
 
     return X
