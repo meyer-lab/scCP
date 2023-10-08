@@ -1,7 +1,6 @@
 import umap
 import numpy as np
 import pandas as pd
-import umap.plot
 from ..figures.common import openPf2
 
 
