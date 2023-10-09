@@ -273,12 +273,6 @@ def plotLabelAllUMAP(conditions, umappoints: np.ndarray, ax: Axes):
     ax.set(title="Pf2-Based Decomposition", ylabel="UMAP2", xlabel="UMAP1")
 
 
-def plotCellTypeUMAP(umappoints: np.ndarray, data, ax: Axes):
-    """Plots UMAP labeled by cell type"""
-    points(umappoints, labels=data["Cell Type"].values, ax=ax)
-    ax.set(ylabel="UMAP2", xlabel="UMAP1")
-
-
 def plotCmpPerCellType(weightedprojs, cmp, ax: Axes, outliers=True):
     """Boxplot of weighted projections for one component across cell types"""
     cmpName = "Cmp. " + str(cmp)

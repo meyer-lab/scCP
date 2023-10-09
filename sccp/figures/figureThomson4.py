@@ -40,7 +40,7 @@ def makeFigure():
         "Triamcinolone Acetonide",
         "Alprostadil",
     ]
-    condList = np.array([c if c in drugs else " Other Conditions" for c in totalconds])
+    condList = np.array([c if c in drugs else " Other Conditions" for c in dataDF["Condition"].values])
 
     points(
         pf2Points,

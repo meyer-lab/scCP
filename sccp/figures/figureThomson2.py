@@ -11,9 +11,9 @@ from .common import (
 )
 from .commonFuncs.plotGeneral import plotGenePerCellType, plotGenePerCategCond
 from .commonFuncs.plotUMAP import (
-    plotCellTypeUMAP,
     plotCmpPerCellType,
     plotCmpUMAP,
+    points
 )
 from ..imports.scRNA import ThompsonXA_SCGenes
 from ..imports.gating import gateThomsonCells
@@ -38,7 +38,8 @@ def makeFigure():
     _, factors, projs = openPf2(rank, "Thomson")
     pf2Points = pacmap.PaCMAP().fit_transform(projs)
 
-    plotCellTypeUMAP(pf2Points, dataDF, ax[0])
+    points(pf2Points, labels=dataDF["Cell Type"].values, ax=ax[0])
+    ax[0].set(ylabel="UMAP2", xlabel="UMAP1")
 
     # weightedProjDF = flattenWeightedProjs(data, factors[1], projs)
     # weightedProjDF["Cell Type"] = dataDF["Cell Type"].values
