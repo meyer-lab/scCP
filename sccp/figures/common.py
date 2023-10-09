@@ -168,9 +168,3 @@ def saveGeneFactors(factors, data, dataName):
 
         dfTop.to_csv(f"/opt/andrew/{dataName}/{dataName}TopGenes_Cmp{rank}.csv")
         dfBot.to_csv(f"/opt/andrew/{dataName}/{dataName}BotGenes_Cmp{rank}.csv")
-
-
-def repeatLabels(condLabels, data, dataDF):
-    """Repeats a label in original AnnData file"""
-    cellCount = dataDF.groupby(["Condition"]).size().values
-    return [np.repeat(condLabels[i], cellCount[i]) for i in range(len(data.X_list))]

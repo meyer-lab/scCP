@@ -5,7 +5,7 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 """
 
 # GOAL: visualize the component compostition by cell type
-from .common import subplotLabel, getSetup, flattenData, repeatLabels
+from .common import subplotLabel, getSetup
 from ..imports.scRNA import load_lupus_data
 from .commonFuncs.plotGeneral import plotGenePerCategStatus
 import numpy as np
@@ -20,13 +20,10 @@ def makeFigure():
     subplotLabel(ax)
 
     # Import of data
-    data, annData = load_lupus_data()
-    dataDF = flattenData(data)
+    X = load_lupus_data()
     
     condLabels = annData[["sample_ID", "SLE_status"]].drop_duplicates("sample_ID")
     condLabels = np.asarray(condLabels["SLE_status"])
- 
-    dataDF["Status"] = np.concatenate(repeatLabels(condLabels, data, dataDF))
     
     cell_types = annData[["cell_type_broad", "SLE_status"]].reset_index(drop=True)
     dataDF["Cell Type"] = cell_types["cell_type_broad"].values
