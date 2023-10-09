@@ -1,9 +1,10 @@
 import numpy as np
 import anndata
+from pacmap import PaCMAP
 from parafac2 import parafac2_nd
 
 
-def tensorFy(annD: anndata.AnnData, obsName: str) -> list[np.ndarray]:
+def tensorFy(annD: anndata.AnnData, obsName: str) -> list:
     observation_vec = annD.obs_vector(obsName)
     sgUnique, sgIndex = np.unique(observation_vec, return_inverse=True)
 
@@ -24,5 +25,6 @@ def pf2(X: anndata.AnnData, condition_name: str, rank: int, random_state=1):
     X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"] = factors
     X.obsm["projections"] = np.concatenate(projs, axis=0)
     X.obsm["weighted_projections"] = X.obsm["projections"] @ X.uns["Pf2_B"]
+    X.obsm["embedding"] = PaCMAP(random_state=random_state).fit_transform(projs)
 
     return X
