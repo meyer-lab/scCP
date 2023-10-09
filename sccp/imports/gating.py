@@ -1,4 +1,4 @@
-import umap
+import pacmap
 import numpy as np
 import pandas as pd
 from ..figures.common import openPf2
@@ -8,7 +8,7 @@ def gateThomsonCells():
     """Manually gates cell types for Thomson UMAP"""
     _, _, projs = openPf2(30, "Thomson")
 
-    pf2Points = umap.UMAP(random_state=1).fit_transform(projs)
+    pf2Points = pacmap.PaCMAP().fit_transform(projs)
 
     umap1 = pf2Points[:, 0]
     umap2 = pf2Points[:, 1]

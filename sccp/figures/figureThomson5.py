@@ -2,7 +2,7 @@
 Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs: investigating UMAP
 """
 from ..imports.scRNA import ThompsonXA_SCGenes
-import umap
+import pacmap
 from sklearn.decomposition import PCA
 from .common import subplotLabel, getSetup, openPf2, flattenData
 
@@ -26,7 +26,7 @@ def makeFigure():
 
     # UMAP dimension reduction
     _, _, projs = openPf2(rank, "Thomson")
-    pf2Points = umap.UMAP(random_state=1).fit(projs)
+    pf2Points = pacmap.PaCMAP().fit_transform(projs)
 
     # Genes for cells
     cd4 = ["IL7R"]

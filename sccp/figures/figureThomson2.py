@@ -1,7 +1,7 @@
 """
 Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs
 """
-import umap
+import pacmap
 from .common import (
     subplotLabel,
     getSetup,
@@ -36,7 +36,7 @@ def makeFigure():
     dataDF["Cell Type"] = gateThomsonCells()
 
     _, factors, projs = openPf2(rank, "Thomson")
-    pf2Points = umap.UMAP(random_state=1, min_dist=.01).fit(projs)
+    pf2Points = pacmap.PaCMAP().fit_transform(projs)
 
     plotCellTypeUMAP(pf2Points, dataDF, ax[0])
 

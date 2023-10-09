@@ -2,7 +2,6 @@ import seaborn as sns
 import matplotlib.colors
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
-import umap
 import numpy as np
 import pandas as pd
 import datashader as ds
@@ -242,7 +241,7 @@ def plotGeneUMAP(
 
 
 def plotCmpUMAP(
-    cmp: int, factors: np.ndarray, umappoints: umap.UMAP, allP: np.ndarray, ax: Axes
+    cmp: int, factors: np.ndarray, umappoints: np.ndarray, allP: np.ndarray, ax: Axes
 ):
     """Scatterplot of UMAP visualization weighted by
     projections for a component and cell state"""
@@ -258,7 +257,7 @@ def plotCmpUMAP(
     ax.set(ylabel="UMAP2", xlabel="UMAP1", title="Cmp. " + str(cmp))
 
 
-def plotUMAP_obslabel(labels, umappoints, ax: Axes):
+def plotUMAP_obslabel(labels, umappoints: np.ndarray, ax: Axes):
     """Scatterplot of UMAP visualization labeled by cell type or other obs column"""
     points(umappoints, labels=labels, color_key_cmap="Paired", ax=ax)
     ax.set(
@@ -268,13 +267,13 @@ def plotUMAP_obslabel(labels, umappoints, ax: Axes):
     )
 
 
-def plotLabelAllUMAP(conditions, umappoints, ax: Axes):
+def plotLabelAllUMAP(conditions, umappoints: np.ndarray, ax: Axes):
     """Scatterplot of UMAP visualization weighted by condition or cell type"""
     points(umappoints, labels=conditions, ax=ax, color_key_cmap="tab20", show_legend=True)
     ax.set(title="Pf2-Based Decomposition", ylabel="UMAP2", xlabel="UMAP1")
 
 
-def plotCellTypeUMAP(umappoints, data, ax: Axes):
+def plotCellTypeUMAP(umappoints: np.ndarray, data, ax: Axes):
     """Plots UMAP labeled by cell type"""
     points(umappoints, labels=data["Cell Type"].values, ax=ax)
     ax.set(ylabel="UMAP2", xlabel="UMAP1")
