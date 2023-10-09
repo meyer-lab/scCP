@@ -2,7 +2,10 @@
 Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs: investigating UMAP
 """
 from ..imports.scRNA import ThompsonXA_SCGenes
-from .common import subplotLabel, getSetup
+import pacmap
+from sklearn.decomposition import PCA
+from .common import subplotLabel, getSetup, openPf2, flattenData
+
 from .commonFuncs.plotUMAP import plotGeneUMAP
 from ..parafac2 import pf2
 
@@ -16,9 +19,14 @@ def makeFigure():
     subplotLabel(ax)
 
     # Import of single cells: [Drug, Cell, Gene]
-    X = ThompsonXA_SCGenes()
+    data = ThompsonXA_SCGenes()
+    rank = 30
 
-    X = pf2(X, "Drugs", rank=30)
+    dataDF = flattenData(data)
+
+    # UMAP dimension reduction
+    _, _, projs = openPf2(rank, "Thomson")
+    pf2Points = pacmap.PaCMAP().fit_transform(projs)
 
     # Genes for cells
     cd4 = ["IL7R"]

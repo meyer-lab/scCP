@@ -1,6 +1,9 @@
 """
 Hamad CITEseq dataset
 """
+import numpy as np
+import pacmap
+
 from .common import (
     subplotLabel,
     getSetup,
@@ -23,6 +26,16 @@ def makeFigure():
 
     names = X.var_names[X.var["feature_types"] == "Antibody Capture"]
 
-    plotGeneUMAP(names, "Pf2", X.obsm["umap"], X, ax[0:25])
+    pf2Points = pacmap.PaCMAP().fit_transform(projs)
+
+    protNames = np.unique(protDF.drop(columns="Condition").columns)
+
+    # protNames = protNames[0:24]
+    # protNames = protNames[24:48]
+    # protNames = protNames[50:75]
+    # protNames = protNames[75:100]
+    protNames = protNames[100:].tolist()
+
+    plotGeneUMAP(protNames, "Pf2", pf2Points, protDF, ax[0:25])
 
     return f

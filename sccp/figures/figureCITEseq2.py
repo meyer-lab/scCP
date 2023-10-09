@@ -2,6 +2,7 @@
 Hamad CITEseq dataset
 """
 import numpy as np
+import pacmap
 
 from .common import (
     subplotLabel,
@@ -25,7 +26,13 @@ def makeFigure():
     X = import_citeseq()
     X = pf2(X, "Condition", rank=40)
 
-    for i in range(1, 25):
+    _, factors, projs = openPf2(rank=rank, dataName="CITEseq")
+
+    pf2Points = pacmap.PaCMAP().fit_transform(projs)
+
+    component = np.arange(1, 25, 1)
+
+    for i in range(len(component)):
         plotCmpUMAP(
             i, factors[1], pf2Points, projs, ax[i]
         )

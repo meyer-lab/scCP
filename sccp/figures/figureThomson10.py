@@ -5,7 +5,6 @@ from .common import (
     subplotLabel,
     getSetup,
     openPf2,
-    openUMAP,
     flattenData,
     flattenWeightedProjs,
 )
@@ -41,7 +40,7 @@ def makeFigure():
     
     threshold = -.3
     cmp = 20
-    Wass_KL_Dist(threshold, cmp, data, dataDF, weightedProjDF, ax[0:2])
+    # Wass_KL_Dist(threshold, cmp, data, dataDF, weightedProjDF, ax[0:2])
     # -.3 for b cells that are more greater
 
     return f
