@@ -144,42 +144,6 @@ def openUMAP(rank: int, dataName: str, opt=True):
     return pickle.load((open(f_name, "rb")))
 
 
-def flattenData(data) -> pd.DataFrame:
-    """Flattens tensor into dataframe"""
-    condNames = np.empty([])
-
-    for i in range(len(data.X_list)):
-        condNames = np.append(
-            condNames, np.repeat(data.condition_labels[i], data.X_list[i].shape[0])
-        )
-        
-    flatData = np.concatenate(data.X_list, axis=0)
-    dataDF = pd.DataFrame(data=flatData, columns=data.variable_labels)
-    dataDF["Condition"] = condNames[1::]
-
-    return dataDF
-
-
-def flattenWeightedProjs(data, factors: np.ndarray, projs: np.ndarray) -> pd.DataFrame:
-    """Flattens tensor into dataframe"""
-    condNames = np.empty([])
-
-    for i in range(len(data.X_list)):
-        condNames = np.append(
-            condNames, np.repeat(data.condition_labels[i], data.X_list[i].shape[0])
-        )
-
-    weightedProjs = projs @ factors
-
-    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs))
-
-    cmpNames = [f"Cmp. {i}" for i in np.arange(1, weightedProjs.shape[1] + 1)]
-    dataDF = pd.DataFrame(data=weightedProjs, columns=cmpNames)
-    dataDF["Condition"] = condNames[1::]
-
-    return dataDF
-
-
 def saveGeneFactors(factors, data, dataName):
     """Saves genes factors based on weight."""
     rank = factors[0].shape[1]
