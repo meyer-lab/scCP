@@ -6,8 +6,6 @@ from .common import (
     subplotLabel,
     getSetup,
     openPf2,
-    flattenData,
-    flattenWeightedProjs,
 )
 from .commonFuncs.plotGeneral import plotGenePerCellType, plotGenePerCategCond
 from .commonFuncs.plotUMAP import (
@@ -30,13 +28,11 @@ def makeFigure():
 
     # Import of single cells: [Drug, Cell, Gene]
     data = ThompsonXA_SCGenes()
-    dataDF = flattenData(data)
 
     rank = 30
     dataDF["Cell Type"] = gateThomsonCells()
 
     _, factors, projs = openPf2(rank, "Thomson")
-    pf2Points = pacmap.PaCMAP().fit_transform(projs)
 
     points(pf2Points, labels=dataDF["Cell Type"].values, ax=ax[0])
     ax[0].set(ylabel="UMAP2", xlabel="UMAP1")

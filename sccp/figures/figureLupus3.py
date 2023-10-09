@@ -6,7 +6,7 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 
 # GOAL: visualize the component compostition by cell type
 import pacmap
-from .common import subplotLabel, getSetup, flattenWeightedProjs, openPf2, flattenData
+from .common import subplotLabel, getSetup, openPf2
 from .commonFuncs.plotUMAP import plotCmpPerCellType, plotCmpUMAP, points
 from ..imports.scRNA import load_lupus_data
 from ..parafac2 import pf2
@@ -37,8 +37,6 @@ def makeFigure():
     weightedProjDF = flattenWeightedProjs(lupus_tensor, factors[1], projs)
     weightedProjDF["Cell Type"] = X["cell_type_broad"]
     dataDF["Cell Type"] = X["cell_type_broad"]
-
-    pf2Points = pacmap.PaCMAP().fit_transform(projs)
 
     comps = [13, 14, 16, 26, 29, 32]
     for i, comp in enumerate(comps):

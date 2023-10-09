@@ -2,7 +2,6 @@
 Hamad CITEseq dataset
 """
 import numpy as np
-import pacmap
 
 from .common import (
     subplotLabel,
@@ -27,8 +26,6 @@ def makeFigure():
     X = pf2(X, "Condition", rank=40)
 
     _, factors, projs = openPf2(rank=rank, dataName="CITEseq")
-
-    pf2Points = pacmap.PaCMAP().fit_transform(projs)
 
     component = np.arange(1, 25, 1)
 

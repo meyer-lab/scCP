@@ -23,7 +23,7 @@ def makeFigure():
     cmp = 13
 
     # Import of data
-    _, obs = load_lupus_data()
+    X = load_lupus_data()
 
     broad_type = obs["cell_type_broad"].reset_index(drop=True)
     lympho_type = obs["cell_type_lympho"].reset_index(drop=True)
@@ -36,9 +36,6 @@ def makeFigure():
         factors,
         projs,
     ) = openPf2(rank=rank, dataName="lupus", optProjs=True)
-
-    # UMAP dimension reduction
-    pf2Points = pacmap.PaCMAP().fit_transform(projs)
 
     plotCmpUMAP(cmp, factors[1], pf2Points, projs, ax[0])
     plotUMAP_obslabel(broad_type, pf2Points, ax[1])

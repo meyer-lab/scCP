@@ -2,7 +2,6 @@
 Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs
 """
 import numpy as np
-import pacmap
 from .common import subplotLabel, getSetup, openPf2, openPf2
 from .commonFuncs.plotUMAP import (
     plotCmpUMAP,
@@ -21,7 +20,6 @@ def makeFigure():
 
     # UMAP dimension reduction
     _, _, projs = openPf2(rank, "Thomson")
-    pf2Points = pacmap.PaCMAP().fit_transform(projs)
 
     for i in range(0, 8):
         plotCmpUMAP(

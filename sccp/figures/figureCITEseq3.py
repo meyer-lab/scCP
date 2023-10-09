@@ -2,7 +2,6 @@
 Hamad CITEseq dataset
 """
 import numpy as np
-import pacmap
 
 from .common import (
     subplotLabel,
@@ -25,8 +24,6 @@ def makeFigure():
     X = pf2(X, "Condition", rank=3)
 
     names = X.var_names[X.var["feature_types"] == "Antibody Capture"]
-
-    pf2Points = pacmap.PaCMAP().fit_transform(projs)
 
     protNames = np.unique(protDF.drop(columns="Condition").columns)
 
