@@ -26,7 +26,7 @@ def ThompsonXA_SCGenes() -> anndata.AnnData:
     # data.write('thompson.h5ad', compression="gzip")
     X = anndata.read_h5ad("/opt/andrew/thomson.h5ad")
 
-    X.obs["Drugs"] = pd.Categorical(metafile["sample_id"])
+    X.obs["Condition"] = pd.Categorical(metafile["sample_id"])
 
     X.X /= np.sum(X.X, axis=0)
 
@@ -67,7 +67,7 @@ def load_lupus_data() -> anndata.AnnData:
             "ind_cov": "patient",
             "cg_cov": "cell_type_broad",
             "ct_cov": "cell_type_lympho",
-            "ind_cov_batch_cov": "sample_ID",
+            "ind_cov_batch_cov": "Condition",
             "Age": "age",
             "Sex": "sex",
             "pop_cov": "ancestry",
@@ -77,9 +77,9 @@ def load_lupus_data() -> anndata.AnnData:
     )
 
     # get rid of IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831 (only 3 cells)
-    X = X[X.obs["sample_ID"] != "IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831"]
+    X = X[X.obs["Condition"] != "IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831"]
 
     # Reorder X so that all of the patients are in alphanumeric order.
-    ptIDX = np.argsort(X.obs_vector("sample_ID"))
+    ptIDX = np.argsort(X.obs_vector("Condition"))
 
     return X[ptIDX, :]
