@@ -8,7 +8,7 @@ def tensorFy(annD: anndata.AnnData, obsName: str) -> list:
     observation_vec = annD.obs_vector(obsName)
     sgUnique, sgIndex = np.unique(observation_vec, return_inverse=True)
 
-    data_list = [annD[sgIndex == sgi, :].X for sgi in range(len(sgUnique))]
+    data_list = [annD[sgIndex == sgi, :].X.toarray() for sgi in range(len(sgUnique))]
     return data_list
 
 

@@ -3,7 +3,7 @@ import pandas as pd
 import anndata
 
 
-def ThompsonXA_SCGenes() -> anndata.AnnData:
+def import_thomson() -> anndata.AnnData:
     """Import Thompson lab PBMC dataset."""
     # Cell barcodes, sample id of treatment and sample number (33482, 3)
     metafile = pd.read_csv("sccp/data/Thomson/meta.csv")
@@ -39,7 +39,7 @@ def ThompsonXA_SCGenes() -> anndata.AnnData:
     return X
 
 
-def load_lupus_data() -> anndata.AnnData:
+def import_lupus() -> anndata.AnnData:
     """Import Lupus PBMC dataset.
 
     -- columns from observation data:

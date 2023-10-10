@@ -12,7 +12,7 @@ def R2X(tensor, rank: int) -> tuple[list[float], np.ndarray]:
 
     # Collect the PCA results
     pc = PCA(n_components=rank)
-    pc.fit(tensor.unfold())
+    pc.fit(np.concatenate(tensor, axis=0))
     pca_error = np.cumsum(pc.explained_variance_ratio_)
 
     return pf2_error, pca_error
