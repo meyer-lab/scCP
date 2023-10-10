@@ -11,6 +11,7 @@ from matplotlib import gridspec, pyplot as plt
 import numpy as np
 import pandas as pd
 from .commonFuncs.plotFactors import reorder_table
+import anndata
 
 
 matplotlib.use("AGG")
@@ -75,56 +76,18 @@ def genFigure():
     print(f"Figure {sys.argv[1]} is done after {time.time() - start} seconds.\n")
 
 
-def savePf2(weight, factors, projs, dataName: str):
+def savePf2(X: anndata.AnnData, rank: int, dataName: str):
     """Saves weight factors and projections for one dataset for a component"""
-    rank = len(weight)
-    np.save(f"./sccp/data/{dataName}/{dataName}_WeightCmp{rank}.npy", weight)
-
-    factor = ["A", "B", "C"]
-    for i in range(3):
-        np.save(
-            f"./sccp/data/{dataName}/{dataName}_Factor{factor[i]}Cmp{rank}.npy",
-            factors[i],
-        )
-
-    np.save(
-        f"./sccp/data/{dataName}/{dataName}_ProjCmp{rank}.npy",
-        np.concatenate(projs, axis=0),
-    )
+    X.write(f"/opt/andrew/{dataName}_analyzed_{rank}comps.h5ad", compression="gzip")
+    
 
 
-def openPf2(rank: int, dataName: str, optProjs: bool=False):
+
+def openPf2(rank: int, dataName: str):
     """Opens weight factors and projections for one dataset for a component as numpy arrays"""
-    weight = np.load(
-        f"./sccp/data/{dataName}/{dataName}_WeightCmp{rank}.npy",
-        allow_pickle=True,
-    )
-    factors = [
-        np.load(
-            f"./sccp/data/{dataName}/{dataName}_FactorACmp{rank}.npy",
-            allow_pickle=True,
-        ),
-        np.load(
-            f"./sccp/data/{dataName}/{dataName}_FactorBCmp{rank}.npy", allow_pickle=True
-        ),
-        np.load(
-            f"./sccp/data/{dataName}/{dataName}_FactorCCmp{rank}.npy",
-            allow_pickle=True,
-        ),
-    ]
+    X = anndata.read_h5ad(f"/opt/andrew/{dataName}_analyzed_{rank}comps.h5ad")  
 
-    if optProjs is False:
-        projs = np.load(
-            f"./sccp/data/{dataName}/{dataName}_ProjCmp{rank}.npy",
-            allow_pickle=True,
-        )
-    else:
-         projs = np.load(
-            f"/opt/andrew/{dataName}/{dataName}_ProjCmp"+str(rank)+".npy", 
-            allow_pickle=True)
-        
-
-    return weight, factors, projs
+    return X
 
 
 def saveGeneFactors(factors, data, dataName):
