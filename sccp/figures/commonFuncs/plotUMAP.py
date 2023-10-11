@@ -7,6 +7,7 @@ import pandas as pd
 import datashader as ds
 import datashader.transfer_functions as tf
 from matplotlib.patches import Patch
+import anndata
 
 
 def _red(x):
@@ -221,24 +222,42 @@ def points(
 
 
 def plotGeneUMAP(
-    genes: list[str],
-    decomp,
-    umappoints,
-    dataDF: pd.DataFrame,
-    axs: list[Axes]
+    gene: list[str],
+    decompType: str,
+    X: anndata.AnnData,
+    ax: Axes
 ):
     """Scatterplot of UMAP visualization weighted by gene"""
-    for i, genez in enumerate(genes):
-        geneList = dataDF[genez].to_numpy()
-        geneList = np.clip(geneList, None, np.quantile(geneList, 0.99))
-        plot = points(umappoints, values=geneList, cmap="winter", ax=axs[i])
-        # colorbar = plt.colorbar(psm, ax=plot)
-        axs[i].set(
-            title=f"{genes[i]}-{decomp}-Based Decomposition",
-            ylabel="UMAP2",
-            xlabel="UMAP1",
-        )
 
+    geneList = X[:, X.var_names.isin([gene])].X.flatten()
+    geneList = geneList + np.min(geneList)
+    geneList /= np.max(geneList)
+    geneList = np.clip(geneList, None, np.quantile(geneList, 0.99))
+    cmap = sns.color_palette("ch:s=-.2,r=.6", as_cmap=True)
+    plot = points(X.obsm["embedding"], values=geneList, cmap=cmap, ax=ax)
+    psm = plt.pcolormesh([[0, 1], [0, 1]], cmap=cmap)
+    colorbar = plt.colorbar(psm, ax=plot)
+    ax.set(
+        title=f"{gene}-{decompType}-Based Decomposition",
+        ylabel="UMAP2",
+        xlabel="UMAP1",
+    )
+    
+def plotCondUMAP(condition: str,
+    decompType: str,
+    X: anndata.AnnData,
+    ax: Axes
+):
+    """Scatterplot of UMAP visualization weighted by condition"""
+    X.obs["Condition"] = np.array([c if c in condition else " Other Conditions" for c in X.obs["Condition"]])
+    points(
+        X.obsm["embedding"],
+        labels=X.obs["Condition"],
+        ax=ax,
+        color_key_cmap="tab20",
+        show_legend=True,
+    )
+    ax.set(title=f"{decompType}-Based Decomposition", ylabel="UMAP2", xlabel="UMAP1")
 
 def plotCmpUMAP(X, cmp: int,  ax: Axes):
     """Scatterplot of UMAP visualization weighted by
