@@ -24,14 +24,9 @@ def makeFigure():
     
     X = import_citeseq()
     X = pf2(X, "Condition", rank=40)
-
-    _, factors, projs = openPf2(rank=rank, dataName="CITEseq")
-
+    
     component = np.arange(1, 25, 1)
-
-    for i in range(len(component)):
-        plotCmpUMAP(
-            i, factors[1], pf2Points, projs, ax[i]
-        )
-
+    for i in len(component):
+        plotCmpUMAP(X, i, ax[i])
+        
     return f

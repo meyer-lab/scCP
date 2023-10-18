@@ -21,18 +21,19 @@ def makeFigure():
     subplotLabel(ax)
 
     X = import_citeseq()
-    X = pf2(X, "Condition", rank=3)
+    # X = pf2(X, "Condition", rank=3)
+    print(X)
 
-    names = X.var_names[X.var["feature_types"] == "Antibody Capture"]
+    # names = X.var_names[X.var["feature_types"] == "Antibody Capture"]
 
-    protNames = np.unique(protDF.drop(columns="Condition").columns)
+    # protNames = np.unique(protDF.drop(columns="Condition").columns)
 
-    # protNames = protNames[0:24]
-    # protNames = protNames[24:48]
-    # protNames = protNames[50:75]
-    # protNames = protNames[75:100]
-    protNames = protNames[100:].tolist()
+    # # protNames = protNames[0:24]
+    # # protNames = protNames[24:48]
+    # # protNames = protNames[50:75]
+    # # protNames = protNames[75:100]
+    # protNames = protNames[100:].tolist()
 
-    plotGeneUMAP(protNames, "Pf2", pf2Points, protDF, ax[0:25])
+    # plotGeneUMAP(protNames, "Pf2", pf2Points, protDF, ax[0:25])
 
     return f

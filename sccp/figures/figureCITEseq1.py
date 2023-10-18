@@ -3,10 +3,10 @@ Hamad CITEseq dataset
 """
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotFactors import (
-    plotFactors,
+    plotFactors, plotWeight
 )
 from ..imports.citeseq import import_citeseq
-from .commonFuncs.plotUMAP import points
+from .commonFuncs.plotUMAP import points, plotAllCondUMAP
 from ..parafac2 import pf2
 
 
@@ -20,14 +20,12 @@ def makeFigure():
 
     X = import_citeseq()
     X = pf2(X, "Condition", rank=40)
+    
+    factors = [X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"]]
+    plotFactors(factors, X, ax[0:3], reorder=(0, 2), trim=(2,))
+    plotWeight(X.uns["Pf2_weights"], ax[3])
+    
+    plotAllCondUMAP(X, ax[4])
 
-    plotFactors(factors, data, ax[0:3], reorder=(0, 2), trim=(2,))
-
-    points(
-        pf2Points,
-        labels=protDF["Condition"].values,
-        ax=ax[3],
-        show_legend=True,
-    )
 
     return f
