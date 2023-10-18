@@ -228,7 +228,6 @@ def plotGeneUMAP(
     ax: Axes
 ):
     """Scatterplot of UMAP visualization weighted by gene"""
-
     geneList = X[:, X.var_names.isin([gene])].X.flatten()
     geneList = geneList + np.min(geneList)
     geneList /= np.max(geneList)
@@ -245,10 +244,11 @@ def plotGeneUMAP(
     
 def plotCondUMAP(condition: str,
     decompType: str,
-    X: anndata.AnnData,
+    XX: anndata.AnnData,
     ax: Axes
 ):
     """Scatterplot of UMAP visualization weighted by condition"""
+    X = XX.copy()
     X.obs["Condition"] = np.array([c if c in condition else " Other Conditions" for c in X.obs["Condition"]])
     points(
         X.obsm["embedding"],
