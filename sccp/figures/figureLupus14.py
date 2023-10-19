@@ -12,7 +12,7 @@ def makeFigure():
 
     X = openPf2(rank=40, dataName="Lupus")
 
-    for i in range(40):
+    for i in range(3):
         plotCmpPerCellType(X, i + 1, ax[i], outliers=False)
 
     return f
