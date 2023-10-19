@@ -24,7 +24,7 @@ def makeFigure():
     rank = 30
     X = openPf2(rank, "Thomson")
 
-    X.obs["Cell Type"] = gateThomsonCells()
+    X.obs["Cell Type"] = gateThomsonCells(X)
 
     genes = [
         "VPREB3",
