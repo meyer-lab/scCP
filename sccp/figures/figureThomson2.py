@@ -32,7 +32,7 @@ def makeFigure():
     rank = 30
     dataDF["Cell Type"] = gateThomsonCells()
 
-    _, factors, projs = openPf2(rank, "Thomson")
+    X = openPf2(rank, "Thomson")
 
     points(pf2Points, labels=dataDF["Cell Type"].values, ax=ax[0])
     ax[0].set(ylabel="UMAP2", xlabel="UMAP1")

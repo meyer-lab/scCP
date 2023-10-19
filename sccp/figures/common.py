@@ -81,13 +81,9 @@ def savePf2(X: anndata.AnnData, rank: int, dataName: str):
     X.write(f"/opt/andrew/{dataName}_analyzed_{rank}comps.h5ad", compression="gzip")
     
 
-
-
-def openPf2(rank: int, dataName: str):
+def openPf2(rank: int, dataName: str) -> anndata.AnnData:
     """Opens weight factors and projections for one dataset for a component as numpy arrays"""
-    X = anndata.read_h5ad(f"/opt/andrew/{dataName}_analyzed_{rank}comps.h5ad")  
-
-    return X
+    return anndata.read_h5ad(f"/opt/andrew/{dataName}_analyzed_{rank}comps.h5ad")  
 
 
 def saveGeneFactors(factors, data, dataName):

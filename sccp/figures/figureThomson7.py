@@ -1,8 +1,7 @@
 """
 Investigation of raw data for Thomson dataset
 """
-from .common import subplotLabel, getSetup, flattenData
-from ..imports.scRNA import ThompsonXA_SCGenes
+from .common import subplotLabel, getSetup
 from ..imports.gating import gateThomsonCells
 import seaborn as sns
 import numpy as np
@@ -16,8 +15,7 @@ def makeFigure():
     subplotLabel(ax)
 
     # Import of single cells: [Drug, Cell, Gene]
-    data = ThompsonXA_SCGenes()
-    dataDF = flattenData(data)
+
     dataDF["Cell Type"] = gateThomsonCells()
     
     dfCond = dataDF.groupby(["Condition"]).size().reset_index(name="Cell Number") 
