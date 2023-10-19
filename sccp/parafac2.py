@@ -4,16 +4,16 @@ from pacmap import PaCMAP
 from parafac2 import parafac2_nd
 
 
-def tensorFy(annD: anndata.AnnData, obsName: str) -> list:
-    observation_vec = annD.obs_vector(obsName)
-    sgUnique, sgIndex = np.unique(observation_vec, return_inverse=True)
-
-    data_list = [annD[sgIndex == sgi, :].X.toarray() for sgi in range(len(sgUnique))]
-    return data_list
-
-
 def pf2(X: anndata.AnnData, condition_name: str, rank: int, random_state=1):
-    X_pf = tensorFy(X, condition_name)
+    # TensorFy
+    # Sort so that the concatenation matches up later
+    sort_idx = np.argsort(X.obs_vector(condition_name))
+    X = X[sort_idx, :]
+
+    # Get the indices for subsetting the data
+    sgUnique, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
+
+    X_pf = [X[sgIndex == sgi, :].X.toarray() for sgi in range(len(sgUnique))]
 
     weight, factors, projs, _ = parafac2_nd(
         X_pf,
