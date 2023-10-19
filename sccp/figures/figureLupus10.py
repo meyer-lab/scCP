@@ -19,16 +19,9 @@ def makeFigure():
     subplotLabel(ax)
 
     # Import of data
-    X = openPf2(rank=40, dataName="Lupus")
-    
-    condLabels = annData[["sample_ID", "SLE_status"]].drop_duplicates("sample_ID")
-    condLabels = np.asarray(condLabels["SLE_status"])
-    
-    cell_types = annData[["cell_type_broad", "SLE_status"]].reset_index(drop=True)
-    dataDF["Cell Type"] = cell_types["cell_type_broad"].values
-    
-    comp = 26
     rank = 40
-    plotGenePerCategStatus(comp, dataDF, rank, "lupus", ax[0:4], geneAmount=2)
+    X = openPf2(rank=rank, dataName="Lupus")
+    cmp = 13
+    plotGenePerCategStatus(X,cmp, rank, "Lupus", ax[0:4], geneAmount=2)
 
     return f

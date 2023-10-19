@@ -298,7 +298,7 @@ def plotCmpPerCellType(X: anndata.AnnData, cmp: int, ax: Axes, outliers=False):
     XX = X.obsm["weighted_projections"]
     XX = XX[:, cmp-1]
     cmpName = f"Cmp. {cmp}"
-    cellTypes  = X.obs["cell_type_broad"]
+    cellTypes = X.obs["cell_type_broad"]
     df = pd.DataFrame(data=np.transpose(np.vstack((XX,cellTypes))), columns=[cmpName, "Cell Type"])
  
     sns.boxplot(
