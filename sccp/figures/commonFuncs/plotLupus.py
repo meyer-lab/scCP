@@ -62,13 +62,13 @@ def investigate_comp(comp: int, rank: int, obs, proj_B, obs_column, ax, threshol
     ax.tick_params(axis="x", rotation=90)
     ax.set_title(obs_column + ' Percentages, Threshold: ' + str(threshold) + ' for comp ' + str(comp))
 
-def plot2DSeparationByComp(merged_data, x_y: tuple, hue, ax):
+def plot2DSeparationByComp(df, pair: tuple, predict : str, ax):
     """
     Plots the separation of some observation variable (hue) that is contained in
     the input merged dataframe across two components, passed as two strings in a tuple (x_y)
     that denote the names of the columns to be used for the x and y axes.   
     """
-    sns.scatterplot(data = merged_data, x = x_y[0], y = x_y[1], hue = hue, ax = ax)
+    sns.scatterplot(data=df, x=f"Cmp. {pair[0]}", y=f"Cmp. {pair[1]}", hue=predict, ax = ax)
 
 
 def plotROCAcrossGroups(A_matrix, group_labs, ax, 

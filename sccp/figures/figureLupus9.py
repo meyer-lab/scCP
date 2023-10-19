@@ -17,44 +17,27 @@ import pandas as pd
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((12, 12), (2, 2))  # fig size  # grid size
+    ax, f = getSetup((6, 8), (1, 2))  # fig size  # grid size
 
     # Add subplot labels
     subplotLabel(ax)
 
-    X = openPf2(rank=40, dataName="Lupus")
+    rank=40
+    X = openPf2(rank=rank, dataName="Lupus")
+    predict = "SLE_status"
+    condStatus = X.obs[["Condition", predict]].drop_duplicates()
+    condStatus = condStatus.set_index("Condition")
 
-    group_to_predict = "SLE_status"  # group to predict
-    group_labs = obs[["sample_ID", group_to_predict]].drop_duplicates()
-    group_labs = group_labs.set_index("sample_ID")
-    
-    # group_labs["ancestry"] = np.where(group_labs["ancestry"].isin( ["European"]), group_labs["ancestry"], "Other")
-
-    (
-        _,
-        factors,
-        _,
-    ) = openPf2(rank=rank, dataName="lupus", optProjs=True)
-
-    factor_A = pd.DataFrame(
-        factors[0],
+    df = pd.DataFrame(
+        X.uns["Pf2_A"],
         columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)],
-        index=lupus_tensor.condition_labels,
+        index=condStatus.index,
     )
+    df = df.merge(condStatus, left_index=True, right_index=True)
 
-    merged = factor_A.merge(group_labs, left_index=True, right_index=True)
+    twoCmp = [[13, 26], [32, 26]]
 
-    # components can be varied; including these for now because 13 and 26 seemed
-    # to have high weights in logistic regression, as do 32 and 29. 32 and 13 both
-    # had positive weights while 26 and 29 were negative
-    comps_to_test = [
-        ("Cmp. 13", "Cmp. 26"),
-        ("Cmp. 32", "Cmp. 26"),
-        ("Cmp. 13", "Cmp. 32"),
-        ("Cmp. 13", "Cmp. 29"),
-    ]
-
-    for i, pair in enumerate(comps_to_test):
-        plot2DSeparationByComp(merged, pair, group_to_predict, ax[i])
+    for i, pair in enumerate(twoCmp):
+        plot2DSeparationByComp(df, pair, predict, ax[i])
 
     return f
