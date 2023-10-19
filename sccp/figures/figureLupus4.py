@@ -26,7 +26,6 @@ def makeFigure():
     
     X = import_lupus()
     condStatus = X.obs[["Condition", "SLE_status", "Processing_Cohort"]].drop_duplicates()
-    print(condStatus)
     condStatus = condStatus.set_index("Condition")
 
     rank = [2] 
