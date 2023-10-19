@@ -7,10 +7,9 @@ import seaborn as sns
 from .common import (
     subplotLabel,
     getSetup,
+    openPf2,
 )
-from ..imports.scRNA import ThompsonXA_SCGenes
 from ..imports.gating import gateThomsonCells
-from ..parafac2 import pf2
 
 
 def makeFigure():
@@ -22,9 +21,8 @@ def makeFigure():
     subplotLabel(ax)
 
     # Import of single cells: [Drug, Cell, Gene]
-    X = ThompsonXA_SCGenes()
-
-    X = pf2(X, "Drugs", rank=30)
+    rank = 30
+    X = openPf2(rank, "Thomson")
 
     X.obs["Cell Type"] = gateThomsonCells()
 

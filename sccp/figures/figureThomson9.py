@@ -1,9 +1,9 @@
 """
 Plots all top and bottom genes for Thomson dataset
 """
+import numpy as np
 from .common import getSetup, openPf2
 from .commonFuncs.plotUMAP import plotCmpPerCellType
-import numpy as np
 from ..imports.gating import gateThomsonCells
 
 
@@ -20,6 +20,6 @@ def makeFigure():
 
     component = np.arange(1, rank + 1, 1)
     for i, comp in enumerate(component):
-        plotCmpPerCellType(weightedProjDF, comp, ax[i], outliers=False)
+        plotCmpPerCellType(X, comp, ax[i], outliers=False)
 
     return f

@@ -1,8 +1,6 @@
 """
 Hamad CITEseq dataset
 """
-import numpy as np
-
 from .common import (
     subplotLabel,
     getSetup,
@@ -21,12 +19,11 @@ def makeFigure():
 
     # Add subplot labels
     subplotLabel(ax)
-    
+
     X = import_citeseq()
     X = pf2(X, "Condition", rank=40)
-    
-    component = np.arange(1, 25, 1)
-    for i in len(component):
-        plotCmpUMAP(X, i, ax[i])
-        
+
+    for i in range(25):
+        plotCmpUMAP(X, i + 1, ax[i])
+
     return f
