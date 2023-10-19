@@ -11,7 +11,6 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 # load functions/modules ----
 from .common import subplotLabel, getSetup, openPf2
 from .commonFuncs.plotLupus import investigate_comp
-from ..imports.scRNA import load_lupus_data
 
 
 def makeFigure():
@@ -25,9 +24,7 @@ def makeFigure():
     rank = 40
     component = 13
 
-    _, obs = load_lupus_data()
-
-    _, factors, projs = openPf2(rank=rank, dataName="lupus", optProjs=True)
+    X = openPf2(rank=40, dataName="Lupus")
 
     proj_B = projs @ factors[1]
 

@@ -1,7 +1,6 @@
 """
 Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs
 """
-import pacmap
 from .common import (
     subplotLabel,
     getSetup,
@@ -13,7 +12,6 @@ from .commonFuncs.plotUMAP import (
     plotCmpUMAP,
     points
 )
-from ..imports.scRNA import ThompsonXA_SCGenes
 from ..imports.gating import gateThomsonCells
 
 
@@ -27,14 +25,12 @@ def makeFigure():
     subplotLabel(ax)
 
     # Import of single cells: [Drug, Cell, Gene]
-    data = ThompsonXA_SCGenes()
-
     rank = 30
-    dataDF["Cell Type"] = gateThomsonCells()
-
     X = openPf2(rank, "Thomson")
 
-    points(pf2Points, labels=dataDF["Cell Type"].values, ax=ax[0])
+    X.obs["Cell Type"] = gateThomsonCells(X)
+
+    points(X.obsm["embedding"], labels=X.obs["Cell Type"].values, ax=ax[0])
     ax[0].set(ylabel="UMAP2", xlabel="UMAP1")
 
     # weightedProjDF = flattenWeightedProjs(data, factors[1], projs)

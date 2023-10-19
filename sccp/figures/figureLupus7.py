@@ -9,7 +9,6 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 # load functions/modules ----
 from .common import subplotLabel, getSetup, openPf2
 from .commonFuncs.plotLupus import plotROCAcrossGroups
-# from ..imports.scRNA import load_lupus_data
 
 
 def makeFigure():

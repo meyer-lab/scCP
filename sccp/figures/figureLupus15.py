@@ -1,11 +1,10 @@
 """
 Investigation of raw data for Thomson dataset
 """
-from .common import subplotLabel, getSetup, flattenData
+from .common import subplotLabel, getSetup, openPf2
 import seaborn as sns
 import numpy as np
-import numpy as np
-from ..imports.scRNA import load_lupus_data
+
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
@@ -15,8 +14,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    lupus_tensor, obs = load_lupus_data()
-    dataDF = flattenData(lupus_tensor)
+    X = openPf2(rank=40, dataName="Lupus")
 
     cell_types = obs[["cell_type_broad", "SLE_status"]].reset_index(drop=True)
     dataDF["Cell Type"] = cell_types["cell_type_broad"].values

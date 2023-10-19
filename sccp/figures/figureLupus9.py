@@ -10,7 +10,6 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 # load functions/modules ----
 from .common import subplotLabel, getSetup, openPf2
 from .commonFuncs.plotLupus import plot2DSeparationByComp
-from ..imports.scRNA import load_lupus_data
 import numpy as np
 import pandas as pd
 
@@ -23,9 +22,9 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    rank = 40
+    X = openPf2(rank=40, dataName="Lupus")
+
     group_to_predict = "SLE_status"  # group to predict
-    lupus_tensor, obs = load_lupus_data()
     group_labs = obs[["sample_ID", group_to_predict]].drop_duplicates()
     group_labs = group_labs.set_index("sample_ID")
     

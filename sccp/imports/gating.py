@@ -1,13 +1,11 @@
+import numpy.typing as npt
 import pandas as pd
-from ..figures.common import openPf2
 
 
-def gateThomsonCells():
+def gateThomsonCells(X) -> npt.ArrayLike:
     """Manually gates cell types for Thomson UMAP"""
-    X = openPf2(30, "Thomson")
-
-    umap1 = pf2Points[:, 0]
-    umap2 = pf2Points[:, 1]
+    umap1 = X.obsm["embedding"][:, 0]
+    umap2 = X.obsm["embedding"][:, 1]
 
     df = pd.DataFrame(data={"UMAP1": umap1, "UMAP2": umap2})
     df["Cell Type"] = "Monocytes"
