@@ -71,7 +71,7 @@ def import_lupus() -> anndata.AnnData:
             "Age": "age",
             "Sex": "sex",
             "pop_cov": "ancestry",
-            "Status": "SLE_condition",
+            "Status": "SLE Status",
         },
         axis=1,
     )
@@ -81,5 +81,16 @@ def import_lupus() -> anndata.AnnData:
 
     # Reorder X so that all of the patients are in alphanumeric order.
     ptIDX = np.argsort(X.obs_vector("Condition"))
+    
+    X = X[ptIDX, :]
+    
+    # X.X = X.X.todense()
+    # X.write('lupus.h5ad', compression="gzip")
+    # X = anndata.read_h5ad("/opt/andrew/thomson.h5ad")
+    
+    
+    
+    # Center the genes
+    X.X -= np.mean(X.X, axis=0)
 
-    return X[ptIDX, :]
+    return X

@@ -6,7 +6,7 @@ from .commonFuncs.plotFactors import (
     plotFactors, plotWeight
 )
 from ..imports.citeseq import import_citeseq
-from .commonFuncs.plotUMAP import points, plotAllCondUMAP
+from .commonFuncs.plotUMAP import points, plotAllLabelsUMAP
 from ..parafac2 import pf2
 
 
@@ -25,7 +25,7 @@ def makeFigure():
     plotFactors(factors, X, ax[0:3], reorder=(0, 2), trim=(2,))
     plotWeight(X.uns["Pf2_weights"], ax[3])
     
-    plotAllCondUMAP(X, ax[4])
+    plotAllLabelsUMAP(X, ax[4])
 
 
     return f

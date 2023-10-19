@@ -284,7 +284,7 @@ def plotUMAP_obslabel(labels, umappoints: np.ndarray, ax: Axes):
     )
 
 
-def plotAllCondUMAP(X: anndata.AnnData,
+def plotAllLabelsUMAP(X: anndata.AnnData,
     ax: Axes
 ):
     """Scatterplot of UMAP visualization weighted by condition or cell type"""
