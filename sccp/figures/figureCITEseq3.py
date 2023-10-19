@@ -21,8 +21,9 @@ def makeFigure():
     subplotLabel(ax)
 
     X = import_citeseq()
-    # X = pf2(X, "Condition", rank=3)
-    print(X)
+    X = pf2(X, "Condition", rank=3)
+    
+    #  Need to figure out if combined information about proteins vs geenes
 
     # names = X.var_names[X.var["feature_types"] == "Antibody Capture"]
 
