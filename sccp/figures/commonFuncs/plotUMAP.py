@@ -222,7 +222,7 @@ def points(
 
 
 def plotGeneUMAP(
-    gene: list[str],
+    gene: str,
     decompType: str,
     X: anndata.AnnData,
     ax: Axes
