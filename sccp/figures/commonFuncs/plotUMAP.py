@@ -284,11 +284,12 @@ def plotUMAP_obslabel(labels, umappoints: np.ndarray, ax: Axes):
     )
 
 
-def plotAllCondUMAP(X: anndata.AnnData,
+def plotAllLabelsUMAP(X: anndata.AnnData,
+                      labelType: str,
     ax: Axes
 ):
     """Scatterplot of UMAP visualization weighted by condition or cell type"""
-    points(X.obsm["embedding"], labels=X.obs["Condition"], ax=ax, color_key_cmap="tab20", show_legend=True)
+    points(X.obsm["embedding"], labels=X.obs[labelType], ax=ax, color_key_cmap="tab20", show_legend=True)
     ax.set(title="Pf2-Based Decomposition", ylabel="UMAP2", xlabel="UMAP1")
 
 
