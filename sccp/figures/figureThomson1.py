@@ -27,8 +27,7 @@ def makeFigure():
     factors = [X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"]]
     plotFactors(factors, X, ax[0:3], reorder=(0, 2), trim=(2,))
     plotWeight(X.uns["Pf2_weights"], ax[3])
-    
-    # X_pf = tensorFy(X, "Condition")
+
     # plotCV(X_pf, rank+1, trainPerc=0.75, ax=ax[4])
     # plotR2X(X_pf, rank+1, ax=ax[5])
 

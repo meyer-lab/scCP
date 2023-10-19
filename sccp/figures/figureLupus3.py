@@ -5,14 +5,8 @@ data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
 """
 
 # GOAL: visualize the component compostition by cell type
-import pacmap
 from .common import subplotLabel, getSetup, openPf2
-from .commonFuncs.plotUMAP import plotCmpPerCellType, plotCmpUMAP, points
-# from ..imports.scRNA import load_lupus_data
-from ..parafac2 import pf2
-import pandas as pd
-
-import numpy as np
+from .commonFuncs.plotUMAP import plotCmpPerCellType, plotCmpUMAP
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
@@ -22,18 +16,13 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    rank = 40
-    X = openPf2(rank, "Lupus")
-    
+    # Import of data
+    X = openPf2(40, "Lupus")
+
     comps = [13, 14, 16, 26, 29, 32]
-    cmp = 13
-    plotCmpPerCellType(X, cmp, ax[0])
-    
-
-
-    # for i, comp in enumerate(comps):
-    #     plotCmpPerCellType(weightedProjDF, comp, ax[(2*i)], outliers=False)
-    #     plotCmpUMAP(comp, factors[1], pf2Points, projs, ax[(2*i)+1])
+    for i, cmp in enumerate(comps):
+        plotCmpPerCellType(X, cmp, ax[(2*i)])
+        plotCmpUMAP(X, cmp, ax[(2*i) + 1])
 
 
     return f

@@ -5,10 +5,7 @@ from .common import (
     subplotLabel,
     getSetup,
     openPf2,
-    flattenData,
-    flattenWeightedProjs,
 )
-from ..imports.scRNA import ThompsonXA_SCGenes
 from ..imports.gating import gateThomsonCells
 import numpy as np
 import pandas as pd
@@ -24,16 +21,12 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    # Import of single cells: [Drug, Cell, Gene]
-    data = ThompsonXA_SCGenes()
-    dataDF = flattenData(data)
-
+    # Import data
     rank = 30
+    X = openPf2(rank, "Thomson")
+    
     dataDF["Cell Type"] = gateThomsonCells()
 
-    _, factors, projs = openPf2(rank, "Thomson")
-
-    weightedProjDF = flattenWeightedProjs(data, factors[1], projs)
     weightedProjDF["Cell Type"] = dataDF["Cell Type"].values
     weightedProjDF.sort_values(by=["Condition", "Cell Type"], inplace=True)
     dataDF.sort_values(by=["Condition", "Cell Type"], inplace=True)

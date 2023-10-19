@@ -293,7 +293,7 @@ def plotAllLabelsUMAP(X: anndata.AnnData,
     ax.set(title="Pf2-Based Decomposition", ylabel="UMAP2", xlabel="UMAP1")
 
 
-def plotCmpPerCellType(X, cmp, ax, outliers=False):
+def plotCmpPerCellType(X: anndata.AnnData, cmp: int, ax: Axes, outliers=False):
     """Boxplot of weighted projections for one component across cell types"""
     XX = X.obsm["weighted_projections"]
     XX = XX[:, cmp-1]
