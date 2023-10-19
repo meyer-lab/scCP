@@ -293,16 +293,21 @@ def plotAllLabelsUMAP(X: anndata.AnnData,
     ax.set(title="Pf2-Based Decomposition", ylabel="UMAP2", xlabel="UMAP1")
 
 
-def plotCmpPerCellType(weightedprojs, cmp, ax: Axes, outliers=True):
+def plotCmpPerCellType(X, cmp, ax, outliers=False):
     """Boxplot of weighted projections for one component across cell types"""
-    cmpName = "Cmp. " + str(cmp)
+    XX = X.obsm["weighted_projections"]
+    XX = XX[:, cmp-1]
+    cmpName = f"Cmp. {cmp}"
+    cellTypes  = X.obs["cell_type_broad"]
+    df = pd.DataFrame(data=np.transpose(np.vstack((XX,cellTypes))), columns=[cmpName, "Cell Type"])
+ 
     sns.boxplot(
-        data=weightedprojs[[cmpName, "Cell Type"]],
+        data=df,
         x=cmpName,
         y="Cell Type",
         showfliers=outliers,
         ax=ax,
     )
     maxvalue = np.max(np.abs(ax.get_xticks()))
-    ax.set(xlim=(-maxvalue, maxvalue), xlabel="Cell Specific Weight")
+    ax.set(xticks=np.linspace(-maxvalue, maxvalue, num=5), xlabel="Cell Specific Weight")
     ax.set_title(cmpName)
