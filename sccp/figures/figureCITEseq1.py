@@ -25,7 +25,7 @@ def makeFigure():
     plotFactors(factors, X, ax[0:3], reorder=(0, 2), trim=(2,))
     plotWeight(X.uns["Pf2_weights"], ax[3])
     
-    plotAllLabelsUMAP(X, ax[4])
+    plotAllLabelsUMAP(X, "Condition", ax[4])
 
 
     return f
