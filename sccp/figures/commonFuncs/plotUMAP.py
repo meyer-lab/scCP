@@ -274,16 +274,6 @@ def plotCmpUMAP(X, cmp: int,  ax: Axes):
     ax.set(ylabel="UMAP2", xlabel="UMAP1", title="Cmp. " + str(cmp))
 
 
-def plotUMAP_obslabel(labels, umappoints: np.ndarray, ax: Axes):
-    """Scatterplot of UMAP visualization labeled by cell type or other obs column"""
-    points(umappoints, labels=labels, color_key_cmap="Paired", ax=ax)
-    ax.set(
-        ylabel="UMAP2",
-        xlabel="UMAP1",
-        title="Pf2-Based Decomposition: Label " + str(labels.name),
-    )
-
-
 def plotAllLabelsUMAP(X: anndata.AnnData,
                       labelType: str,
     ax: Axes

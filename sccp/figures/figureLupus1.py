@@ -25,16 +25,16 @@ def makeFigure():
     subplotLabel(ax)
 
     rank = 40
-    # X = import_lupus()
-    # X = pf2(X, "Condition", rank=rank)
-    # savePf2(X, rank, "Lupus")
-    X = openPf2(rank, "Lupus")
-    lupusStatus = X.obs[["Condition", "SLE_status"]].drop_duplicates("Condition")
-    lupusStatus = lupusStatus.set_index("Condition")["SLE_status"]
+    X = import_lupus()
+    X = pf2(X, "Condition", rank=rank)
+    savePf2(X, rank, "Lupus")
+    # X = openPf2(rank, "Lupus")
+    # lupusStatus = X.obs[["Condition", "SLE_status"]].drop_duplicates("Condition")
+    # lupusStatus = lupusStatus.set_index("Condition")["SLE_status"]
 
-    factors = [X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"]]
-    plotFactors(factors, X, ax[0:3], reorder=(0, 2), trim=(2,), cond_group_labels=lupusStatus)
-    plotWeight(X.uns["Pf2_weights"], ax[3])
+    # factors = [X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"]]
+    # plotFactors(factors, X, ax[0:3], reorder=(0, 2), trim=(2,), cond_group_labels=lupusStatus)
+    # plotWeight(X.uns["Pf2_weights"], ax[3])
     
     # X_pf = tensorFy(X, "Condition")
     # plotCV(X_pf, rank+1, trainPerc=0.75, ax=ax[4])
