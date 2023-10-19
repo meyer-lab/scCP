@@ -132,9 +132,9 @@ def plotGenePerCategStatus(X, cmp, rank, dataName, axs, geneAmount=5):
     axNumb = 0
     dataDF = pd.DataFrame(data=pd.concat([X[:, np.concatenate(genes)].to_df(), 
                                           X.obs["Condition"].to_frame(), 
-                                          X.obs["cell_type_broad"].to_frame(), 
+                                          X.obs["Cell Type"].to_frame(), 
                                           X.obs["SLE_status"].to_frame()], axis=1))
-    dataDF.rename(columns={"cell_type_broad": "Cell Type", "SLE_status": "Status"}, inplace=True)
+    dataDF.rename(columns={"SLE_status": "Status"}, inplace=True)
     
     for i in range(2):
         data = pd.melt(dataDF, id_vars=["Condition", "Status", "Cell Type"], value_vars=genes[i]).rename(

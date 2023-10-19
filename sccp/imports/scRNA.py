@@ -65,13 +65,12 @@ def import_lupus() -> anndata.AnnData:
         {
             "batch_cov": "pool",
             "ind_cov": "patient",
-            "cg_cov": "cell_type_broad",
+            "cg_cov": "Cell Type",
             "ct_cov": "cell_type_lympho",
             "ind_cov_batch_cov": "Condition",
             "Age": "age",
             "Sex": "sex",
             "pop_cov": "ancestry",
-            "Status": "SLE Status",
         },
         axis=1,
     )

@@ -20,6 +20,6 @@ def makeFigure():
     rank = 40
     X = openPf2(rank, "Lupus")
     
-    plotAllLabelsUMAP(X, "cell_type_broad", ax[0])
+    plotAllLabelsUMAP(X, "Cell Type", ax[0])
 
     return f
