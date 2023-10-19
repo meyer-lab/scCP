@@ -8,6 +8,7 @@ from parafac2 import parafac2_nd
 from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.model_selection import StratifiedGroupKFold
 from sklearn.metrics import roc_auc_score
+from .parafac2 import pf2
 
 
 def testPf2Ranks(
@@ -29,11 +30,10 @@ def testPf2Ranks(
     for rank in ranks_to_test:
         # perform pf2 on the given rank
         print(f"\n\nPARAFAC2 FITTING: RANK {rank}")
-        _, factors, _, _ = parafac2_nd(
-            pfx2_data, rank=rank, random_state=1
-        )
+        
+        X = pf2(pfx2_data, "Condition", rank=rank, random_state=1)
 
-        A_matrix = factors[0]
+        A_matrix = X.uns["Pf2_A"]
         condition_labels = condition_labels_all["SLE_status"]
 
         # train a logisitic regression model on that rank, using cross validation

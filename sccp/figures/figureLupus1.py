@@ -31,8 +31,6 @@ def makeFigure():
     X = openPf2(rank, "Lupus")
     lupusStatus = X.obs[["Condition", "SLE_status"]].drop_duplicates("Condition")
     lupusStatus = lupusStatus.set_index("Condition")["SLE_status"]
-    print(lupusStatus)
-    print(len(lupusStatus))
 
     factors = [X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"]]
     plotFactors(factors, X, ax[0:3], reorder=(0, 2), trim=(2,), cond_group_labels=lupusStatus)

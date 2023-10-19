@@ -6,7 +6,7 @@ from sklearn.metrics import RocCurveDisplay, auc
 from sklearn.model_selection import StratifiedGroupKFold
 
 
-def plotPf2RankTest(rank_test_results, ax, error_metric = "accuracy", palette = 'Set1'):
+def plotPf2RankTest(rank_test_results, ax, error_metric = "accuracy", palette = 'tab10'):
     """Plots results from Pf2 test of various ranks using defined error metric and logistic reg"""
     sns.lineplot(data = rank_test_results, 
                  x = 'rank', y = error_metric, 
