@@ -1,8 +1,6 @@
 """
 Hamad CITEseq dataset
 """
-import numpy as np
-
 from .common import (
     subplotLabel,
     getSetup,
@@ -21,20 +19,13 @@ def makeFigure():
     subplotLabel(ax)
 
     X = import_citeseq()
-    X = pf2(X, "Condition", rank=3)
-    
-    #  Need to figure out if combined information about proteins vs geenes
+    X = pf2(X, "Condition", rank=40)
 
-    # names = X.var_names[X.var["feature_types"] == "Antibody Capture"]
+    names = X.var_names[X.var["feature_types"] == "Antibody Capture"]
 
-    # protNames = np.unique(protDF.drop(columns="Condition").columns)
+    protNames = names[0:24].tolist()
 
-    # # protNames = protNames[0:24]
-    # # protNames = protNames[24:48]
-    # # protNames = protNames[50:75]
-    # # protNames = protNames[75:100]
-    # protNames = protNames[100:].tolist()
-
-    # plotGeneUMAP(protNames, "Pf2", pf2Points, protDF, ax[0:25])
+    for i, name in enumerate(protNames):
+        plotGeneUMAP(name, "Pf2", X, ax[i])
 
     return f
