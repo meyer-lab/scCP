@@ -1,9 +1,10 @@
 """
 Investigation of raw data for Thomson dataset
 """
-from .common import subplotLabel, getSetup, openPf2
-import seaborn as sns
 import numpy as np
+import pandas as pd
+import seaborn as sns
+from .common import subplotLabel, getSetup, openPf2
 
 
 def makeFigure():
@@ -16,15 +17,14 @@ def makeFigure():
 
     X = openPf2(rank=40, dataName="Lupus")
 
-    cell_types = obs[["cell_type_broad", "SLE_status"]].reset_index(drop=True)
-    dataDF["Cell Type"] = cell_types["cell_type_broad"].values
+    df = X.obs[["Cell Type", "SLE_status", "Condition"]].reset_index(drop=True)
     
-    dfCond = dataDF.groupby(["Condition"]).size().reset_index(name="Cell Number") 
+    dfCond = df.groupby(["Condition"]).size().reset_index(name="Cell Number") 
     sns.histplot(data=dfCond, x="Cell Number", bins=15, color="k", ax=ax[0])
     ax[0].set(ylabel="# of Experiments")
     
-    dfCellType = dataDF.groupby(["Cell Type", "Condition"]).size().reset_index(name="Count") 
-    for i, cond in enumerate(lupus_tensor.condition_labels):
+    dfCellType = df.groupby(["Cell Type", "Condition"]).size().reset_index(name="Count") 
+    for i, cond in enumerate(pd.unique(df["Condition"])):
         dfCellType.loc[dfCellType["Condition"] == cond, "Count"] = 100 * dfCellType.loc[dfCellType["Condition"] == cond, "Count"].to_numpy()/dfCond.loc[dfCond["Condition"] == cond]["Cell Number"].to_numpy()
     
     dfCellType.rename(columns={"Count": "Cell Type Percentage"}, inplace=True)
