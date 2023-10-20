@@ -26,15 +26,8 @@ def makeFigure():
 
     X = openPf2(rank=40, dataName="Lupus")
 
-    proj_B = projs @ factors[1]
-
     investigate_comp(
-        component, rank, obs, proj_B, "cell_type_broad", ax[0], threshold=0.1
+        X, component, "Cell Type", ax[0], threshold=0.1
     )
-    # investigate_comp(component, rank, obs, proj_B, 'louvain', ax[1], threshold=0.1)
-    # investigate_comp(component, rank, obs, proj_B, 'cell_type_broad', ax[2])
-    # investigate_comp(component, rank, obs, proj_B, 'louvain', ax[3])
-    # investigate_comp(component, rank, obs, proj_B, 'cell_type_broad', ax[4], threshold=0.0)
-    # investigate_comp(component, rank, obs, proj_B, 'louvain', ax[5], threshold=0.0)
 
     return f
