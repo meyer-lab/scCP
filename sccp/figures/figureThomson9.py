@@ -15,8 +15,7 @@ def makeFigure():
     rank = 30
     X = openPf2(rank, "Thomson")
 
-    # TODO: Fix
-    # weightedProjDF["Cell Type"] = gateThomsonCells()
+    X.obs["Cell Type"] = gateThomsonCells(X)
 
     component = np.arange(1, rank + 1, 1)
     for i, comp in enumerate(component):
