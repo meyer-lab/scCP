@@ -28,7 +28,7 @@ def makeFigure():
     condStatus = X.obs[["Condition", "SLE_status", "Processing_Cohort"]].drop_duplicates()
     condStatus = condStatus.set_index("Condition")
 
-    rank = [2] 
+    rank = [2, 3] 
     results = testPf2Ranks(
         X,
         condStatus,
