@@ -1,9 +1,10 @@
 import numpy as np 
 import pandas as pd
 import seaborn as sns
-from matplotlib import gridspec, pyplot as plt
 from ...crossVal import CrossVal
 from ...decomposition import R2X
+from .plotFactors import reorder_table
+import anndata
 
 
 def plotR2X(data, rank, ax):
@@ -81,6 +82,46 @@ def plotCellTypePerExpPerc(dataDF, condition, ax):
     sns.barplot(data=df, x="Cell Type", y="Count", ax=ax)
     ax.set(title=condition)
 
+
+def getGeneFactors(dataIn: anndata.AnnData):
+    """Saves genes factors based on weight."""
+    yt = dataIn.var_names
+    X = dataIn.varm["Pf2_C"]
+    rank = X.shape[1]
+
+    max_weight = np.max(np.abs(X), axis=1)
+    kept_idxs = max_weight > 0.08
+    X = X[kept_idxs]
+    yt = yt[kept_idxs]
+
+    X, ind = reorder_table(X)
+    yt = yt[ind]
+
+    X = X / np.max(np.abs(X))
+
+    df = pd.DataFrame(
+        data=X, index=yt, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)]
+    )
+
+    geneAmount = 20
+    genesTop = np.empty((geneAmount, X.shape[1]), dtype="<U10")
+    genesBottom = np.empty((geneAmount, X.shape[1]), dtype="<U10")
+    sort_idx = np.argsort(X, axis=0)
+
+    for j in range(rank):
+        sortGenes = yt[sort_idx[:, j]]
+        genesTop[:, j] = np.flip(sortGenes[-geneAmount:])
+        genesBottom[:, j] = sortGenes[:geneAmount]
+
+    dfTop = pd.DataFrame(
+        data=genesTop, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)]
+    )
+    dfBot = pd.DataFrame(
+        data=genesBottom, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)]
+    )
+
+    return df, dfTop, dfBot
+
     
 def plotGenePerCellType(genes, dataDF, ax):
     """Plots average gene expression across cell types for all conditions"""
@@ -108,27 +149,28 @@ def plotGenePerCategCond(conds, categoryCond, genes, dataDF, axs, mean=True):
     for i, gene in enumerate(genes):
         sns.boxplot(data=df.loc[df["Gene"] == gene], x="Cell Type", y="Average Gene Expression For Drugs", hue="Condition", ax=axs[i])
         axs[i].set(title=gene)
-        
-def plotGeneFactors(cmp, rank, dataName, axs, geneAmount=20):
+
+
+def plotGeneFactors(cmp, dataIn: anndata.AnnData, axs, geneAmount=20):
     """Plotting weights for gene factors for both most negatively/positively weighted terms"""
-    df = pd.read_csv("sccp/data/"+dataName+"/"+dataName+"TopBotGenes_Cmp"+str(rank)+".csv").rename(columns={"Unnamed: 0": "Gene"})
+    df = getGeneFactors(dataIn)[0]
     cmpName = "Cmp. "+str(cmp)
-    df = df[["Gene", cmpName]].sort_values(by=[cmpName])
+    df = df[[cmpName]].sort_values(by="index")
     sns.barplot(data=df.iloc[:geneAmount,:], x="Gene", y=cmpName, color="k", ax=axs[0])
     sns.barplot(data=df.iloc[-geneAmount:,:], x="Gene", y=cmpName, color="k", ax=axs[1])
     axs[0].tick_params(axis="x", rotation=90)
     axs[1].tick_params(axis="x", rotation=90)
 
 
-def plotGenePerCategStatus(X, cmp, rank, dataName, axs, geneAmount=5):
+def plotGenePerCategStatus(X, cmp, axs, geneAmount=5):
     """Plotting weights for gene factors for both most negatively/positively weighted terms"""
-    df = pd.read_csv(f"sccp/data/{dataName}/{dataName}TopBotGenes_Cmp{rank}.csv").rename(columns={"Unnamed: 0": "Gene"})
+    df, topGenes, botGenes = getGeneFactors(X)
     cmpName = "Cmp. " + str(cmp)
-    df = df[["Gene", cmpName]].sort_values(by=[cmpName])
+    df = df[[cmpName]].sort_values(by="index")
     botGenes = df.iloc[:geneAmount,:]
     topGenes = df.iloc[-geneAmount:,:]
 
-    genes = [botGenes["Gene"].values, np.flip(topGenes["Gene"].values)]
+    genes = [botGenes.index, np.flip(topGenes.index)]
     axNumb = 0
     dataDF = pd.DataFrame(data=pd.concat([X[:, np.concatenate(genes)].to_df(), 
                                           X.obs["Condition"].to_frame(), 
