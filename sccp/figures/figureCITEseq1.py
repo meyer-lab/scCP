@@ -4,7 +4,7 @@ Hamad CITEseq dataset
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotFactors import plotFactors, plotWeight
 from ..imports.citeseq import import_citeseq
-from .commonFuncs.plotUMAP import points, plotAllLabelsUMAP
+from .commonFuncs.plotUMAP import plotAllLabelsUMAP
 from ..parafac2 import pf2
 
 
