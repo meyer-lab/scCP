@@ -155,7 +155,7 @@ def plotLabelsUMAP(X: anndata.AnnData, labelType: str, ax: Axes, condition=None)
 
     points(
         X.obsm["embedding"],
-        labels=X.obs[labelType],
+        labels=labs,
         ax=ax,
         cmap="tab20",
         show_legend=True,
