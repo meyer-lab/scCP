@@ -22,7 +22,7 @@ def makeFigure():
     rank = 30
     X = openPf2(rank, "Thomson")
 
-    X.obs["Cell Type"] = gateThomsonCells(X)
+    gateThomsonCells(X)
 
     points(X.obsm["embedding"], labels=X.obs["Cell Type"].values, ax=ax[0])
     ax[0].set(ylabel="UMAP2", xlabel="UMAP1")
