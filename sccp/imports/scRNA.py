@@ -39,42 +39,6 @@ def import_thomson() -> anndata.AnnData:
 
     return X
 
-def ThompsonXA_SCGenesAD() -> anndata.AnnData:
-    """Import Thompson lab PBMC dataset."""
-    # Cell barcodes, sample id of treatment and sample number (33482, 3)
-    metafile = pd.read_csv("sccp/data/Thomson/meta.csv")
-
-    # Cell barcodes (33482)
-    # barcodes = pd.read_csv(
-    #     "sccp/data/Thomson/barcodes.tsv", sep="\t", header=None, names=("cell_barcode",)
-    # )
-
-    # Left merging should put the barcodes in order
-    # metafile = pd.merge(
-    #     barcodes, metafile, on="cell_barcode", how="left", validate="one_to_one"
-    # )
-
-    # h5ad is simplified version of mtx format
-    # import scanpy as sc
-    # data = sc.read_10x_mtx("./sccp/data/", var_names='gene_symbols', make_unique=True)
-    # data.X = data.X.todense()
-    # data = data[:, np.mean(data.X > 0, axis=0) > 0.001]
-    # data.write('thompson.h5ad', compression="gzip")
-    X = anndata.read_h5ad("/opt/andrew/thomson.h5ad")
-
-    X.obs["Drugs"] = pd.Categorical(metafile["sample_id"])
-
-    assert np.all(np.isfinite(X.X.data))
-
-    X.X /= np.sum(X.X, axis=0)
-
-    # Only operating on the data works because 0 ends up as 0 here
-    X.X = np.log10((1000.0 * X.X) + 1) # scaling factor
-
-    # Center the genes
-    X.X -= np.mean(X.X, axis=0)
-
-    return X
 
 def import_lupus() -> anndata.AnnData:
     """Import Lupus PBMC dataset.
