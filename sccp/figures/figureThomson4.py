@@ -1,11 +1,9 @@
 """
-Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs: investigating UMAP
+Thomson: Compares PCA and Pf2 UMAP labeled by genes and drugs
 """
-import numpy as np
 from sklearn.decomposition import PCA
-from .common import subplotLabel, getSetup, openPf2, flattenData
-from .commonFuncs.plotUMAP import plotGeneUMAP, points
-from ..imports.scRNA import ThompsonXA_SCGenes
+from .common import subplotLabel, getSetup, openPf2
+from .commonFuncs.plotUMAP import plotGeneUMAP, plotLabelsUMAP
 import pacmap
 
 
@@ -17,51 +15,27 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    # Import of single cells: [Drug, Cell, Gene]
-    data = ThompsonXA_SCGenes()
     rank = 30
-    dataDF = flattenData(data)
+    X = openPf2(rank, dataName="Thomson")
 
-    # UMAP dimension reduction
-    _, _, projs = openPf2(rank, "Thomson")
-    pf2Points = pacmap.PaCMAP().fit_transform(projs)
+    genes = ["GNLY", "NKG7"]
+    for i, gene in enumerate(genes):
+        plotGeneUMAP(gene, "Pf2", X, ax[i])
+
+    drugs = ["Triamcinolone Acetonide", "Alprostadil"]
+
+    plotLabelsUMAP(X, "Condition", ax[2], drugs)
+    ax[2].set(title=f"Pf2-Based Decomposition")
 
     # PCA dimension reduction
     pc = PCA(n_components=rank)
-    pcaPoints = pc.fit_transform(data.unfold())
-    pcaPoints = pacmap.PaCMAP().fit_transform(pcaPoints)
+    pcaPoints = pc.fit_transform(X.X)
+    X.obsm["embedding"] = pacmap.PaCMAP().fit_transform(pcaPoints)
 
-    genes = ["GNLY", "NKG7"]
-    plotGeneUMAP(genes, "Pf2", pf2Points, dataDF, ax[0:2])
-    plotGeneUMAP(genes, "PCA", pcaPoints, dataDF, ax[2:4])
+    for i, gene in enumerate(genes):
+        plotGeneUMAP(gene, "PCA", X, ax[i + 4])
 
-    # Find cells associated with drugs
-    drugs = [
-        "Triamcinolone Acetonide",
-        "Alprostadil",
-    ]
-    condList = np.array([c if c in drugs else " Other Conditions" for c in dataDF["Condition"].values])
-
-    points(
-        pf2Points,
-        labels=condList,
-        ax=ax[4],
-        color_key_cmap="Paired",
-        show_legend=True,
-    )
-    ax[4].set(
-        title="Pf2-Based Decomposition", ylabel="UMAP2", xlabel="UMAP1"
-    )
-
-    points(
-        pcaPoints,
-        labels=condList,
-        ax=ax[5],
-        color_key_cmap="Paired",
-        show_legend=True,
-    )
-    ax[5].set(
-        title="PCA-Based Decomposition", ylabel="UMAP2", xlabel="UMAP1"
-    )
+    plotLabelsUMAP(X, "Condition", ax[6], drugs)
+    ax[6].set(title=f"PCA-Based Decomposition")
 
     return f

@@ -1,15 +1,11 @@
 """
-Hamad CITEseq dataset
+CITEseq: Plotting weighted projections per component
 """
-import numpy as np
-import pacmap
-
 from .common import (
     subplotLabel,
     getSetup,
     openPf2,
 )
-from ..imports.citeseq import import_citeseq
 from .commonFuncs.plotUMAP import (
     plotCmpUMAP,
 )
@@ -18,21 +14,14 @@ from .commonFuncs.plotUMAP import (
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((50, 50), (5, 5))
+    ax, f = getSetup((10, 10), (3, 3))
 
     # Add subplot labels
     subplotLabel(ax)
-    rank = 80
 
-    _, factors, projs = openPf2(rank=rank, dataName="CITEseq")
+    X = openPf2(80, "CITEseq")
 
-    pf2Points = pacmap.PaCMAP().fit_transform(projs)
-
-    component = np.arange(1, 25, 1)
-
-    for i in range(len(component)):
-        plotCmpUMAP(
-            component[i], factors[1], pf2Points, projs, ax[i]
-        )
+    for i, axi in enumerate(ax):
+        plotCmpUMAP(X, i + 1, axi)
 
     return f

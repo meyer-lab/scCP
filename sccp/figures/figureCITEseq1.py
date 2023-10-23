@@ -1,37 +1,25 @@
 """
-Hamad CITEseq dataset
+CITEseq: Plotting Pf2 factors, weights, and UMAP labeled by all conditions
 """
 from .common import subplotLabel, getSetup, openPf2
-from .commonFuncs.plotFactors import (
-    plotFactors,
-)
-import pacmap
-from ..imports.citeseq import import_citeseq
-from .commonFuncs.plotUMAP import points
+from .commonFuncs.plotFactors import plotFactors, plotWeight
+from .commonFuncs.plotUMAP import plotLabelsUMAP
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((25, 25), (3, 3))
+    ax, f = getSetup((8, 8), (2, 3))
 
     # Add subplot labels
     subplotLabel(ax)
 
-    data, protDF = import_citeseq()
-    rank = 80
+    X = openPf2(80, "CITEseq")
 
-    _, factors, projs = openPf2(rank=rank, dataName="CITEseq")
+    factors = [X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"]]
+    plotFactors(factors, X, ax[0:3], reorder=(0, 2), trim=(2,))
+    plotWeight(X.uns["Pf2_weights"], ax[3])
 
-    plotFactors(factors, data, ax[0:3], reorder=(0, 2), trim=(2,))
-
-    pf2Points = pacmap.PaCMAP().fit_transform(projs)
-
-    points(
-        pf2Points,
-        labels=protDF["Condition"].values,
-        ax=ax[3],
-        show_legend=True,
-    )
+    plotLabelsUMAP(X, "Condition", ax[4])
 
     return f

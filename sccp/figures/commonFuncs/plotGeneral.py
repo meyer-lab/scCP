@@ -1,9 +1,9 @@
 import numpy as np 
 import pandas as pd
 import seaborn as sns
-from matplotlib import gridspec, pyplot as plt
 from ...crossVal import CrossVal
 from ...decomposition import R2X
+import anndata
 
 
 def plotR2X(data, rank, ax):
@@ -81,18 +81,19 @@ def plotCellTypePerExpPerc(dataDF, condition, ax):
     sns.barplot(data=df, x="Cell Type", y="Count", ax=ax)
     ax.set(title=condition)
 
-    
-def plotGenePerCellType(genes, dataDF, ax):
+
+def plotGenePerCellType(genes, dataDF: pd.DataFrame, ax):
     """Plots average gene expression across cell types for all conditions"""
     data = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=genes).rename(
             columns={"variable": "Gene", "value": "Value"})
     df = data.groupby(["Condition", "Cell Type", "Gene"]).mean()
     df = df.rename(columns={"Value": "Average Gene Expression For Drugs"})
     sns.stripplot(data=df, x="Gene", y="Average Gene Expression For Drugs", hue="Cell Type", dodge=True, jitter=False, ax=ax)
-    
+
 
 def plotGenePerCategCond(conds, categoryCond, genes, dataDF, axs, mean=True):
     """Plots average gene expression across cell types for a category of drugs"""
+    
     df = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=genes).rename(
             columns={"variable": "Gene", "value": "Value"})
     if mean is True:
@@ -107,43 +108,20 @@ def plotGenePerCategCond(conds, categoryCond, genes, dataDF, axs, mean=True):
     for i, gene in enumerate(genes):
         sns.boxplot(data=df.loc[df["Gene"] == gene], x="Cell Type", y="Average Gene Expression For Drugs", hue="Condition", ax=axs[i])
         axs[i].set(title=gene)
-        
-def plotGeneFactors(cmp, rank, dataName, axs, geneAmount=20):
+
+
+def plotGeneFactors(cmp: int, dataIn: anndata.AnnData, axs, geneAmount: int=20):
     """Plotting weights for gene factors for both most negatively/positively weighted terms"""
-    df = pd.read_csv("sccp/data/"+dataName+"/"+dataName+"TopBotGenes_Cmp"+str(rank)+".csv").rename(columns={"Unnamed: 0": "Gene"})
-    cmpName = "Cmp. "+str(cmp)
-    df = df[["Gene", cmpName]].sort_values(by=[cmpName])
+    cmpName = f"Cmp. {cmp}"
+
+    df = pd.DataFrame(
+        data=dataIn.varm["Pf2_C"][:, cmp - 1], index=dataIn.var_names, columns=[cmpName]
+    )
+
+    df = df.reset_index(names="Gene")
+    df = df.sort_values(by=cmpName)
+
     sns.barplot(data=df.iloc[:geneAmount,:], x="Gene", y=cmpName, color="k", ax=axs[0])
     sns.barplot(data=df.iloc[-geneAmount:,:], x="Gene", y=cmpName, color="k", ax=axs[1])
     axs[0].tick_params(axis="x", rotation=90)
     axs[1].tick_params(axis="x", rotation=90)
-
-
-def plotGenePerCategStatus(cmp, dataDF, rank, dataName, axs, geneAmount=5):
-    """Plotting weights for gene factors for both most negatively/positively weighted terms"""
-    df = pd.read_csv("sccp/data/"+dataName+"/"+dataName+"TopBotGenes_Cmp"+str(rank)+".csv").rename(columns={"Unnamed: 0": "Gene"})
-    cmpName = "Cmp. " + str(cmp)
-    df = df[["Gene", cmpName]].sort_values(by=[cmpName])
-    botGenes = df.iloc[:geneAmount,:]
-    topGenes = df.iloc[-geneAmount:,:]
-
-    genes = [botGenes["Gene"].values, np.flip(topGenes["Gene"].values)]
-    axNumb = 0
-    
-    for i in range(2):
-        data = pd.melt(dataDF, id_vars=["Condition", "Status", "Cell Type"], value_vars=genes[i]).rename(
-            columns={"variable": "Gene", "value": "Value"})
-        df = data.groupby(["Condition","Status", "Cell Type", "Gene"]).mean()
-        df = df.rename(columns={"Value": "Average Gene Expression For Drugs"}).reset_index()
-        for j, gene in enumerate(genes[i]):
-            sns.boxplot(data=df.loc[df["Gene"] == gene], x="Cell Type", y="Average Gene Expression For Drugs", hue="Status", showfliers=False, ax=axs[axNumb])
-            if i == 0:
-                axs[axNumb].set(title="Downreg. Gene: "+gene)
-            else: 
-                axs[axNumb].set(title="Upreg. Gene: "+gene)
-            axs[axNumb].set(xticks=np.linspace(0.5-np.abs(np.min(df["Average Gene Expression For Drugs"])), 
-                                       0.5+np.abs(np.max(df["Average Gene Expression For Drugs"])), 
-                                       num=5))
-
-            axNumb += 1
-

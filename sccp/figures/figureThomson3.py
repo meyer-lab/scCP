@@ -1,9 +1,7 @@
 """
-Parafac2 implementation on PBMCs treated wtih PopAlign/Thompson drugs
+Thomson: Plotting weighted projections per component
 """
-import numpy as np
-import pacmap
-from .common import subplotLabel, getSetup, openPf2, openPf2
+from .common import subplotLabel, getSetup, openPf2
 from .commonFuncs.plotUMAP import (
     plotCmpUMAP,
 )
@@ -16,16 +14,11 @@ def makeFigure():
 
     # Add subplot labels
     subplotLabel(ax)
+
     rank = 30
-    _, factors, projs = openPf2(rank, "Thomson")
+    X = openPf2(rank, "Thomson")
 
-    # UMAP dimension reduction
-    _, _, projs = openPf2(rank, "Thomson")
-    pf2Points = pacmap.PaCMAP().fit_transform(projs)
-
-    component = np.arange(17, 25, 1)
-
-    for i in range(len(component)):
-        plotCmpUMAP(component[i], factors[1], pf2Points, projs, ax[i])
+    for i in range(0, 8):
+        plotCmpUMAP(X, i, ax[i])
 
     return f

@@ -2,12 +2,12 @@
 # for more information about possible inputs/specifications, see the sci-kit learn documentation:
 # https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegressionCV.html
 
-import pandas as pd
 import numpy as np
-from parafac2 import parafac2_nd
+import pandas as pd
 from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.model_selection import StratifiedGroupKFold
 from sklearn.metrics import roc_auc_score
+from .parafac2 import pf2
 
 
 def testPf2Ranks(
@@ -29,11 +29,10 @@ def testPf2Ranks(
     for rank in ranks_to_test:
         # perform pf2 on the given rank
         print(f"\n\nPARAFAC2 FITTING: RANK {rank}")
-        _, factors, _, _ = parafac2_nd(
-            pfx2_data, rank=rank, random_state=1
-        )
 
-        A_matrix = factors[0]
+        X = pf2(pfx2_data, "Condition", rank=rank, random_state=1, doEmbedding=False)
+
+        A_matrix = X.uns["Pf2_A"]
         condition_labels = condition_labels_all["SLE_status"]
 
         # train a logisitic regression model on that rank, using cross validation
@@ -55,7 +54,7 @@ def testPf2Ranks(
             penalty="l1",
             solver="saga",
             scoring=error_metric,
-            n_jobs=5
+            n_jobs=5,
         )
 
         log_fit = log_reg.fit(A_matrix, condition_labels.to_numpy())
@@ -73,14 +72,15 @@ def testPf2Ranks(
     return pd.concat(results, ignore_index=True)
 
 
-def getCompContribs(A_matrix, target, penalty_amt: float=50) -> np.ndarray:
+def getCompContribs(A_matrix, target, penalty_amt: float = 50) -> np.ndarray:
     """Fit logistic regression model, return coefficients of that model"""
     log_fit = LogisticRegression(
         random_state=0, max_iter=5000, penalty="l1", solver="saga", C=penalty_amt
     ).fit(A_matrix, target)
-    
+
     coefs = pd.DataFrame(
-        log_fit.densify().coef_, columns=[f"Cmp. {i}" for i in np.arange(1, A_matrix.shape[1] + 1)]
+        log_fit.densify().coef_,
+        columns=[f"Cmp. {i}" for i in np.arange(1, A_matrix.shape[1] + 1)],
     ).melt(var_name="Component", value_name="Weight")
 
     return coefs
@@ -143,7 +143,7 @@ def getPf2ROC(A_matrix, condition_batch_labels, rank, penalties_to_test=10):
         penalty="l1",
         solver="saga",
         scoring="roc_auc",
-        #Cs=penalties_to_test,
+        # Cs=penalties_to_test,
     )
     log_fit = log_reg.fit(cmp_train, y_train)
 
