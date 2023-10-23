@@ -140,16 +140,13 @@ def plotGenePerCategStatus(X, cmp, rank, dataName, axs, geneAmount=5):
         data = pd.melt(dataDF, id_vars=["Condition", "Status", "Cell Type"], value_vars=genes[i]).rename(
             columns={"variable": "Gene", "value": "Value"})
         df = data.groupby(["Condition", "Status", "Cell Type", "Gene"]).mean()
-        df = df.rename(columns={"Value": "Average Gene Expression For Drugs"}).reset_index()
+        df = df.rename(columns={"Value": "Average Gene Expression"}).reset_index()
         for j, gene in enumerate(genes[i]):
-            sns.boxplot(data=df.loc[df["Gene"] == gene], x="Cell Type", y="Average Gene Expression For Drugs", hue="Status", showfliers=False, ax=axs[axNumb])
+            sns.boxplot(data=df.loc[df["Gene"] == gene], x="Cell Type", y="Average Gene Expression", hue="Status", showfliers=False, ax=axs[axNumb])
             if i == 0:
                 axs[axNumb].set(title="Downreg. Gene: "+gene)
             else: 
                 axs[axNumb].set(title="Upreg. Gene: "+gene)
-            axs[axNumb].set(xticks=np.linspace(0.5-np.abs(np.min(df["Average Gene Expression For Drugs"])), 
-                                       0.5+np.abs(np.max(df["Average Gene Expression For Drugs"])), 
-                                       num=5))
 
             axNumb += 1
 

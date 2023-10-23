@@ -272,7 +272,10 @@ def plotCmpUMAP(X, cmp: int, ax: Axes):
     projections for a component and cell state"""
     weightedProjs = X.obsm["weighted_projections"]
     weightedProjs = weightedProjs[:, cmp - 1]
-    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs)) * 2.0
+    weightedProjs = weightedProjs / np.max(np.abs(weightedProjs)) * 2
+    weightedProjs[0] = -1
+    weightedProjs[1] = 1
+    
 
     cmap = sns.diverging_palette(240, 10, as_cmap=True, s=100)
     plot = points(X.obsm["embedding"], values=weightedProjs, cmap=cmap, ax=ax)

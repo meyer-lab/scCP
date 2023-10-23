@@ -16,7 +16,8 @@ def makeFigure():
     # Import of data
     X = openPf2(40, "Lupus")
 
-    comps = [13, 14, 16, 26, 29, 32]
+    comps = [26]
+    X.obs["Cell Type"] = X.obs["louvain"]
     for i, cmp in enumerate(comps):
         plotCmpPerCellType(X, cmp, ax[(2 * i)])
         plotCmpUMAP(X, cmp, ax[(2 * i) + 1])
