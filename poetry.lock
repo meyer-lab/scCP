@@ -2,27 +2,29 @@
 
 [[package]]
 name = "anndata"
-version = "0.9.2"
+version = "0.10.2"
 description = "Annotated data."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "anndata-0.9.2-py3-none-any.whl", hash = "sha256:badab44bf0b4d598ae49403ee634a6ffc8896d9aa21db52f0f6af98d6fe1fceb"},
-    {file = "anndata-0.9.2.tar.gz", hash = "sha256:e5b8383d09723af674cae7ad0c2ef53eb1f8c73949b7f4c182a6e30f42196327"},
+    {file = "anndata-0.10.2-py3-none-any.whl", hash = "sha256:2a1724a89f7c8132b19ba78bc15c4abb31059897256aa0f1aca334b802587cd2"},
+    {file = "anndata-0.10.2.tar.gz", hash = "sha256:e82e7a79bc41493be47655d3e3376e08597a00a7315c0a03eeffcc3c5e8b288f"},
 ]
 
 [package.dependencies]
+array-api-compat = "*"
 h5py = ">=3"
 natsort = "*"
 numpy = ">=1.16.5"
 packaging = ">=20"
-pandas = ">=1.1.1,<2.0.1 || >2.0.1"
+pandas = ">=1.1.1,<2.1.0rc0 || >2.1.0rc0"
 scipy = ">1.4"
 
 [package.extras]
-dev = ["pytest-xdist", "setuptools_scm"]
-doc = ["IPython", "awkward (>=2.0.7)", "myst_parser", "nbsphinx", "scanpydoc[theme] (>=0.9)", "sphinx (>=4.4)", "sphinx-autodoc-typehints (>=1.11.0)", "sphinx-rtd-theme (>=1.1.1)", "sphinx_issues", "sphinxext.opengraph", "zarr"]
-test = ["awkward (>=2.3)", "boltons", "dask[array]", "joblib", "loompy (>=3.0.5)", "matplotlib", "openpyxl", "pytest (>=6.0)", "pytest-cov (>=2.10)", "pytest_memray", "scanpy", "scikit-learn", "zarr"]
+dev = ["pytest-xdist", "setuptools-scm"]
+doc = ["awkward (>=2.0.7)", "ipython", "myst-parser", "nbsphinx", "scanpydoc (>=0.9)", "sphinx (>=4.4)", "sphinx-autodoc-typehints (>=1.11.0)", "sphinx-book-theme (>=1.0.1)", "sphinx-copybutton", "sphinx-design (>=0.5.0)", "sphinx-issues", "sphinxext-opengraph", "zarr"]
+gpu = ["cupy"]
+test = ["awkward (>=2.3)", "boltons", "dask[array,distributed]", "httpx", "joblib", "loompy (>=3.0.5)", "matplotlib", "openpyxl", "pytest (>=6.0)", "pytest-cov (>=2.10)", "pytest-memray", "scanpy", "scikit-learn", "zarr"]
 
 [[package]]
 name = "annoy"
@@ -34,6 +36,21 @@ files = [
     {file = "annoy-1.17.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:c33a5d4d344c136c84976bfb2825760142a8bb25335165e24e11c9afbfa8c2e9"},
     {file = "annoy-1.17.3.tar.gz", hash = "sha256:9cbfebefe0a5f843eba29c6be4c84d601f4f41ad4ded0486f1b88c3b07739c15"},
 ]
+
+[[package]]
+name = "array-api-compat"
+version = "1.4"
+description = "A wrapper around NumPy and other array libraries to make them compatible with the Array API standard"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "array_api_compat-1.4-py3-none-any.whl", hash = "sha256:326383f5423716922724199988084250ca41074c7938bed6f9cea95d8d70f833"},
+    {file = "array_api_compat-1.4.tar.gz", hash = "sha256:d49f00eb66b436cf3a6026d6f43c115d3e058a3a9936536b0bac33dd470e8b4d"},
+]
+
+[package.extras]
+cupy = ["cupy"]
+numpy = ["numpy"]
 
 [[package]]
 name = "biothings-client"
@@ -2580,4 +2597,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "66244b99a4bf3aeda94f1dccf7d529ebc72c06912dab16825c6f582dbab6e582"
+content-hash = "284e5a8a9372e44474e327a5d9354415edea6a9a2e43398df0ab4426405d358c"
