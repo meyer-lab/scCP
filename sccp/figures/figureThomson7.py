@@ -43,6 +43,10 @@ def makeFigure():
             color="k",
             ax=ax[i + 1],
         )
-        ax[i + 1].set(title=name, ylabel="# of Experiments", xlim=(0.0, group["Cell Type Percentage"].max()))
+        ax[i + 1].set(
+            title=name,
+            ylabel="# of Experiments",
+            xlim=(0.0, group["Cell Type Percentage"].max()),
+        )
 
     return f

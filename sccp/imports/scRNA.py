@@ -99,7 +99,10 @@ def import_citeseq() -> anndata.AnnData:
     files = ["control", "ic_pod1", "ic_pod7", "sc_pod1", "sc_pod7"]
 
     data = {
-        k: sc.read_10x_mtx("/opt/andrew/HamadCITEseq/" + k, gex_only=False, make_unique=True) for k in files
+        k: sc.read_10x_mtx(
+            "/opt/andrew/HamadCITEseq/" + k, gex_only=False, make_unique=True
+        )
+        for k in files
     }
     X = anndata.concat(data, merge="same", label="Condition")
 
