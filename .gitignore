@@ -131,7 +131,6 @@ dmypy.json
 .vscode
 
 output
+*.ipynb
 
 .DS_Store
-
-workbook.ipynb
