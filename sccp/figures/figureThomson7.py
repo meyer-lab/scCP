@@ -4,7 +4,7 @@ Thomson dataset: Cell counts and cell type percentages per condition.
 import pandas as pd
 import seaborn as sns
 from .common import subplotLabel, getSetup, openPf2
-from ..imports.gating import gateThomsonCells
+from ..gating import gateThomsonCells
 
 
 def makeFigure():

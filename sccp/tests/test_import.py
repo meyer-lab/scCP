@@ -2,7 +2,7 @@
 Test the cross validation accuracy.
 """
 import numpy as np
-from ..imports.scRNA import import_thomson, import_lupus, import_citeseq
+from ..imports import import_thomson, import_lupus, import_citeseq
 
 
 def test_Thomson():
