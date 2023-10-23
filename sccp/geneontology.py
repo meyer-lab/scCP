@@ -7,7 +7,6 @@ import pandas as pd
 # from gseapy import Biomart
 # bm = Biomart()
 import mygene
-from .figures.commonFuncs.plotGeneral import getGeneFactors
 
 mg = mygene.MyGeneInfo()
 
@@ -16,8 +15,11 @@ def geneOntology(cmpNumb: int, X, geneAmount, goTerms, geneValue):
     """Plots top Gene Ontology terms for molecular function,
     biological process, cellular component. Uses factors as
     input for function"""
+    rank = X.varm["Pf2_C"].shape[1]
+    df = pd.DataFrame(
+        data=X.varm["Pf2_C"], index=X.var_names, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)]
+    )
 
-    df = getGeneFactors(X)[0]
     sort_idx = np.argsort(df.to_numpy(), axis=0)
 
     # Specifies enrichment sets to run against

@@ -8,9 +8,6 @@ import seaborn as sns
 import matplotlib
 from matplotlib.figure import Figure
 from matplotlib import gridspec, pyplot as plt
-import numpy as np
-import pandas as pd
-from .commonFuncs.plotFactors import reorder_table
 import anndata
 
 
@@ -72,8 +69,9 @@ def genFigure():
 
     exec(f"from sccp.figures.{nameOut} import makeFigure", globals())
     ff = makeFigure()
-    ff.savefig(f"./output/{nameOut}.svg", dpi=300, bbox_inches="tight", pad_inches=0)
-    ff.savefig(f"./output/{nameOut}.png", dpi=300, bbox_inches="tight", pad_inches=0)
+
+    if ff is not None:
+        ff.savefig(f"./output/{nameOut}.svg", dpi=300, bbox_inches="tight", pad_inches=0)
 
     print(f"Figure {sys.argv[1]} is done after {time.time() - start} seconds.\n")
 
