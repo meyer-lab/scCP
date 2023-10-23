@@ -1,12 +1,8 @@
 """
-S2: Examining cell state for Pf2 on lupus data
-article: https://www.science.org/doi/10.1126/science.abf1970
-data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
+Lupus: UMAP labeled by cell type
 """
-
-# GOAL: visualize the cell state compostition by cell type/UMAP
 from .common import subplotLabel, getSetup, openPf2
-from .commonFuncs.plotUMAP import plotAllLabelsUMAP
+from .commonFuncs.plotUMAP import plotLabelsUMAP
 
 
 def makeFigure():
@@ -20,6 +16,6 @@ def makeFigure():
     rank = 40
     X = openPf2(rank, "Lupus")
 
-    plotAllLabelsUMAP(X, "Cell Type", ax[0])
+    plotLabelsUMAP(X, "Cell Type", ax[0])
 
     return f
