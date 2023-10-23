@@ -84,10 +84,6 @@ def import_lupus() -> anndata.AnnData:
 
     X = X[ptIDX, :]
 
-    # X.X = X.X.toarray()
-    # X.write('lupus.h5ad', compression="gzip")
-    # X = anndata.read_h5ad("/opt/andrew/thomson.h5ad")
-
     # Center the genes
     X.X -= np.mean(X.X, axis=0)
 
