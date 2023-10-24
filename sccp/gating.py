@@ -156,7 +156,7 @@ marker_genes_1 = {
 
 
 # This is a list of genes which I assembled to label the second layer of cell annotation. I assembled this using several sources.
-marker_genes_1 = {
+marker_genes_2 = {
 		'B cells' : ['PXK',
 			    'MS4A1',
 			    'CD19',
