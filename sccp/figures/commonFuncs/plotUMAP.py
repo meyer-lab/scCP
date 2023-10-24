@@ -81,13 +81,12 @@ def points(
         assert values.shape[0] == points.shape[0]
 
         min_val, max_val = np.min(values), np.max(values)
-        #Here!
         bin_size = (max_val - min_val) / 255.0
         data["val_cat"] = pd.Categorical(
             np.round((values - min_val) / bin_size).astype(np.int16)
         )
         aggregation = canvas.points(data, "x", "y", agg=ds.count_cat("val_cat"))
-        color_key = _to_hex(plt.get_cmap(cmap)(np.linspace(0, 1, 256)))
+        color_key = _to_hex(plt.get_cmap(cmap)(np.linspace(min_val, max_val, 256)))
         result = tf.shade(
             aggregation,
             color_key=color_key,
