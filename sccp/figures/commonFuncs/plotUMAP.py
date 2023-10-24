@@ -33,47 +33,8 @@ def _to_hex(arr):
     return [matplotlib.colors.to_hex(c) for c in arr]
 
 
-def points(
-    points: np.ndarray,
-    ax: Axes,
-    values=None,
-    cmap=None,
-    show_legend: bool = True,
-) -> Axes:
-    """Use datashader to plot points"""
-    assert points.shape[1] == 2
-
-    canvas = _get_canvas(points)
-    data = pd.DataFrame(points, columns=("x", "y"))
-
-    # Color by values
-    if values is not None:
-        if cmap is None:
-            cmap = "Blues"
-
-        assert values.shape[0] == points.shape[0]
-
-        min_val, max_val = np.min(values), np.max(values)
-        bin_size = (max_val - min_val) / 255.0
-        data["val_cat"] = pd.Categorical(
-            np.round((values - min_val) / bin_size).astype(np.int16)
-        )
-        aggregation = canvas.points(data, "x", "y", agg=ds.count_cat("val_cat"))
-        color_key = _to_hex(plt.get_cmap(cmap)(np.linspace(0, 1, 256)))
-        result = tf.shade(
-            aggregation,
-            color_key=color_key,
-            how="eq_hist",
-            min_alpha=255,
-        )
-
-    # Color by density (default datashader option)
-    else:
-        aggregation = canvas.points(data, "x", "y", agg=ds.count())
-        result = tf.shade(aggregation, cmap=plt.get_cmap(cmap), how="log")
-
+def ds_show(result, ax):
     result = tf.set_background(result, "white")
-
     img_rev = result.data[::-1]
     mpl_img = np.dstack(
         [img_rev & 0x0000FF, (img_rev & 0x00FF00) >> 8, (img_rev & 0xFF0000) >> 16]
@@ -81,33 +42,68 @@ def points(
 
     ax.imshow(mpl_img)
 
-    if show_legend:
-        psm = plt.pcolormesh([[min_val, max_val], [min_val, max_val]], cmap=cmap)
-        plt.colorbar(psm, ax=ax)
-
-    ax.set(xticks=[], yticks=[])
-    return ax
-
 
 def plotGeneUMAP(gene: str, decompType: str, X: anndata.AnnData, ax: Axes):
     """Scatterplot of UMAP visualization weighted by gene"""
     geneList = X[:, gene].X.toarray().flatten()
     geneList = np.clip(geneList, None, np.quantile(geneList, 0.99))
     cmap = sns.color_palette("ch:s=-.2,r=.6", as_cmap=True)
-    points(X.obsm["embedding"], values=geneList, cmap=cmap, ax=ax)
+
+    values = geneList
+    points = X.obsm["embedding"]
+
+    canvas = _get_canvas(points)
+    data = pd.DataFrame(points, columns=("x", "y"))
+
+    # Color by values
+    values -= np.min(values)
+    values /= np.max(values)
+    data["val_cat"] = values
+    result = tf.shade(
+        agg=canvas.points(data, "x", "y", agg=ds.mean("val_cat")),
+        color_key=cmap,
+        span=(0, 1),
+        how="linear",
+        min_alpha=255,
+    )
+
+    ds_show(result, ax)
+
+    psm = plt.pcolormesh([[0, 1], [0, 1]], cmap=cmap)
+    plt.colorbar(psm, ax=ax)
+
+    ax.set(xticks=[], yticks=[])
     ax.set(title=f"{gene}-{decompType}-Based Decomposition")
 
 
 def plotCmpUMAP(X: anndata.AnnData, cmp: int, ax: Axes):
     """Scatterplot of UMAP visualization weighted by
     projections for a component and cell state"""
-    weightedProjs = X.obsm["weighted_projections"][:, cmp - 1]
-    print(np.max(weightedProjs))
-    print(np.min(weightedProjs))
+    values = X.obsm["weighted_projections"][:, cmp - 1]
+    points = X.obsm["embedding"]
 
     cmap = sns.diverging_palette(250, 30, l=65, center="dark", as_cmap=True)
-    points(X.obsm["embedding"], values=weightedProjs, cmap=cmap, ax=ax)
-    ax.set(title="Cmp. " + str(cmp))
+
+    canvas = _get_canvas(points)
+    data = pd.DataFrame(points, columns=("x", "y"))
+
+    # Color by values
+    values /= np.max(np.abs(values))
+
+    data["val_cat"] = values
+    result = tf.shade(
+        agg=canvas.points(data, "x", "y", agg=ds.mean("val_cat")),
+        cmap=cmap,
+        span=(-1, 1),
+        how="linear",
+        min_alpha=255,
+    )
+
+    ds_show(result, ax)
+
+    psm = plt.pcolormesh([[-1, 1], [-1, 1]], cmap=cmap)
+    plt.colorbar(psm, ax=ax)
+    ax.set(title="Cmp. " + str(cmp), xticks=[], yticks=[])
 
 
 def plotLabelsUMAP(X: anndata.AnnData, labelType: str, ax: Axes, condition=None):
@@ -138,14 +134,7 @@ def plotLabelsUMAP(X: anndata.AnnData, labelType: str, ax: Axes, condition=None)
         min_alpha=255,
     )
 
-    result = tf.set_background(result, "white")
-
-    img_rev = result.data[::-1]
-    mpl_img = np.dstack(
-        [img_rev & 0x0000FF, (img_rev & 0x00FF00) >> 8, (img_rev & 0xFF0000) >> 16]
-    )
-
-    ax.imshow(mpl_img)
+    ds_show(result, ax)
     ax.legend(handles=legend_elements)
     ax.set(xticks=[], yticks=[])
 
