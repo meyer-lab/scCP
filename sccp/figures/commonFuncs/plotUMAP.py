@@ -86,7 +86,7 @@ def points(
             np.round((values - min_val) / bin_size).astype(np.int16)
         )
         aggregation = canvas.points(data, "x", "y", agg=ds.count_cat("val_cat"))
-        color_key = _to_hex(plt.get_cmap(cmap)(np.linspace(min_val, max_val, 256)))
+        color_key = _to_hex(plt.get_cmap(cmap)(np.linspace(0, 1, 256)))
         result = tf.shade(
             aggregation,
             color_key=color_key,
@@ -97,7 +97,6 @@ def points(
 
     # Color by density (default datashader option)
     else:
-        print("yup")
         aggregation = canvas.points(data, "x", "y", agg=ds.count())
         result = tf.shade(aggregation, cmap=plt.get_cmap(cmap), alpha=alpha, how="log")
 
@@ -113,7 +112,7 @@ def points(
     if show_legend and legend_elements is not None:
         ax.legend(handles=legend_elements)
     elif show_legend:
-        psm = plt.pcolormesh([[0, 256], [0, 256]], cmap=cmap)
+        psm = plt.pcolormesh([[min_val, max_val], [min_val, max_val]], cmap=cmap)
         plt.colorbar(psm, ax=ax)
 
     ax.set(xticks=[], yticks=[])
