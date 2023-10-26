@@ -157,7 +157,7 @@ def population_bar_chart(adata: anndata.AnnData, cellType: str, category: str, a
     ax.set(ylim=(0, 1), ylabel= "Proportion of Cells")
 
 
-def cell_comp_hist(X: anndata.AnnData, category: str, comp: int, unique, ax):
+def cell_comp_hist(X, category: str, comp: int, unique, ax):
     """Plots weighted projections of each cell according to category"""
     adata = deepcopy(X)
     adata.obs[category] = adata.obs[category].astype(str)
@@ -170,7 +170,7 @@ def cell_comp_hist(X: anndata.AnnData, category: str, comp: int, unique, ax):
         sns.histplot(data=histDF, x="Component " + str(comp), hue=category, kde=True, ax=ax)
 
 
-def gene_plot_cells(X: anndata.AnnData, genes: np.array, hue: str, ax, unique=None, average=False, kde=False):
+def gene_plot_cells(X, genes, hue: str, ax, unique=None, average=False, kde=False):
     """Plots two genes on either a per cell or per cell type basis"""
     #adata = deepcopy(X)
     adata = sc.pp.subsample(X, fraction=0.01, random_state=0, copy=True)
@@ -187,7 +187,7 @@ def gene_plot_cells(X: anndata.AnnData, genes: np.array, hue: str, ax, unique=No
         sns.kdeplot(data=dataDF, x=genes[0], y=genes[1], hue=hue, levels=5, fill=True, alpha=0.3, cut=2, ax=ax)
 
 
-def gene_plot_conditions(X: anndata.AnnData, condition: str, genes: np.array, ax, hue=None, unique=None):
+def gene_plot_conditions(X, condition: str, genes, ax, hue=None, unique=None):
     """Plots two genes on either a per cell or per cell type basis"""
     #adata = deepcopy(X)
     adata = sc.pp.subsample(X, fraction=0.01, random_state=0, copy=True)
