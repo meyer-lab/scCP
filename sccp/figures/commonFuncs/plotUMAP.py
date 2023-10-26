@@ -106,14 +106,23 @@ def plotCmpUMAP(X: anndata.AnnData, cmp: int, ax: Axes):
     ax.set(title="Cmp. " + str(cmp), xticks=[], yticks=[])
 
 
-def plotLabelsUMAP(X: anndata.AnnData, labelType: str, ax: Axes, condition=None):
+def plotLabelsUMAP(X: anndata.AnnData, labelType: str, ax: Axes, condition=None, conditionName=None, cmp1=None, cmp2=None):
     """Scatterplot of UMAP visualization weighted by condition or cell type"""
     labels = X.obs[labelType]
 
     if condition is not None:
         labels = np.array([c if c in condition else "Other" for c in labels])
-
+    
+    if conditionName is not None:
+        labels = np.array([c if c in "Other" else conditionName for c in labels])
+    
     indices = np.argsort(labels)
+    
+    if cmp1 and cmp2 is not None:
+        p = np.vstack((X.obsm["weighted_projections"][:, cmp1 - 1], 
+               X.obsm["weighted_projections"][:, cmp2 - 1])).transpose()
+        X.obsm["embedding"] = 1000 * p
+    
     points = X.obsm["embedding"][indices, :]
     labels = labels[indices]
 

@@ -18,37 +18,37 @@ def makeFigure():
 
     X = openPf2(rank=40, dataName="Lupus")
 
-    df = X.obs[["Cell Type", "SLE_status", "Condition"]].reset_index(drop=True)
+    # df = X.obs[["Cell Type", "SLE_status", "Condition"]].reset_index(drop=True)
 
-    dfCond = (
-        df.groupby(["Condition"], observed=True).size().reset_index(name="Cell Number")
-    )
-    sns.histplot(data=dfCond, x="Cell Number", bins=15, color="k", ax=ax[0])
-    ax[0].set(ylabel="# of Experiments")
+    # dfCond = (
+    #     df.groupby(["Condition"], observed=True).size().reset_index(name="Cell Number")
+    # )
+    # sns.histplot(data=dfCond, x="Cell Number", bins=15, color="k", ax=ax[0])
+    # ax[0].set(ylabel="# of Experiments")
 
-    dfCellType = (
-        df.groupby(["Cell Type", "Condition"], observed=True)
-        .size()
-        .reset_index(name="Count")
-    )
-    dfCellType["Count"] = dfCellType["Count"].astype("float")
-    for i, cond in enumerate(pd.unique(df["Condition"])):
-        dfCellType.loc[dfCellType["Condition"] == cond, "Count"] = (
-            100
-            * dfCellType.loc[dfCellType["Condition"] == cond, "Count"].to_numpy()
-            / dfCond.loc[dfCond["Condition"] == cond]["Cell Number"].to_numpy()
-        )
+    # dfCellType = (
+    #     df.groupby(["Cell Type", "Condition"], observed=True)
+    #     .size()
+    #     .reset_index(name="Count")
+    # )
+    # dfCellType["Count"] = dfCellType["Count"].astype("float")
+    # for i, cond in enumerate(pd.unique(df["Condition"])):
+    #     dfCellType.loc[dfCellType["Condition"] == cond, "Count"] = (
+    #         100
+    #         * dfCellType.loc[dfCellType["Condition"] == cond, "Count"].to_numpy()
+    #         / dfCond.loc[dfCond["Condition"] == cond]["Cell Number"].to_numpy()
+    #     )
 
-    dfCellType.rename(columns={"Count": "Cell Type Percentage"}, inplace=True)
-    for i, celltype in enumerate(np.unique(dfCellType["Cell Type"])):
-        sns.histplot(
-            data=dfCellType.loc[dfCellType["Cell Type"] == celltype],
-            x="Cell Type Percentage",
-            bins=15,
-            color="k",
-            ax=ax[i + 1],
-        )
-        ax[i + 1].set(title=celltype, ylabel="# of Experiments")
+    # dfCellType.rename(columns={"Count": "Cell Type Percentage"}, inplace=True)
+    # for i, celltype in enumerate(np.unique(dfCellType["Cell Type"])):
+    #     sns.histplot(
+    #         data=dfCellType.loc[dfCellType["Cell Type"] == celltype],
+    #         x="Cell Type Percentage",
+    #         bins=15,
+    #         color="k",
+    #         ax=ax[i + 1],
+    #     )
+    #     ax[i + 1].set(title=celltype, ylabel="# of Experiments")
     
     population_bar_chart(X, "Cell Type", "SLE_status", ax[12])
 
