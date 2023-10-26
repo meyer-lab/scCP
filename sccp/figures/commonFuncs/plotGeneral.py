@@ -4,6 +4,7 @@ import seaborn as sns
 from ...crossVal import CrossVal
 from ...decomposition import R2X
 import anndata
+from copy import deepcopy
 
 
 def plotR2X(data, rank, ax):
@@ -150,3 +151,16 @@ def population_bar_chart(adata: anndata.AnnData, cellType: str, category: str, a
     cellDF = pd.crosstab(adata.obs[category],adata.obs[cellType], normalize='index')
     cellDF.plot.bar(ax=ax, stacked=True).legend(loc='upper right')
     ax.set(ylim=(0, 1), ylabel= "Proportion of Cells")
+
+
+def cell_comp_hist(X: anndata.AnnData, category: str, comp: int, unique, ax):
+    """Plots weighted projections of each cell according to category"""
+    adata = deepcopy(X)
+    adata.obs[category] = adata.obs[category].astype(str)
+    w_proj = adata.obsm["weighted_projections"][:, comp - 1]
+    if category is not None:
+        if unique is not None:
+            adata.obs.loc[adata.obs[category] != unique, category] = "Other"
+        labels = adata.obs[category]
+        histDF = pd.DataFrame({"Component " + str(comp): w_proj, category: labels})
+        sns.histplot(data=histDF, x="Component " + str(comp), hue=category, kde=True, ax=ax)
