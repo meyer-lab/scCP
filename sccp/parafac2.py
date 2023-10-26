@@ -17,7 +17,7 @@ def cwSNR(
     SNR = np.empty((len(matrices), len(weights)), dtype=float)
 
     for i, mat in enumerate(matrices):
-        xx = parafac2_to_slice(((weights, factors), projections), i, validate=False)
+        xx = parafac2_to_slice((weights, factors, projections), i, validate=False)
 
         E_k = np.linalg.norm(mat - xx)
 
