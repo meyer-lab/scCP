@@ -147,6 +147,6 @@ def plotGeneFactors(cmp: int, dataIn: anndata.AnnData, axs, geneAmount: int = 20
 
 def population_bar_chart(adata: anndata.AnnData, cellType: str, category: str, ax):
     """Plots proportion of cells by type stratified by an identifying condition or patient attribute (i.e. Lupus Status)"""
-    cellDF = pd.crosstab(adata.obs[category],adata.obs[cellType], normalize='index')
-    cellDF.plot.bar(ax=ax, stacked=True).legend(loc='upper right')
-    ax.set(ylim=(0, 1), ylabel= "Proportion of Cells")
+    cellDF = pd.crosstab(adata.obs[category], adata.obs[cellType], normalize="index")
+    cellDF.plot.bar(ax=ax, stacked=True).legend(loc="upper right")
+    ax.set(ylim=(0, 1), ylabel="Proportion of Cells")
