@@ -164,3 +164,28 @@ def cell_comp_hist(X: anndata.AnnData, category: str, comp: int, unique, ax):
         labels = adata.obs[category]
         histDF = pd.DataFrame({"Component " + str(comp): w_proj, category: labels})
         sns.histplot(data=histDF, x="Component " + str(comp), hue=category, kde=True, ax=ax)
+
+
+def gene_plot_cells(X: anndata.AnnData, genes: np.array, hue: str, ax, unique=None, average=False):
+    """Plots two genes on either a per cell or per cell type basis"""
+    adata = deepcopy(X)
+    adata = adata[:, [genes[0], genes[1]]]
+    dataDF = pd.DataFrame(columns=genes, data=adata.X)
+    dataDF[hue] = adata.obs[hue]
+    if unique is not None:
+        dataDF.loc[adata.obs[hue] != unique, hue] = "Other"
+    if average:
+        dataDF = dataDF.groupby([hue]).mean()
+    sns.scatterplot(data=dataDF, x=genes[0], y=genes[1], hue=hue, ax=ax)
+
+
+def gene_plot_conditions(X: anndata.AnnData, condition: str, genes: np.array, ax, unique=None):
+    """Plots two genes on either a per cell or per cell type basis"""
+    adata = deepcopy(X)
+    adata = adata[:, [genes[0], genes[1]]]
+    dataDF = pd.DataFrame(columns=genes, data=adata.X)
+    dataDF[condition] = adata.obs[condition]
+    dataDF = dataDF.groupby([condition]).mean()
+    if unique is not None:
+        dataDF.loc[adata.obs[condition] != unique, condition] = "Other"
+    sns.scatterplot(data=dataDF, x=genes[0], y=genes[1], hue=condition, ax=ax)
