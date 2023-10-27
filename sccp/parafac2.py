@@ -1,9 +1,29 @@
+from typing import Sequence
 import numpy as np
 import anndata
 import tensorly as tl
 from pacmap import PaCMAP
 from parafac2 import parafac2_nd
 from .imports import import_citeseq, import_lupus, import_thomson
+from tensorly.parafac2_tensor import parafac2_to_slice
+
+
+def cwSNR(
+    matrices: Sequence,
+    weights: np.ndarray,
+    factors: list[np.ndarray],
+    projections: list[np.ndarray],
+):
+    """Calculate the columnwise signal-to-noise ratio for each dataset."""
+    SNR = np.empty((len(matrices), len(weights)), dtype=float)
+
+    for i, mat in enumerate(matrices):
+        xx = parafac2_to_slice((weights, factors, projections), i, validate=False)
+
+        SNR[i, :] = (factors[0][i, :] * weights) ** 2.0
+        SNR[i, :] /= np.linalg.norm(mat - xx) ** 2.0
+
+    return SNR
 
 
 def pf2(
@@ -36,16 +56,17 @@ def pf2(
     X.uns["Pf2_weights"] = weight
     X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"] = factors
     X.uns["cov_ratio"] = cov_var / cov_total
+    X.uns["cvSNR"] = cwSNR(X_pf, weight, factors, projs)
 
     X.obsm["projections"] = np.zeros((X.shape[0], rank))
     for i, p in enumerate(projs):
-        X.obsm["projections"][sgIndex == i, :] = p # type: ignore
+        X.obsm["projections"][sgIndex == i, :] = p  # type: ignore
 
     X.obsm["weighted_projections"] = X.obsm["projections"] @ X.uns["Pf2_B"]
 
     if doEmbedding:
         pcm = PaCMAP(random_state=random_state)
-        X.obsm["embedding"] = pcm.fit_transform(X.obsm["projections"]) # type: ignore
+        X.obsm["embedding"] = pcm.fit_transform(X.obsm["projections"])  # type: ignore
 
     return X
 
