@@ -8,18 +8,25 @@ from .common import (
 )
 from .commonFuncs.plotUMAP import plotLabelsUMAP
 from ..gating import gateThomsonCells
+from ..parafac2 import pf2
+from ..imports import import_thomson
+
+
 
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((16, 16), (4, 4))
+    ax, f = getSetup((16, 16), (1, 2))
 
     # Add subplot labels
     subplotLabel(ax)
     rank = 30
     X = openPf2(rank, "Thomson")
+    # X = import_thomson()
+    # X= pf2(X, "Condition", rank)
+    
 
     gateThomsonCells(X)
     plotLabelsUMAP(X, "Cell Type", ax[0])
@@ -44,6 +51,9 @@ def makeFigure():
 
     # set3 = ["VPREB3", "CD79A", "FAM111B", "HOPX", "SLC30A3", "MS4A1"]
     # set4 = ["CD163", "ADORA3", "MS4A6A", "RNASE1", "MTMR11"]
+
+
+
 
     # glucs = [
     #     "Betamethasone Valerate",
