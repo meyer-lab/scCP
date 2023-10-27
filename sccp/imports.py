@@ -6,6 +6,13 @@ import scanpy as sc
 
 def prepare_dataset(X):
     assert np.amin(X.X) == 0.0
+        
+    # assert np.all(np.isfinite(X.X.data))
+    # X.X = X.X.todense()
+    # X = X[:, np.mean(X.X > 0, axis=0) > 0.001]
+    # X.X /= np.sum(X.X, axis=0)
+    # X.X = np.log10((1000 * X.X) + 1) 
+    # assert np.all(np.isfinite(X.X.data))
 
     sc.pp.normalize_total(X)
     sc.pp.log1p(X)
