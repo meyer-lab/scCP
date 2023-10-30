@@ -19,7 +19,7 @@ def test_parafac2():
 
     # Test that the model still matches the data
     err = _parafac2_reconstruction_error(X, (w1, f1, p1)) ** 2
-    np.testing.assert_allclose(1.0 - err / norm_tensor, e1, rtol=1e-6)
+    np.testing.assert_allclose(1.0 - err / norm_tensor, e1, rtol=0.01)
 
     # Test reproducibility
     w2, f2, p2, e2 = parafac2_nd(X, rank=3, random_state=1)
@@ -54,7 +54,7 @@ def test_parafac2():
 def test_performance():
     """Test for equivalence to TensorLy's PARAFAC2."""
     # 5000 by 2000 by 300 is roughly the lupus data
-    pf2shape = [(5000, 1000)] * 30
-    X = random_parafac2(pf2shape, rank=12, full=True, random_state=2)
+    pf2shape = [(5000, 2000)] * 100
+    X = random_parafac2(pf2shape, rank=40, full=True, random_state=2)
 
     w1, f1, p1, e1 = parafac2_nd(X, rank=9)

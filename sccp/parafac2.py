@@ -1,18 +1,17 @@
 import os
-from tqdm import tqdm
-from copy import deepcopy
 from typing import Sequence
 import numpy as np
+from tqdm import tqdm
 import anndata
 import tensorly as tl
 import torch
 from pacmap import PaCMAP
 from .imports import import_citeseq, import_lupus, import_thomson
 from tensorly.parafac2_tensor import parafac2_to_slice
-from tensorly.cp_tensor import cp_flip_sign, CPTensor, cp_normalize
-from tensorly.tenalg.svd import randomized_svd, truncated_svd
-from tensorly.decomposition import non_negative_parafac_hals
-from tensorly.decomposition._parafac2 import _parafac2_reconstruction_error, _compute_projections, _project_tensor_slices
+from tensorly.cp_tensor import cp_flip_sign, CPTensor
+from tensorly.tenalg.svd import randomized_svd
+from tensorly.decomposition._parafac2 import parafac2, _parafac2_reconstruction_error
+from tensorly.preprocessing import svd_decompress_parafac2_tensor
 from scipy.optimize import linear_sum_assignment
 
 
@@ -94,34 +93,31 @@ def runAndSavePf2():
     X.write("Thomson_analyzed_30comps.h5ad")
 
 
-def _cmf_reconstruction_error(matrices: Sequence, factors: list, norm_X_sq):
-    A, B, C = factors
+def svd_compress_tensor_slices(tensor_slices, rng, maxrank=500):
+    r"""Compress data with the SVD for running PARAFAC2."""
+    loading_matrices = [None for _ in tensor_slices]
+    score_matrices = [None for _ in tensor_slices]
 
-    norm_sq_err = norm_X_sq
-    CtC = C.T @ C
-    projections = []
-    projected_X = []
+    for i, tensor_slice in tqdm(enumerate(tensor_slices), total=len(tensor_slices)):
+        n_rows, n_cols = np.shape(tensor_slice)
+        if n_rows <= n_cols:
+            score_matrices[i] = torch.tensor(tensor_slice, device="cuda", dtype=torch.float64)
+            continue
 
-    for i, mat in enumerate(matrices):
-        if isinstance(B, torch.Tensor):
-            mat_gpu = torch.tensor(mat).cuda().double()
-        else:
-            mat_gpu = mat
+        U, s, Vh = tl.tenalg.svd.randomized_svd(
+            torch.tensor(tensor_slice, device="cuda", dtype=torch.float64),
+            n_eigenvecs=min(n_cols, maxrank),
+            random_state=rng,
+        )
 
-        lhs = B @ (A[i] * C).T
-        U, _, Vh = truncated_svd(mat_gpu @ lhs.T, A.shape[1])
-        proj = U @ Vh
+        # Array broadcasting happens at the last dimension, since Vh is num_svds x n_cols
+        # we need to transpose it, multiply in the singular values and then transpose
+        # it again. This is equivalen to writing diag(s) @ Vh. If we skip the
+        # transposes, we would get Vh @ diag(s), which is wrong.
+        score_matrices[i] = tl.transpose(s * tl.transpose(Vh)).to(torch.float64)
+        loading_matrices[i] = U.numpy(force=True)
 
-        projections.append(proj)
-        projected_X.append(proj.T @ mat_gpu)
-
-        B_i = (proj @ B) * A[i]
-
-        # trace of the multiplication products
-        norm_sq_err -= 2.0 * tl.trace(A[i][:, np.newaxis] * B.T @ projected_X[-1] @ C)
-        norm_sq_err += ((B_i.T @ B_i) * CtC).sum()
-
-    return norm_sq_err, projections, projected_X
+    return score_matrices, loading_matrices
 
 
 @torch.inference_mode()
@@ -129,7 +125,7 @@ def parafac2_nd(
     X_in: Sequence,
     rank: int,
     n_iter_max: int = 200,
-    tol: float = 1e-6,
+    tol: float = 1e-7,
     random_state=None,
 ) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray], float]:
     r"""The same interface as regular PARAFAC2."""
@@ -138,11 +134,6 @@ def parafac2_nd(
     # Verbose if this is not an automated build
     verbose = "CI" not in os.environ
 
-    acc_pow: float = 2.0  # Extrapolate to the iteration^(1/acc_pow) ahead
-    acc_fail: int = 0  # How many times acceleration have failed
-
-    norm_tensor = np.sum([np.linalg.norm(xx) ** 2 for xx in X_in])
-
     # Checks size of each experiment is bigger than rank
     for i in range(len(X_in)):
         assert np.shape(X_in[i])[0] > rank
@@ -150,109 +141,78 @@ def parafac2_nd(
     # Checks size of signal measured is bigger than rank
     assert np.shape(X_in[0])[1] > rank
 
+    print("Compressing tensor slices")
+    tl.set_backend("pytorch")
+    score_matrices, loading_matrices = svd_compress_tensor_slices(X_in, rng)
+
     # Assemble covariance matrix rather than concatenation
     # This saves memory and should be faster
-    covM = X_in[0].T @ X_in[0]
-    for i in range(1, len(X_in)):
-        covM += X_in[i].T @ X_in[i]
+    covM = score_matrices[0].T @ score_matrices[0]
+    for i in range(1, len(score_matrices)):
+        covM += score_matrices[i].T @ score_matrices[i]
 
     C = randomized_svd(covM, rank, random_state=rng, n_iter=4)[0]
 
-    tl.set_backend("pytorch")
-    CP = CPTensor(
+    CPinit = CPTensor(
         (
             None,
             [
-                tl.ones((len(X_in), rank)).cuda().double(),
-                tl.eye(rank).cuda().double(),
-                torch.tensor(C).cuda().double(),
+                torch.ones(
+                    (len(score_matrices), rank), device="cuda", dtype=torch.float64
+                ),
+                torch.eye(rank, device="cuda", dtype=torch.float64),
+                C,
             ],
         )
     )
 
-    errs = []
-
-    tq = tqdm(range(n_iter_max), disable=(not verbose))
-    for iter in tq:
-        err, projections, projected_X = _cmf_reconstruction_error(
-            X_in, CP.factors, norm_tensor
-        )
-
-        # Initiate line search
-        if iter % 2 == 0 and iter > 5:
-            jump = iter ** (1.0 / acc_pow)
-
-            # Estimate error with line search
-            CP_ls = deepcopy(CP)
-            CP_ls.factors = [
-                CP_old.factors[ii] + (CP.factors[ii] - CP_old.factors[ii]) * jump
-                for ii in range(3)
-            ]
-            err_ls, projections_ls, projected_X_ls = _cmf_reconstruction_error(
-                X_in, CP_ls.factors, norm_tensor
-            )
-
-            if err_ls < err:
-                acc_fail = 0
-                err = err_ls
-                projections = projections_ls
-                projected_X = projected_X_ls
-                CP = CP_ls
-            else:
-                acc_fail += 1
-
-                if acc_fail >= 4:
-                    acc_pow += 1.0
-                    acc_fail = 0
-
-                    if verbose:
-                        print("Reducing acceleration.")
-
-        errs.append(tl.to_numpy((err / norm_tensor).cpu()))
-
-        # Project tensor slices
-        projected_X = tl.stack(projected_X)
-
-        CP_old: CPTensor = deepcopy(CP)
-        CP = non_negative_parafac_hals(
-            projected_X,
-            rank,
-            n_iter_max=10,
-            nn_modes=(0, ),
-            init=CP,
-            tol=False,
-            normalize_factors=False,
-        )
-
-        if iter > 1:
-            delta = errs[-2] - errs[-1]
-            tq.set_postfix(R2X=1.0 - errs[-1], Δ=delta, refresh=False)
-
-            if delta < tol:
-                break
-
-    R2X = 1 - errs[-1]
+    weights, factors, projections = parafac2(
+        score_matrices,
+        rank,
+        n_iter_max=n_iter_max,
+        init=CPinit,  # type: ignore
+        svd="truncated_svd",
+        normalize_factors=True,
+        tol=tol,
+        nn_modes=(0,),
+        random_state=rng,
+        verbose=verbose,
+        n_iter_parafac=5,
+        linesearch=True,
+    )
     tl.set_backend("numpy")
 
-    gini_idx = giniIndex(tl.to_numpy(CP.factors[0].cpu()))
-    assert gini_idx.size == rank
+    weights = weights.numpy(force=True)
+    factors = [f.numpy(force=True) for f in factors]
+    projections = [p.numpy(force=True) for p in projections]
 
-    CP.factors = [f.numpy(force=True)[:, gini_idx] for f in CP.factors]
-    CP.weights = CP.weights.numpy(force=True)[gini_idx]
+    weights, factors, projections = svd_decompress_parafac2_tensor(
+        (weights, factors, projections), loading_matrices
+    )
 
-    CP = cp_normalize(cp_flip_sign(CP, mode=1))
+    gini_idx = giniIndex(factors[0])
+
+    factors = [f[:, gini_idx] for f in factors]
+    weights = weights[gini_idx]
+
+    weights, factors = cp_flip_sign((weights, factors), mode=1)
 
     # Maximize the diagonal of B
-    _, col_ind = linear_sum_assignment(np.abs(CP.factors[1].T), maximize=True)
-    CP.factors[1] = CP.factors[1][col_ind, :]
-    projections = [p.numpy(force=True)[:, col_ind] for p in projections]
+    _, col_ind = linear_sum_assignment(np.abs(factors[1].T), maximize=True)
+    factors[1] = factors[1][col_ind, :]
+    projections = [p[:, col_ind] for p in projections]
 
     # Flip the sign based on B
-    signn = np.sign(np.diag(CP.factors[1]))
-    CP.factors[1] *= signn[:, np.newaxis]
+    signn = np.sign(np.diag(factors[1]))
+    factors[1] *= signn[:, np.newaxis]
     projections = [p * signn for p in projections]
 
-    return CP.weights, CP.factors, projections, R2X
+    # Calculate R2X
+    norm_tensor = np.sum([np.linalg.norm(xx) ** 2 for xx in X_in])
+    err = _parafac2_reconstruction_error(X_in, (weights, factors, projections)) ** 2
+    R2X = 1.0 - err / norm_tensor
+
+    return weights, factors, projections, R2X
 
 
 def giniIndex(X: np.ndarray) -> np.ndarray:
