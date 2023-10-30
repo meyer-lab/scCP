@@ -8,12 +8,13 @@ from .common import (
 )
 from .commonFuncs.plotUMAP import plotLabelsUMAP
 from ..gating import gateThomsonCells
+import seaborn as sns
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((16, 16), (4, 4))
+    ax, f = getSetup((8, 10), (4, 4))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -24,8 +25,24 @@ def makeFigure():
     print(X.varm["Pf2_C"].shape)
 
     gateThomsonCells(X)
-    plotLabelsUMAP(X, "Cell Type", ax[0])
-    plotLabelsUMAP(X, "Cell Type2", ax[1])
+    # plotLabelsUMAP(X, "Cell Type", ax[0])
+    # plotLabelsUMAP(X, "Cell Type2", ax[1])
+    
+    # X = X[:, ["PF4", "SDPR", "GNG11", "PPBP"]]
+    
+    print(X.obs["Processing_Cohort"])
+    # for
+
+    #     sns.histplot(X[:, "PF4"].X, ax=ax[0], bins=100)
+    #     sns.histplot(X[:, "GNG11"].X, ax=ax[1], bins=100)
+    #     sns.histplot(X[:, "PPBP"].X, ax=ax[2], bins=100)
+    #     ax[0].set_yscale('log')
+    #     ax[1].set_yscale('log')
+    #     ax[2].set_yscale('log')
+    #     ax[0].set(xlabel="Gene Expression", title="PF4")
+    #     ax[1].set(xlabel="Gene Expression", title="GNG11")
+    #     ax[2].set(xlabel="Gene Expression", title="PPBP")
+    # sns.histplot(X[:, "SDPR"].X, ax=ax[3])
 
     # weightedProjDF = flattenWeightedProjs(data, factors[1], projs)
     # weightedProjDF["Cell Type"] = dataDF["Cell Type"].values
