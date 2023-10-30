@@ -50,7 +50,8 @@ def import_thomson() -> anndata.AnnData:
     )
 
     # Workaround to not trigger conversion to dense
-    X._obs = pd.DataFrame({"Condition": pd.Categorical(metafile["sample_id"])})
+    # X._obs = pd.DataFrame({"Condition": pd.Categorical(metafile["sample_id"])})
+    X.obs["Condition"] = pd.Categorical(metafile["sample_id"])
 
     return prepare_dataset(X)
 
