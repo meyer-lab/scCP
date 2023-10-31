@@ -1,47 +1,51 @@
+from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 import pandas as pd
 import anndata
 import scanpy as sc
+from scipy.sparse import spmatrix
 
 
-def prepare_dataset(X):
+def prepare_dataset(X: anndata.AnnData) -> anndata.AnnData:
     assert np.amin(X.X) == 0.0
 
-    sc.pp.normalize_total(X)
-    sc.pp.log1p(X)
-    sc.pp.highly_variable_genes(X, n_top_genes=4000)
+    # Convert to dense to simplify slicing
+    if isinstance(X.X, spmatrix):
+        X.X = X.X.toarray()
 
-    X = X[:, X.var["highly_variable"]]
+    # Filter out genes that show up in very few cells
+    X = X[:, np.sum(X.X > 0, axis=0) > 100]
 
-    # Read normalize the genes
+    # Filter out genes with too few reads
+    X = X[:, np.sum(X.X, axis=0) > 1000]
+
+    # Filter out cells with too few reads
+    X = X[np.sum(X.X, axis=1) > 100, :]
+
     X.X /= np.sum(X.X, axis=0)
-    X.X = X.X.tocsr()
+    X.X = np.log10((1000 * X.X) + 1)
 
-    print(X.shape)
-    print(X.X.nnz / X.X.shape[0] / X.X.shape[1])
+    assert np.all(np.isfinite(X.X))
     return X
 
 
 def import_thomson() -> anndata.AnnData:
     """Import Thompson lab PBMC dataset."""
     # Cell barcodes, sample id of treatment and sample number (33482, 3)
-    metafile = pd.read_csv("sccp/data/Thomson/meta.csv")
-
-    # Cell barcodes (33482)
-    barcodes = pd.read_csv(
-        "sccp/data/Thomson/barcodes.tsv", sep="\t", header=None, names=("cell_barcode",)
-    )
-
-    # Left merging should put the barcodes in order
-    metafile = pd.merge(
-        barcodes, metafile, on="cell_barcode", how="left", validate="one_to_one"
-    )
+    metafile = pd.read_csv("sccp/data/Thomson/meta.csv", usecols=[0, 1])
 
     # read in actual data
     X = sc.read_10x_mtx(
         "/opt/andrew/Thomson/", var_names="gene_symbols", make_unique=True
     )
-    X.obs["Condition"] = pd.Categorical(metafile["sample_id"])
+    obs = X.obs.reset_index(names="cell_barcode")
+
+    # Left merging should put the barcodes in order
+    metafile = pd.merge(
+        obs, metafile, on="cell_barcode", how="left", validate="one_to_one"
+    )
+
+    X.obs = pd.DataFrame({"cell_barcode": metafile["cell_barcode"], "Condition": pd.Categorical(metafile["sample_id"])})
 
     return prepare_dataset(X)
 
@@ -92,12 +96,19 @@ def import_citeseq() -> anndata.AnnData:
     """Imports 5 datasets from Hamad CITEseq."""
     files = ["control", "ic_pod1", "ic_pod7", "sc_pod1", "sc_pod7"]
 
-    data = {
-        k: sc.read_10x_mtx(
-            "/opt/andrew/HamadCITEseq/" + k, gex_only=False, make_unique=True
-        )
-        for k in files
-    }
+    with ProcessPoolExecutor(max_workers=5) as executor:
+        futures = [
+            executor.submit(
+                sc.read_10x_mtx,
+                "/opt/andrew/HamadCITEseq/" + k,
+                gex_only=False,
+                make_unique=True,
+            )
+            for k in files
+        ]
+
+        data = {k: futures[i].result() for i, k in enumerate(files)}
+
     X = anndata.concat(data, merge="same", label="Condition")
 
     return prepare_dataset(X)

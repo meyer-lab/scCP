@@ -1,9 +1,11 @@
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import scanpy as sc
+import anndata
+from copy import deepcopy
 from ...crossVal import CrossVal
 from ...decomposition import R2X
-import anndata
 
 
 def plotR2X(data, rank, ax):
@@ -147,6 +149,126 @@ def plotGeneFactors(cmp: int, dataIn: anndata.AnnData, axs, geneAmount: int = 20
 
 def population_bar_chart(adata: anndata.AnnData, cellType: str, category: str, ax):
     """Plots proportion of cells by type stratified by an identifying condition or patient attribute (i.e. Lupus Status)"""
-    cellDF = pd.crosstab(adata.obs[category],adata.obs[cellType], normalize='index')
-    cellDF.plot.bar(ax=ax, stacked=True).legend(loc='upper right')
-    ax.set(ylim=(0, 1), ylabel= "Proportion of Cells")
+    cellDF = pd.crosstab(adata.obs[category], adata.obs[cellType], normalize="index")
+    cellDF.plot.bar(ax=ax, stacked=True).legend(loc="upper right")
+    ax.set(ylim=(0, 1), ylabel="Proportion of Cells")
+
+
+def cell_comp_hist(X, category: str, comp: int, unique, ax):
+    """Plots weighted projections of each cell according to category"""
+    w_proj = X.obsm["weighted_projections"][:, comp - 1]
+    obsDF = pd.DataFrame({category: X.obs[category].astype(str).values})
+    w_proj = X.obsm["weighted_projections"][:, comp - 1]
+    if category is not None:
+        if unique is not None:
+            obsDF.loc[obsDF[category] != unique, category] = "Other"
+        labels = obsDF[category]
+        # obsDF[category] = obsDF[category].astype(str)
+        histDF = pd.DataFrame({"Component " + str(comp): w_proj, category: labels})
+        sns.histplot(
+            data=histDF, x="Component " + str(comp), hue=category, kde=True, ax=ax
+        )
+
+
+def gene_plot_cells(
+    X: anndata.AnnData, genes, hue: str, ax, unique=None, average=False, kde=False
+):
+    """Plots two genes on either a per cell or per cell type basis"""
+    adata = X[:, [genes[0], genes[1]]]
+    sc.pp.subsample(adata, fraction=0.01, random_state=0)
+    dataDF = pd.DataFrame(columns=genes, data=adata.X)
+    dataDF[hue] = adata.obs[hue].values
+    alpha = 0.3
+    if unique is not None:
+        dataDF[hue] = dataDF[hue].astype(str)
+        dataDF.loc[dataDF[hue] != unique, hue] = "Other"
+    if average:
+        dataDF = dataDF.groupby([hue], observed=True).mean()
+        alpha = 1
+    sns.scatterplot(
+        data=dataDF, x=genes[0], y=genes[1], hue=hue, ax=ax, size=-0.1, alpha=alpha
+    )
+    if kde:
+        sns.kdeplot(
+            data=dataDF,
+            x=genes[0],
+            y=genes[1],
+            hue=hue,
+            levels=5,
+            fill=True,
+            alpha=0.3,
+            cut=2,
+            ax=ax,
+        )
+
+
+def gene_plot_conditions(X, condition: str, genes, ax, hue=None, unique=None):
+    """Plots two genes on either a per cell or per cell type basis"""
+    adata = X[:, [genes[0], genes[1]]]
+    sc.pp.subsample(adata, fraction=0.01, random_state=0)
+
+    dataDF = pd.DataFrame(columns=genes, data=adata.X)
+    dataDF[condition] = adata.obs[condition].values
+    dataDF[condition] = dataDF[condition].astype("str")
+    if hue:
+        dataDF[hue] = adata.obs[hue].values
+        dataDF[hue] = dataDF[hue].astype("str")
+        dataDF = dataDF.groupby([condition, hue]).mean()
+    else:
+        dataDF = dataDF.groupby([condition]).mean()
+    if unique is not None:
+        dataDF[condition] = dataDF[condition].astype(str)
+        dataDF.loc[dataDF[condition] != unique, condition] = "Other"
+    if hue is not None:
+        sns.scatterplot(
+            data=dataDF, x=genes[0], y=genes[1], hue=hue, ax=ax, size=-0.1, alpha=5
+        )
+    else:
+        sns.scatterplot(
+            data=dataDF, x=genes[0], y=genes[1], ax=ax, size=-0.1, alpha=0.2
+        )
+
+
+def geneSig_plot_cells(X, comps, hue: str, ax, unique=None, average=False, kde=False):
+    """Plots two genes on either a per cell or per cell type basis"""
+
+    geneSigDF = pd.DataFrame()
+    geneVecs = X.varm["Pf2_C"][:, comps]
+    for i, _ in enumerate(comps):
+        geneSigDF[str(comps[i])] = np.matmul(X.X, geneVecs[:, i])
+
+    geneSigDF[hue] = X.obs[hue].values
+    geneSigDF = geneSigDF.sample(n=10000)
+    alpha = 0.3
+
+    if unique is not None:
+        geneSigDF[hue] = geneSigDF[hue].astype(str)
+        geneSigDF.loc[geneSigDF[hue] != unique, hue] = "Other"
+    if average:
+        geneSigDF = geneSigDF.groupby([hue], observed=True).mean()
+        alpha = 1
+    sns.scatterplot(
+        data=geneSigDF,
+        x=str(comps[0]),
+        y=str(comps[1]),
+        hue=hue,
+        ax=ax,
+        size=-0.1,
+        alpha=alpha,
+    )
+    if kde:
+        sns.kdeplot(
+            data=geneSigDF,
+            x=str(comps[0]),
+            y=str(comps[1]),
+            hue=hue,
+            levels=5,
+            fill=True,
+            alpha=0.3,
+            cut=2,
+            ax=ax,
+        )
+    ax.set(
+        xlabel="Comp. " + str(comps[0]) + " Signature",
+        ylabel="Comp. " + str(comps[1]) + " Signature",
+    )

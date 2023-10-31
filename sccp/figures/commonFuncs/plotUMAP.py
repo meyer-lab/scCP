@@ -8,6 +8,7 @@ import datashader as ds
 import datashader.transfer_functions as tf
 from matplotlib.patches import Patch
 import anndata
+from scipy.sparse import spmatrix
 
 
 def _get_canvas(points: np.ndarray):
@@ -45,7 +46,10 @@ def ds_show(result, ax):
 
 def plotGeneUMAP(gene: str, decompType: str, X: anndata.AnnData, ax: Axes):
     """Scatterplot of UMAP visualization weighted by gene"""
-    geneList = X[:, gene].X.toarray().flatten()
+    geneList = X[:, gene].X
+    if isinstance(geneList, spmatrix):
+        geneList = geneList.toarray()
+
     geneList = np.clip(geneList, None, np.quantile(geneList, 0.99))
     cmap = sns.color_palette("ch:s=-.2,r=.6", as_cmap=True)
 
@@ -111,11 +115,8 @@ def plotLabelsUMAP(X: anndata.AnnData, labelType: str, ax: Axes, condition=None,
     labels = X.obs[labelType]
 
     if condition is not None:
-        labels = np.array([c if c in condition else "Other" for c in labels])
-    
-    if conditionName is not None:
-        labels = np.array([c if c in "Other" else conditionName for c in labels])
-    
+        labels = pd.Series([c if c in condition else "Other" for c in labels])
+
     indices = np.argsort(labels)
     
     if cmp1 and cmp2 is not None:
@@ -124,7 +125,7 @@ def plotLabelsUMAP(X: anndata.AnnData, labelType: str, ax: Axes, condition=None,
         X.obsm["embedding"] = 1000 * p
     
     points = X.obsm["embedding"][indices, :]
-    labels = labels[indices]
+    labels = labels.iloc[indices]
 
     canvas = _get_canvas(points)
     data = pd.DataFrame(points, columns=("x", "y"))
