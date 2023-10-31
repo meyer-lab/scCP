@@ -71,17 +71,15 @@ def genFigure():
     ff = makeFigure()
 
     if ff is not None:
-        ff.savefig(f"./output/{nameOut}.svg", dpi=300, bbox_inches="tight", pad_inches=0)
+        ff.savefig(
+            f"./output/{nameOut}.svg", dpi=300, bbox_inches="tight", pad_inches=0
+        )
 
     print(f"Figure {sys.argv[1]} is done after {time.time() - start} seconds.\n")
 
 
-def savePf2(X: anndata.AnnData, dataName: str):
-    """Saves weight factors and projections for one dataset for a component"""
-    rank = X.uns["Pf2_A"].shape[1]
-    X.write(f"{dataName}_analyzed_{rank}comps.h5ad")
-
-
 def openPf2(rank: int, dataName: str) -> anndata.AnnData:
     """Opens weight factors and projections for one dataset for a component as numpy arrays"""
-    return anndata.read_h5ad(f"/opt/andrew/{dataName}_analyzed_{rank}comps.h5ad")
+    return anndata.read_h5ad(
+        f"/opt/andrew/{dataName}_analyzed_{rank}comps.h5ad", backed="r"
+    )

@@ -6,9 +6,8 @@ from .common import (
     getSetup,
     openPf2,
 )
-from .commonFuncs.plotGeneral import plotGenePerCellType, plotGenePerCategCond
-from .commonFuncs.plotUMAP import plotCmpPerCellType, plotCmpUMAP, points
-from ..imports.gating import gateThomsonCells
+from .commonFuncs.plotUMAP import plotLabelsUMAP
+from ..gating import gateThomsonCells
 
 
 def makeFigure():
@@ -18,14 +17,15 @@ def makeFigure():
 
     # Add subplot labels
     subplotLabel(ax)
-
     rank = 30
     X = openPf2(rank, "Thomson")
+    print(X.uns["Pf2_A"].shape)
+    print(X.uns["Pf2_B"].shape)
+    print(X.varm["Pf2_C"].shape)
 
-    X.obs["Cell Type"] = gateThomsonCells(X)
-
-    points(X.obsm["embedding"], labels=X.obs["Cell Type"].values, ax=ax[0])
-    ax[0].set(ylabel="UMAP2", xlabel="UMAP1")
+    gateThomsonCells(X)
+    plotLabelsUMAP(X, "Cell Type", ax[0])
+    plotLabelsUMAP(X, "Cell Type2", ax[1])
 
     # weightedProjDF = flattenWeightedProjs(data, factors[1], projs)
     # weightedProjDF["Cell Type"] = dataDF["Cell Type"].values

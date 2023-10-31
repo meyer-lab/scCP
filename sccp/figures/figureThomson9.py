@@ -4,7 +4,7 @@ Thomson: Boxplots of weighted projectoins per component
 import numpy as np
 from .common import getSetup, openPf2
 from .commonFuncs.plotUMAP import plotCmpPerCellType
-from ..imports.gating import gateThomsonCells
+from ..gating import gateThomsonCells
 
 
 def makeFigure():
@@ -15,7 +15,7 @@ def makeFigure():
     rank = 30
     X = openPf2(rank, "Thomson")
 
-    X.obs["Cell Type"] = gateThomsonCells(X)
+    gateThomsonCells(X)
 
     component = np.arange(1, rank + 1, 1)
     for i, comp in enumerate(component):

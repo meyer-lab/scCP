@@ -1,14 +1,19 @@
-import seaborn as sns
-import pandas as pd
-from matplotlib import pyplot as plt
+from typing import Optional
 import numpy as np
+import pandas as pd
+import seaborn as sns
+from matplotlib import pyplot as plt
 import scipy.cluster.hierarchy as sch
 from matplotlib.patches import Patch
-import pandas as pd
 
 
 def plotFactors(
-    factors, data, axs, reorder=tuple(), trim=tuple(), cond_group_labels=None
+    factors,
+    data,
+    axs,
+    reorder=tuple(),
+    trim=tuple(),
+    cond_group_labels: Optional[pd.Series] = None,
 ):
     """Plots parafac2 factors."""
     pd.set_option("display.max_rows", None)
@@ -39,7 +44,7 @@ def plotFactors(
             X, ind = reorder_table(X)
             yt = [yt[ii] for ii in ind]
             if i == 0 and not (cond_group_labels is None):
-                cond_group_labels = cond_group_labels[ind]
+                cond_group_labels = cond_group_labels.iloc[ind]
 
         X = X / np.max(np.abs(X))
 

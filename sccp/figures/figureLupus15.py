@@ -5,12 +5,13 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from .common import subplotLabel, getSetup, openPf2
+from .commonFuncs.plotGeneral import population_bar_chart
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((10, 8), (4, 3))
+    ax, f = getSetup((10, 10), (5, 3))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -19,11 +20,18 @@ def makeFigure():
 
     df = X.obs[["Cell Type", "SLE_status", "Condition"]].reset_index(drop=True)
 
-    dfCond = df.groupby(["Condition"]).size().reset_index(name="Cell Number")
+    dfCond = (
+        df.groupby(["Condition"], observed=True).size().reset_index(name="Cell Number")
+    )
     sns.histplot(data=dfCond, x="Cell Number", bins=15, color="k", ax=ax[0])
     ax[0].set(ylabel="# of Experiments")
 
-    dfCellType = df.groupby(["Cell Type", "Condition"]).size().reset_index(name="Count")
+    dfCellType = (
+        df.groupby(["Cell Type", "Condition"], observed=True)
+        .size()
+        .reset_index(name="Count")
+    )
+    dfCellType["Count"] = dfCellType["Count"].astype("float")
     for i, cond in enumerate(pd.unique(df["Condition"])):
         dfCellType.loc[dfCellType["Condition"] == cond, "Count"] = (
             100
@@ -41,5 +49,7 @@ def makeFigure():
             ax=ax[i + 1],
         )
         ax[i + 1].set(title=celltype, ylabel="# of Experiments")
+
+    population_bar_chart(X, "Cell Type", "SLE_status", ax[12])
 
     return f
