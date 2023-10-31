@@ -116,13 +116,16 @@ def plotLabelsUMAP(X: anndata.AnnData, labelType: str, ax: Axes, condition=None,
 
     if condition is not None:
         labels = pd.Series([c if c in condition else "Other" for c in labels])
+        
+    if conditionName is not None:
+        labels = pd.Series([c if c in "Other" else conditionName for c in labels])
 
     indices = np.argsort(labels)
     
     if cmp1 and cmp2 is not None:
         p = np.vstack((X.obsm["weighted_projections"][:, cmp1 - 1], 
                X.obsm["weighted_projections"][:, cmp2 - 1])).transpose()
-        X.obsm["embedding"] = 1000 * p
+        X.obsm["embedding"] = 10000 * p
     
     points = X.obsm["embedding"][indices, :]
     labels = labels.iloc[indices]
@@ -135,7 +138,7 @@ def plotLabelsUMAP(X: anndata.AnnData, labelType: str, ax: Axes, condition=None,
 
     unique_labels = np.unique(labels)
     num_labels = unique_labels.shape[0]
-    color_key = _to_hex(plt.get_cmap("tab20")(np.linspace(0, 1, num_labels)))
+    color_key = _to_hex(plt.get_cmap("Set1")(np.linspace(0, 1, num_labels)))
     legend_elements = [
         Patch(facecolor=color_key[i], label=k) for i, k in enumerate(unique_labels)
     ]
@@ -149,6 +152,51 @@ def plotLabelsUMAP(X: anndata.AnnData, labelType: str, ax: Axes, condition=None,
     ds_show(result, ax)
     ax.legend(handles=legend_elements)
     ax.set(xticks=[], yticks=[])
+
+def plotLabelsUMAP2(X: anndata.AnnData, labelType: str, ax: Axes, condition=None, conditionName=None, cmp1=None, cmp2=None):
+    """Scatterplot of UMAP visualization weighted by condition or cell type"""
+    labels = X.obs[labelType]
+
+    if condition is not None:
+        labels = pd.Series([c if c in condition else "Other" for c in labels])
+        
+    if conditionName is not None:
+        labels = pd.Series([c if c in "Other" else conditionName for c in labels])
+
+    indices = np.argsort(labels)
+    
+    if cmp1 and cmp2 is not None:
+        
+        p = np.vstack((X.varm["Pf2_C"][:, cmp1 - 1], 
+               X.varm["Pf2_C"][:, cmp2 - 1])).transpose()
+        X.varm["embedding2"] = 1000000 * p
+    
+    points = X.varm["embedding2"][indices, :]
+    labels = labels.iloc[indices]
+
+    canvas = _get_canvas(points)
+    data = pd.DataFrame(points, columns=("x", "y"))
+
+    data["label"] = pd.Categorical(labels)
+    aggregation = canvas.points(data, "x", "y", agg=ds.count_cat("label"))
+
+    unique_labels = np.unique(labels)
+    num_labels = unique_labels.shape[0]
+    color_key = _to_hex(plt.get_cmap("Set1")(np.linspace(0, 1, num_labels)))
+    legend_elements = [
+        Patch(facecolor=color_key[i], label=k) for i, k in enumerate(unique_labels)
+    ]
+    result = tf.shade(
+        aggregation,
+        color_key=color_key,
+        how="eq_hist",
+        min_alpha=255,
+    )
+
+    ds_show(result, ax)
+    ax.legend(handles=legend_elements)
+    ax.set(xticks=[], yticks=[])
+
 
 
 def plotCmpPerCellType(X: anndata.AnnData, cmp: int, ax: Axes, outliers: bool = False):
