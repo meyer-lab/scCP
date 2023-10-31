@@ -1,8 +1,8 @@
 from copy import deepcopy
 import numpy as np
 from tensorly.tenalg.svd import randomized_svd
-from parafac2 import parafac2_nd
-from parafac2.parafac2 import _cmf_reconstruction_error
+from .parafac2 import parafac2_nd
+from tensorly.decomposition._parafac2 import _compute_projections
 from tensorly.parafac2_tensor import parafac2_to_slices
 
 
@@ -43,9 +43,7 @@ def crossvalidate_PCA(
     return 1.0 - recon_error / total_var
 
 
-def crossvalidate(
-    X, rank: int, trainPerc: float = 0.75, random_state=None
-) -> float:
+def crossvalidate(X, rank: int, trainPerc: float = 0.75, random_state=None) -> float:
     rng = np.random.default_rng(random_state)
 
     # Shuffle, rnd.shuffle handles the cell axis
@@ -65,7 +63,7 @@ def crossvalidate(
     fac_C = deepcopy(fac_B)
     fac_C[0] *= w_B[np.newaxis, :]
     fac_C[2] = fac_C[2][:X_C_idx, :]
-    _, proj, _ = _cmf_reconstruction_error(C_train, fac_C, 1.0)
+    proj = _compute_projections(C_train, fac_C, "truncated_svd")
 
     # Project projections into B space
     X_recon = parafac2_to_slices((w_B, fac_B, proj), validate=False)
@@ -87,9 +85,9 @@ def CrossVal(X, rank: int, trainPerc: float = 0.75):
     rank_vec = np.arange(1, rank + 1)
 
     # Collect Pf2 results
-    cv_pf2_error = [
-        crossvalidate(X.X_list, rank=rank, trainPerc=trainPerc) for r in rank_vec
-    ]
-    cv_pca_error = crossvalidate_PCA(X.unfold(), rank, trainPerc=trainPerc)
+    cv_pf2_error = [crossvalidate(X, rank=rank, trainPerc=trainPerc) for r in rank_vec]
+    cv_pca_error = crossvalidate_PCA(
+        np.concatenate(X, axis=0), rank, trainPerc=trainPerc
+    )
 
     return cv_pf2_error, cv_pca_error

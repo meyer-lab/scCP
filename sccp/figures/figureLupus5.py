@@ -1,45 +1,55 @@
 """
-S3b: Logistic Regression (and maybe SVM) on Pf2 Factor matrix A output
-article: https://www.science.org/doi/10.1126/science.abf1970
-data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
+Lupus: Plot logistic regression weights for SLE and/or ancestry
 """
-
-# GOAL: run logisitc regression to see which components are best able to predict disease status
-
-# load functions/modules ----
+import numpy as np
+import pandas as pd
+import seaborn as sns
 from .common import subplotLabel, getSetup, openPf2
 from .commonFuncs.plotLupus import plotCmpRegContributions
-from ..imports.scRNA import load_lupus_data
 from ..logisticReg import getCompContribs
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (1, 1))  # fig size  # grid size
+    ax, f = getSetup((5, 8), (2, 1))  #
 
     # Add subplot labels
     subplotLabel(ax)
 
     rank = 40
-    group_to_predict = "SLE_status"  # group to predict in logistic regression
+    predict = "SLE_status"
+    X = openPf2(rank, "Lupus")
+    condStatus = X.obs[["Condition", predict]].drop_duplicates()
+    condStatus = condStatus.set_index("Condition")
+    contribsStatus = getCompContribs(
+        X.uns["Pf2_A"], condStatus.to_numpy(), penalty_amt=50
+    )
+    plotCmpRegContributions(contribsStatus, predict, ax[0])
 
-    _, obs = load_lupus_data()
+    predict = "ancestry"
+    condStatus = X.obs[["Condition", predict]].drop_duplicates()
+    condStatus = condStatus.set_index("Condition")
+    condStatus[predict] = np.where(
+        condStatus[predict].isin(["European"]), condStatus[predict], "Other"
+    )
+    contribsAnc = getCompContribs(
+        X.uns["Pf2_A"], condStatus[predict].to_numpy(), penalty_amt=50
+    )
 
-    status = obs[["sample_ID", group_to_predict]].drop_duplicates()
+    contribsStatus["Predicting"] = np.repeat("SLE Status", contribsStatus.shape[0])
+    contribsAnc["Predicting"] = np.repeat("Euro-Ancestry", contribsAnc.shape[0])
+    contribs = pd.concat([contribsStatus, contribsAnc])
 
-    group_labs = status.set_index("sample_ID")[group_to_predict]
-
-    (
-        _,
-        factors,
-        _,
-    ) = openPf2(rank=rank, dataName="lupus", optProjs=True)
-
-    A_matrix = factors[0]
-
-    contribs = getCompContribs(A_matrix, group_labs.to_numpy(), penalty_amt=50)
-
-    plotCmpRegContributions(contribs, group_to_predict, ax[0])
+    sns.barplot(
+        data=contribs,
+        x="Component",
+        y="Weight",
+        hue="Predicting",
+        errorbar=None,
+        ax=ax[1],
+    )
+    ax[1].tick_params(axis="x", rotation=90)
+    ax[1].set_title("Weight of Pf2 Cmps in Logsitic Regression")
 
     return f

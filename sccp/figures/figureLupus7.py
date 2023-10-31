@@ -1,15 +1,8 @@
 """
-S3b: Logistic Regression (and maybe SVM) on Pf2 Factor matrix A output
-article: https://www.science.org/doi/10.1126/science.abf1970
-data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
+Lupus: Plot AUC ROC curve for logistic regression for each batch
 """
-
-# GOAL: run logisitc regression to see which components are best able to predict disease status
-
-# load functions/modules ----
 from .common import subplotLabel, getSetup, openPf2
 from .commonFuncs.plotLupus import plotROCAcrossGroups
-from ..imports.scRNA import load_lupus_data
 
 
 def makeFigure():
@@ -21,22 +14,16 @@ def makeFigure():
     subplotLabel(ax)
 
     rank = 40
-
-    _, factors, _ = openPf2(rank=rank, dataName="lupus", optProjs=True)
-
-    _, obs = load_lupus_data()
-
-    status = obs[["sample_ID", "SLE_status", "Processing_Cohort"]].drop_duplicates()
-
-    group_labs = status.set_index("sample_ID")[["SLE_status", "Processing_Cohort"]]
-
-    A_matrix = factors[0]
+    X = openPf2(rank, "Lupus")
+    predict = "SLE_status"
+    condStatus = X.obs[["Condition", predict, "Processing_Cohort"]].drop_duplicates()
+    condStatus = condStatus.set_index("Condition")
 
     plotROCAcrossGroups(
-        A_matrix,
-        group_labs,
+        X.uns["Pf2_A"],
+        condStatus,
         ax[0],
-        pred_group="SLE_status",
+        pred_group=predict,
         cv_group="Processing_Cohort",
     )
 

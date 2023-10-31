@@ -1,19 +1,12 @@
 """
-S3b: Logistic Regression (and maybe SVM) on Pf2 Factor matrix A output
-article: https://www.science.org/doi/10.1126/science.abf1970
-data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
+Lupus: Plot factor weights correlations for donor SLE prediction
 """
-
-# GOAL: run logisitc regression to see which components are best able to predict disease status
-
-# load functions/modules ----
 import itertools
 import numpy as np
 import seaborn as sns
 from sklearn.linear_model import LogisticRegression
 from sklearn import preprocessing
 from .common import subplotLabel, getSetup, openPf2
-from ..imports.scRNA import load_lupus_data
 
 
 def makeFigure():
@@ -24,18 +17,19 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    _, factors, _ = openPf2(rank=40, dataName="lupus", optProjs=True)
-    _, obs = load_lupus_data()
+    X = openPf2(rank=40, dataName="Lupus")
 
-    status = obs[["sample_ID", "SLE_status", "Processing_Cohort"]].drop_duplicates()
+    status = X.obs[
+        ["pool", "patient", "SLE_status", "Processing_Cohort"]
+    ].drop_duplicates()
 
-    Lupus_comp_scan_plot(ax[0], factors[0], status)
+    Lupus_comp_scan_plot(ax[0], X.uns["Pf2_A"], status)
 
     return f
 
 
 def Lupus_comp_scan_plot(ax, X, status_DF):
-    """Plot factor weights for donor BC prediction"""
+    """Plot factor weights for donor SLE prediction"""
     lrmodel = LogisticRegression(penalty=None)
     y = preprocessing.label_binarize(
         status_DF.SLE_status, classes=["Healthy", "SLE"]

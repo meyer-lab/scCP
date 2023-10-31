@@ -1,13 +1,7 @@
 """
-S3: Logisitic Regression (and maybe SVM) on Pf2 Factor matrix A output
-article: https://www.science.org/doi/10.1126/science.abf1970
-data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174188
+Lupus: Cross validation for determining optimal paramaters for logistic regression
 """
-
-# GOAL: Test various Pf2 ranks to see which best predicts disease status
-
-# load functions/modules ----
-from ..imports.scRNA import load_lupus_data
+from ..imports import import_lupus
 from ..logisticReg import testPf2Ranks
 from .common import (
     subplotLabel,
@@ -24,21 +18,22 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    lupus_tensor, obs = load_lupus_data()
+    X = import_lupus()
+    X = X.to_memory()
 
-    status = obs[["sample_ID", "SLE_status", "Processing_Cohort"]].drop_duplicates()
+    condStatus = X.obs[
+        ["Condition", "SLE_status", "Processing_Cohort"]
+    ].drop_duplicates()
+    condStatus = condStatus.set_index("Condition")
 
-    group_labs = status.set_index("sample_ID")[["SLE_status", "Processing_Cohort"]]
+    rank = [2, 3]
+    # results = testPf2Ranks(
+    #     X,
+    #     condStatus,
+    #     rank,
+    #     cv_group="Processing_Cohort",
+    # )
 
-    ranks_to_test = [2, 3]  # set to 2,3 for github test
-
-    results = testPf2Ranks(
-        lupus_tensor,
-        group_labs,
-        ranks_to_test,
-        cv_group="Processing_Cohort",
-    )
-
-    plotPf2RankTest(results, ax[0])
+    # plotPf2RankTest(results, ax[0])
 
     return f
