@@ -110,7 +110,7 @@ def plotCmpUMAP(X: anndata.AnnData, cmp: int, ax: Axes):
     ax.set(title="Cmp. " + str(cmp), xticks=[], yticks=[])
 
 
-def plotLabelsUMAP(X: anndata.AnnData, labelType: str, ax: Axes, condition=None, conditionName=None, cmp1=None, cmp2=None):
+def plotLabelsUMAP(X: anndata.AnnData, labelType: str, ax: Axes, condition=None, conditionName=None, cmp1=None, cmp2=None, type=None):
     """Scatterplot of UMAP visualization weighted by condition or cell type"""
     labels = X.obs[labelType]
 
@@ -123,79 +123,77 @@ def plotLabelsUMAP(X: anndata.AnnData, labelType: str, ax: Axes, condition=None,
     indices = np.argsort(labels)
     
     if cmp1 and cmp2 is not None:
-        p = np.vstack((X.obsm["weighted_projections"][:, cmp1 - 1], 
-               X.obsm["weighted_projections"][:, cmp2 - 1])).transpose()
-        X.obsm["embedding"] = 10000 * p
-    
-    points = X.obsm["embedding"][indices, :]
+        if type == "WP":
+            p = np.vstack((X.obsm["weighted_projections"][:, cmp1 - 1], 
+                    X.obsm["weighted_projections"][:, cmp2 - 1])).transpose()
+            X.obsm["embedding"] = 100000 * p  
+            points = X.obsm["embedding"][indices, :]
+            
+        elif type == "WGene":
+            p = np.vstack(((X.X @ X.varm["Pf2_C"])[:, cmp1 - 1], 
+            (X.X @ X.varm["Pf2_C"])[:, cmp2 - 1])).transpose()
+            X.obsm["embedding"] = 10000 * p
+            points = X.obsm["embedding"][indices, :]
+            
     labels = labels.iloc[indices]
+    assign_to_plot(points, labels, ax)
 
-    canvas = _get_canvas(points)
-    data = pd.DataFrame(points, columns=("x", "y"))
 
-    data["label"] = pd.Categorical(labels)
-    aggregation = canvas.points(data, "x", "y", agg=ds.count_cat("label"))
-
-    unique_labels = np.unique(labels)
-    num_labels = unique_labels.shape[0]
-    color_key = _to_hex(plt.get_cmap("Set1")(np.linspace(0, 1, num_labels)))
-    legend_elements = [
-        Patch(facecolor=color_key[i], label=k) for i, k in enumerate(unique_labels)
-    ]
-    result = tf.shade(
-        aggregation,
-        color_key=color_key,
-        how="eq_hist",
-        min_alpha=255,
-    )
-
-    ds_show(result, ax)
-    ax.legend(handles=legend_elements)
-    ax.set(xticks=[], yticks=[])
-
-def plotLabelsUMAP2(X: anndata.AnnData, labelType: str, ax: Axes, condition=None, conditionName=None, cmp1=None, cmp2=None):
+def plotGenesFactorsUMAP(X: anndata.AnnData, ax: Axes, cmp1=None, cmp2=None):
     """Scatterplot of UMAP visualization weighted by condition or cell type"""
-    labels = X.obs[labelType]
-
-    if condition is not None:
-        labels = pd.Series([c if c in condition else "Other" for c in labels])
-        
-    if conditionName is not None:
-        labels = pd.Series([c if c in "Other" else conditionName for c in labels])
-
-    indices = np.argsort(labels)
     
     if cmp1 and cmp2 is not None:
-        
         p = np.vstack((X.varm["Pf2_C"][:, cmp1 - 1], 
-               X.varm["Pf2_C"][:, cmp2 - 1])).transpose()
-        X.varm["embedding2"] = 1000000 * p
-    
-    points = X.varm["embedding2"][indices, :]
-    labels = labels.iloc[indices]
-
+                X.varm["Pf2_C"][:, cmp2 - 1])).transpose()
+        X.varm["embedding2"] = 100000 * p  
+        points = X.varm["embedding2"]
+            
     canvas = _get_canvas(points)
     data = pd.DataFrame(points, columns=("x", "y"))
-
-    data["label"] = pd.Categorical(labels)
-    aggregation = canvas.points(data, "x", "y", agg=ds.count_cat("label"))
-
-    unique_labels = np.unique(labels)
-    num_labels = unique_labels.shape[0]
-    color_key = _to_hex(plt.get_cmap("Set1")(np.linspace(0, 1, num_labels)))
-    legend_elements = [
-        Patch(facecolor=color_key[i], label=k) for i, k in enumerate(unique_labels)
-    ]
+    aggregation = canvas.points(data, "x", "y")
     result = tf.shade(
         aggregation,
-        color_key=color_key,
         how="eq_hist",
         min_alpha=255,
     )
 
     ds_show(result, ax)
-    ax.legend(handles=legend_elements)
     ax.set(xticks=[], yticks=[])
+    
+def plotLabelsAveUMAP(X: anndata.AnnData, labelType: str, ax: Axes, condition=None, conditionName=None, cmp1=None, cmp2=None, stats=None, labelType2=None, type=None):
+    """Scatterplot of UMAP visualization weighted by condition or cell type"""
+    labels = X.obs[labelType].values
+    indices = np.argsort(labels)
+    
+    if cmp1 and cmp2 is not None:
+        if type == "WP":
+            XX = np.vstack((X.obsm["weighted_projections"][:, cmp1 - 1], 
+                       X.obsm["weighted_projections"][:, cmp2 - 1])).transpose()
+            
+        elif type == "WGene":
+            XX = np.vstack(((X.X @ X.varm["Pf2_C"])[:, cmp1 - 1], 
+            (X.X @ X.varm["Pf2_C"])[:, cmp2 - 1])).transpose()
+        
+    df = pd.DataFrame(data=XX, columns=[f"Cmp. {cmp1}", f"Cmp. {cmp2}"])
+    labels = labels[indices]
+    df[labelType] = labels
+    
+    if labelType2 is not None:
+        df[labelType2] = X.obs[labelType2].values[indices]
+        if stats == "Mean":
+            df = df.groupby([labelType, labelType2]).mean().reset_index()
+        if stats == "Var":
+            df = df.groupby([labelType, labelType2]).var().reset_index()
+    else:
+        if stats == "Mean":
+            df = df.groupby([labelType]).mean().reset_index()
+        if stats == "Var":
+            df = df.groupby([labelType]).var().reset_index()
+            
+    print(df)
+        
+    sns.scatterplot(data=df, x=f"Cmp. {cmp1}", y=f"Cmp. {cmp2}", hue=labelType, size= labelType2, ax=ax)
+  
 
 
 
@@ -218,3 +216,92 @@ def plotCmpPerCellType(X: anndata.AnnData, cmp: int, ax: Axes, outliers: bool = 
         xticks=np.linspace(-maxvalue, maxvalue, num=5), xlabel="Cell Specific Weight"
     )
     ax.set_title(cmpName)
+
+
+def assign_to_plot(points, labels, ax):
+    
+    canvas = _get_canvas(points)
+    data = pd.DataFrame(points, columns=("x", "y"))
+
+    data["label"] = pd.Categorical(labels)
+    aggregation = canvas.points(data, "x", "y", agg=ds.count_cat("label"))
+
+    unique_labels = np.unique(labels)
+    num_labels = unique_labels.shape[0]
+    color_key = _to_hex(plt.get_cmap("tab20")(np.linspace(0, 1, num_labels)))
+    legend_elements = [
+        Patch(facecolor=color_key[i], label=k) for i, k in enumerate(unique_labels)
+    ]
+    result = tf.shade(
+        aggregation,
+        color_key=color_key,
+        how="eq_hist",
+        min_alpha=255,
+    )
+
+    ds_show(result, ax)
+    ax.legend(handles=legend_elements)
+    ax.set(xticks=[], yticks=[])
+    
+    
+def plotPerGeneWP(X: anndata.AnnData, labelType: str, ax: Axes, condition=None, conditionName=None, cmp1=None, cmp2=None, stats=None, labelType2=None, type=None, gene=None):
+    """Scatterplot of UMAP visualization weighted by condition or cell type"""
+    labels = X.obs[labelType]
+    indices = np.argsort(labels)
+    
+    if cmp1 is not None:
+        # if type == "WP":
+        XX = np.vstack((X.obsm["weighted_projections"][:, cmp1 - 1], 
+                       X[:, gene].X.flatten())).transpose()
+        
+
+        X.obsm["embedding"] = 10000 * XX
+        points = X.obsm["embedding"][indices, :]
+        labels = labels.iloc[indices]
+        
+    # if condition is not None:
+    #     labels = pd.Series([c if c in condition else "Other" for c in labels])
+        
+    # if conditionName is not None:
+    #     labels = pd.Series([c if c in "Other" else conditionName for c in labels])
+
+            
+    if type == "Ave":
+        df = pd.DataFrame(data=X.obsm["embedding"][indices, :] / 10000, columns=[f"Cmp. {cmp1}", gene])
+        df[labelType] = labels.values
+        df[labelType2] = X.obs[labelType2].values[indices]
+        if stats == "Mean":
+            df = df.groupby([labelType, labelType2]).mean().reset_index()
+        if stats == "Var":
+            df = df.groupby([labelType, labelType2]).var().reset_index()
+            
+                
+        print(df)
+        sns.scatterplot(data=df, x=f"Cmp. {cmp1}", y=gene, hue=labelType, size=labelType2, ax=ax)
+            
+    else: 
+        assign_to_plot(points, labels, ax)
+            
+        # elif type == "WGene":
+        #     XX = np.vstack(((X.X @ X.varm["Pf2_C"])[:, cmp1 - 1], 
+        #     (X.X @ X.varm["Pf2_C"])[:, cmp2 - 1])).transpose()
+        
+    # df = pd.DataFrame(data=XX, columns=[f"Cmp. {cmp1}", gene])
+    # labels = labels[indices]
+    # df[labelType] = labels
+    
+    
+    
+    # if labelType2 is not None:
+    #     df[labelType2] = X.obs[labelType2].values[indices]
+    #     if stats == "Mean":
+    #         df = df.groupby([labelType, labelType2]).mean().reset_index()
+    #     if stats == "Var":
+    #         df = df.groupby([labelType, labelType2]).var().reset_index()
+
+    # print(df)
+    
+    
+        
+    # sns.scatterplot(data=df, x=f"Cmp. {cmp1}", y=gene, hue=labelType, size= labelType2, ax=ax)
+  
