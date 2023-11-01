@@ -9,17 +9,18 @@ from .commonFuncs.plotUMAP import (
 from .commonFuncs.plotFactors import (
     plotFactors,
 )
+from ..imports import import_thomson
 
 
 def makeFigure():
     rank = 30
-    data = openPf2(rank, "Thomson")
+    data = import_thomson()
     gateThomsonCells(data)
 
     ax, f = getSetup((16,12), (2, 2))
     subplotLabel(ax)
 
-    data = data.to_memory(copy=True)
+    # data = data.to_memory(copy=True)
     sampled_data = data[(data.obs['Cell Type'] != 'Monocytes') | (data.obs['Condition'] != 'CTRL4')]
 
     # sampled_data = data.to_memory(copy=True)
