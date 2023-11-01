@@ -234,3 +234,25 @@ def geneSig_plot_cells(X, comps, hue: str, ax, unique=None, average=False, kde=F
     if kde: 
         sns.kdeplot(data=geneSigDF, x=str(comps[0]), y=str(comps[1]), hue=hue, levels=5, fill=True, alpha=0.3, cut=2, ax=ax)
     ax.set(xlabel="Comp. " + str(comps[0]) + " Signature", ylabel="Comp. " + str(comps[1]) + " Signature")
+
+
+def wproj_plot_cells(X, comps, ax,average=False, kde=False):
+    """Plots two genes on either a per cell or per cell type basis"""
+    
+    geneSigDF = pd.DataFrame()
+    geneVecs = X.obsm["weighted_projections"][:, comps]
+    for i, _ in enumerate(comps):
+        geneSigDF[str(comps[i])] = geneVecs[:, i]
+
+    geneSigDF["Cell Type"] = X.obs["Cell Type"].values
+    geneSigDF["SLE_status"] = X.obs["SLE_status"].values
+    geneSigDF = geneSigDF.sample(n=10000)
+    alpha=0.3
+
+    if average:
+        geneSigDF = geneSigDF.groupby(["Cell Type", "SLE_status"]).mean()
+        alpha=1
+    sns.scatterplot(data=geneSigDF, x=str(comps[0]), y=str(comps[1]), hue="Cell Type", style="SLE_status", ax=ax, size=-.1, alpha=alpha)
+    if kde: 
+        sns.kdeplot(data=geneSigDF, x=str(comps[0]), y=str(comps[1]), hue="Cell Type", style="SLE_status", levels=5, fill=True, alpha=0.3, cut=2, ax=ax)
+    ax.set(xlabel="Comp. " + str(comps[0]) + " Signature", ylabel="Comp. " + str(comps[1]) + " Signature")
