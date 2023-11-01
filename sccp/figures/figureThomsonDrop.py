@@ -19,6 +19,7 @@ def makeFigure():
     ax, f = getSetup((16,12), (2, 2))
     subplotLabel(ax)
 
+    data = data.to_memory(copy=True)
     sampled_data = data[(data.obs['Cell Type'] != 'Monocytes') | (data.obs['Condition'] != 'CTRL4')]
 
     # sampled_data = data.to_memory(copy=True)
