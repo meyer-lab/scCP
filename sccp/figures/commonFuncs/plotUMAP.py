@@ -21,8 +21,8 @@ def _get_canvas(points: np.ndarray):
     maxs = np.round(max_xy + 0.05 * (max_xy - min_xy))
 
     canvas = ds.Canvas(
-        plot_width=1200,
-        plot_height=1200,
+        plot_width=1000,
+        plot_height=1000,
         x_range=(mins[0], maxs[0]),
         y_range=(mins[1], maxs[1]),
     )
@@ -80,7 +80,7 @@ def plotGeneUMAP(gene: str, decompType: str, X: anndata.AnnData, ax: Axes):
     ax.set(title=f"{gene}-{decompType}-Based Decomposition")
 
 
-def plotCmpUMAP(X: anndata.AnnData, cmp: int, ax: Axes):
+def plotCmpUMAP(X: anndata.AnnData, cmp: int, ax: Axes, cbarMax=1):
     """Scatterplot of UMAP visualization weighted by
     projections for a component and cell state"""
     values = X.obsm["weighted_projections"][:, cmp - 1]
@@ -98,14 +98,15 @@ def plotCmpUMAP(X: anndata.AnnData, cmp: int, ax: Axes):
     result = tf.shade(
         agg=canvas.points(data, "x", "y", agg=ds.mean("val_cat")),
         cmap=cmap,
-        span=(-1, 1),
+        span=(-cbarMax, cbarMax),
         how="linear",
+        alpha=255,
         min_alpha=255,
     )
 
     ds_show(result, ax)
 
-    psm = plt.pcolormesh([[-1, 1], [-1, 1]], cmap=cmap)
+    psm = plt.pcolormesh([[-cbarMax, cbarMax], [-cbarMax, cbarMax]], cmap=cmap)
     plt.colorbar(psm, ax=ax)
     ax.set(title="Cmp. " + str(cmp), xticks=[], yticks=[])
 
@@ -159,7 +160,7 @@ def plotCmpPerCellType(X: anndata.AnnData, cmp: int, ax: Axes, outliers: bool = 
         showfliers=outliers,
         ax=ax,
     )
-    maxvalue = np.max(np.abs(ax.get_xticks()))
+    maxvalue = 0.75 # np.max(np.abs(ax.get_xticks()))
     ax.set(
         xticks=np.linspace(-maxvalue, maxvalue, num=5), xlabel="Cell Specific Weight"
     )
