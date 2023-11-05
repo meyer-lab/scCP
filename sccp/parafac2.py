@@ -1,14 +1,12 @@
-import os
 from typing import Sequence
 import numpy as np
 from tqdm import tqdm
 import anndata
 import tensorly as tl
-import torch
+import cupy as cp
 from pacmap import PaCMAP
 from .imports import import_citeseq, import_lupus, import_thomson
 from tensorly.parafac2_tensor import parafac2_to_slice
-from tensorly.cp_tensor import cp_flip_sign, CPTensor
 from tensorly.tenalg.svd import randomized_svd
 from tensorly.decomposition._parafac2 import parafac2, _parafac2_reconstruction_error
 from tensorly.preprocessing import svd_decompress_parafac2_tensor
@@ -101,11 +99,11 @@ def svd_compress_tensor_slices(tensor_slices, rng, maxrank=500):
     for i, tensor_slice in tqdm(enumerate(tensor_slices), total=len(tensor_slices)):
         n_rows, n_cols = np.shape(tensor_slice)
         if n_rows <= n_cols:
-            score_matrices[i] = torch.tensor(tensor_slice, device="cuda", dtype=torch.float64)
+            score_matrices[i] = cp.array(tensor_slice)
             continue
 
-        U, s, Vh = tl.tenalg.svd.randomized_svd(
-            torch.tensor(tensor_slice, device="cuda", dtype=torch.float64),
+        U, s, Vh = randomized_svd(
+            cp.array(tensor_slice),
             n_eigenvecs=min(n_cols, maxrank),
             random_state=rng,
         )
@@ -114,25 +112,22 @@ def svd_compress_tensor_slices(tensor_slices, rng, maxrank=500):
         # we need to transpose it, multiply in the singular values and then transpose
         # it again. This is equivalen to writing diag(s) @ Vh. If we skip the
         # transposes, we would get Vh @ diag(s), which is wrong.
-        score_matrices[i] = tl.transpose(s * tl.transpose(Vh)).to(torch.float64)
-        loading_matrices[i] = U.numpy(force=True)
+        score_matrices[i] = (s * Vh.T).T
+        loading_matrices[i] = U.get()
 
     return score_matrices, loading_matrices
 
 
-@torch.inference_mode()
 def parafac2_nd(
     X_in: Sequence,
     rank: int,
     n_iter_max: int = 200,
     tol: float = 1e-7,
+    verbose=False,
     random_state=None,
 ) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray], float]:
     r"""The same interface as regular PARAFAC2."""
     rng = np.random.RandomState(random_state)
-
-    # Verbose if this is not an automated build
-    verbose = "CI" not in os.environ
 
     # Checks size of each experiment is bigger than rank
     for i in range(len(X_in)):
@@ -142,7 +137,7 @@ def parafac2_nd(
     assert np.shape(X_in[0])[1] > rank
 
     print("Compressing tensor slices")
-    tl.set_backend("pytorch")
+    tl.set_backend("cupy")
     score_matrices, loading_matrices = svd_compress_tensor_slices(X_in, rng)
 
     # Assemble covariance matrix rather than concatenation
@@ -151,19 +146,18 @@ def parafac2_nd(
     for i in range(1, len(score_matrices)):
         covM += score_matrices[i].T @ score_matrices[i]
 
-    C = randomized_svd(covM, rank, random_state=rng, n_iter=4)[0]
+    # Since we've reduced to cov matrix, calculate overall norm
+    norm_tensor = cp.asnumpy(cp.trace(covM))
 
-    CPinit = CPTensor(
-        (
-            None,
-            [
-                torch.ones(
-                    (len(score_matrices), rank), device="cuda", dtype=torch.float64
-                ),
-                torch.eye(rank, device="cuda", dtype=torch.float64),
-                C,
-            ],
-        )
+    _, C = cp.linalg.eigh(cp.asarray(covM))
+
+    CPinit = (
+        None,
+        [
+            cp.ones((len(X_in), rank)),
+            cp.eye(rank),
+            C[:, -rank:],
+        ],
     )
 
     weights, factors, projections = parafac2(
@@ -177,14 +171,14 @@ def parafac2_nd(
         nn_modes=(0,),
         random_state=rng,
         verbose=verbose,
-        n_iter_parafac=5,
+        n_iter_parafac=10,
         linesearch=True,
     )
     tl.set_backend("numpy")
 
-    weights = weights.numpy(force=True)
-    factors = [f.numpy(force=True) for f in factors]
-    projections = [p.numpy(force=True) for p in projections]
+    weights = weights.get()
+    factors = [f.get() for f in factors]
+    projections = [p.get() for p in projections]
 
     weights, factors, projections = svd_decompress_parafac2_tensor(
         (weights, factors, projections), loading_matrices
@@ -194,8 +188,6 @@ def parafac2_nd(
 
     factors = [f[:, gini_idx] for f in factors]
     weights = weights[gini_idx]
-
-    weights, factors = cp_flip_sign((weights, factors), mode=1)
 
     # Maximize the diagonal of B
     _, col_ind = linear_sum_assignment(np.abs(factors[1].T), maximize=True)
@@ -208,7 +200,6 @@ def parafac2_nd(
     projections = [p * signn for p in projections]
 
     # Calculate R2X
-    norm_tensor = np.sum([np.linalg.norm(xx) ** 2 for xx in X_in])
     err = _parafac2_reconstruction_error(X_in, (weights, factors, projections)) ** 2
     R2X = 1.0 - err / norm_tensor
 
