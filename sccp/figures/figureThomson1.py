@@ -26,6 +26,7 @@ def makeFigure():
     plotFactors(factors, X, ax[0:3], reorder=(0, 2), trim=(2,), cond_group_labels=drugNames)
     plotWeight(X.uns["Pf2_weights"], ax[3])
 
+
     return f
 
 
@@ -45,8 +46,8 @@ def groupDrugs(labels):
     names[names == "Rapamycin (Sirolimus)"] = "Prostaglandin"
     names[names == "Alprostadil"] = "mTOR Inhibitor"
     names[names == "Cyclosporine"] = "Calcineruin Inhibitor"
-    
-    condition = ["Glucocoritcoids", "Control", "Prostaglandin", "mTOR Inhibitor"]
+
+    condition = ["Glucocoritcoids", "Control", "Prostaglandin", "mTOR Inhibitor", "Calcineruin Inhibitor"]
     
     names = pd.Series([c if c in condition else "Other" for c in names])
     
