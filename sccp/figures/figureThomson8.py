@@ -15,6 +15,6 @@ def makeFigure():
     X = openPf2(rank, "Thomson")
 
     for i in np.arange(0, rank):
-        plotGeneFactors(i + 1, X, ax[2 * i : 2 * i + 2], geneAmount=5)
+        plotGeneFactors(i + 1, X, ax[2 * i : 2 * i + 2], geneAmount=20)
 
     return f

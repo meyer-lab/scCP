@@ -4,6 +4,7 @@ Thomson: Gene ontology for gene factors of Pf2
 from .common import (
     subplotLabel,
     getSetup,
+    openPf2,
 )
 from .commonFuncs.plotGeneOntology import plotCombGO, plotPvalGO
 from ..geneontology import geneOntology
@@ -20,9 +21,10 @@ def makeFigure():
     # value = "Underexpressed"
     value = "Overexpressed"
 
-    # combDF, pvalDF = geneOntology(cmpNumb=26, dataName="Thomson", rank=30, geneAmount=30, goTerms=5, geneValue=value)
+    X = openPf2(30, "Thomson")
+    combDF, pvalDF = geneOntology(cmpNumb=23, X=X, geneAmount=30, goTerms=5, geneValue=value)
 
-    # plotCombGO(combDF, geneValue=value, axs=ax[0:3])
-    # plotPvalGO(pvalDF, geneValue=value, axs=ax[3:6])
+    plotCombGO(combDF, geneValue=value, axs=ax[0:3])
+    plotPvalGO(pvalDF, geneValue=value, axs=ax[3:6])
 
     return f

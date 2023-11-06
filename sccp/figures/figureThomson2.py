@@ -7,7 +7,7 @@ from .common import (
     openPf2,
 )
 from .commonFuncs.plotUMAP import plotLabelsUMAP, plotCmpUMAP
-from .commonFuncs.plotGeneral import plotGenePerCellType, plotGenePerCategCond
+from .commonFuncs.plotGeneral import plotGenePerCellType, plotGenePerCategCond, cell_comp_hist
 from ..gating import gateThomsonCells
 
 
@@ -28,7 +28,7 @@ def makeFigure():
     plotCmpUMAP(X, 3, ax[2], 0.2) # NK
     plotCmpUMAP(X, 29, ax[3], 0.2) # Gluco
     plotCmpUMAP(X, 12, ax[4], 0.2) # B Cell
-    plotCmpUMAP(X, 23, ax[5], 0.2) # Dex Hcl
+    plotCmpUMAP(X, 23, ax[5], 0.1) # Dex Hcl
 
     # weightedProjDF = flattenWeightedProjs(data, factors[1], projs)
     # weightedProjDF["Cell Type"] = dataDF["Cell Type"].values
@@ -59,6 +59,14 @@ def makeFigure():
      ]
     geneSet3 = ["CD163"]
     plotGenePerCategCond(glucs, "Gluco", geneSet3, X, [ax[8]])
+    
+    cell_comp_hist(X, "Condition", 23, "Dexrazoxane HCl (ICRF-187, ADR-529)", ax[9])
+
+    Dex = [
+         "Dexrazoxane HCl (ICRF-187, ADR-529)"
+     ]
+    geneSet4 = ["MT1G", "MT1M", "VTRNA2-1"]#"MT1H"]
+    plotGenePerCategCond(Dex, "Dex HCL", geneSet4, X, ax[10:13])
 
     # geneSet4 = ["VPREB3", "FAM111B"]
     # plotGenePerCategCond(

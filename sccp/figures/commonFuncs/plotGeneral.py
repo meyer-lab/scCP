@@ -112,7 +112,7 @@ def plotGenePerCategCond(conds, categoryCond, genes, adata, axs, mean=True):
     genesV = adata[:, genes]
     dataDF = pd.DataFrame(columns=genes, data=genesV.X)
     dataDF["Condition"] = genesV.obs["Condition"].values
-    dataDF["Cell Type"] = genesV.obs["Cell Type"].values
+    dataDF["Cell Type"] = genesV.obs["Cell Type2"].values
 
     df = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=genes).rename(
         columns={"variable": "Gene", "value": "Value"}
@@ -125,7 +125,6 @@ def plotGenePerCategCond(conds, categoryCond, genes, adata, axs, mean=True):
     df["Condition"] = np.where(df["Condition"].isin(conds), df["Condition"], "Other")
     for i in conds:
         df = df.replace({"Condition": {i: categoryCond}})
-
     for i, gene in enumerate(genes):
         sns.boxplot(
             data=df.loc[df["Gene"] == gene],
@@ -135,6 +134,8 @@ def plotGenePerCategCond(conds, categoryCond, genes, adata, axs, mean=True):
             ax=axs[i],
         )
         axs[i].set(title=gene)
+        axs[i].set_xticklabels(axs[i].get_xticklabels(), rotation=45, ha='right')
+    
 
 
 def plotGeneFactors(

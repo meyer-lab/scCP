@@ -20,7 +20,7 @@ def makeFigure():
     X = gateThomsonCells(X)
 
     df = pd.DataFrame(
-        {"Cell Type": X.obs["Cell Type"], "Condition": X.obs["Condition"]}
+        {"Cell Type": X.obs["Cell Type2"], "Condition": X.obs["Condition"]}
     )
 
     # Per condition counts

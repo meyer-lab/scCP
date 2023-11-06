@@ -113,7 +113,7 @@ thomson_layer2 = {
     "38": "Monocytes",
     "39": "CD4 T Cells",
     "40": "Activated Monocyte",
-    "41": "None",
+    "41": "Dead Cells",
     "42": "Macrophages",
     "43": "Naive B",
     "44": "Monocytes",

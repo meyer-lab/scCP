@@ -44,7 +44,9 @@ def geneOntology(cmpNumb: int, X, geneAmount, goTerms, geneValue):
         if geneValue == "Overexpressed":
             enrichrGO = runGO(genesTop, geneSets)
         else:
+            print(genesBottom)
             enrichrGO = runGO(genesBottom, geneSets)
+        print(genesBottom)
 
         CombGO = combinedDF(enrichrGO, geneSet, geneValue, goTerms)
         PvalGO = pvalueDF(enrichrGO, geneSet, geneValue, goTerms)
