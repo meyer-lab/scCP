@@ -4,8 +4,9 @@ Test the parafac2 method.
 import numpy as np
 from tensorly.decomposition import parafac2
 from tensorly.random import random_parafac2
-from ..parafac2 import parafac2_nd
+from ..parafac2 import parafac2_nd, pf2
 from tensorly.decomposition._parafac2 import _parafac2_reconstruction_error
+from ..imports import import_thomson
 
 
 pf2shape = [(100, 800)] * 4
@@ -15,14 +16,14 @@ norm_tensor = np.linalg.norm(X) ** 2
 
 def test_parafac2():
     """Test for equivalence to TensorLy's PARAFAC2."""
-    w1, f1, p1, e1 = parafac2_nd(X, rank=3, random_state=1)
+    w1, f1, p1, e1 = parafac2_nd(X, rank=3)
 
     # Test that the model still matches the data
     err = _parafac2_reconstruction_error(X, (w1, f1, p1)) ** 2
     np.testing.assert_allclose(1.0 - err / norm_tensor, e1, rtol=1e-6)
 
     # Test reproducibility
-    w2, f2, p2, e2 = parafac2_nd(X, rank=3, random_state=1)
+    w2, f2, p2, e2 = parafac2_nd(X, rank=3)
     # Compare to TensorLy
     wT, fT, pT = parafac2(
         X,
@@ -49,6 +50,13 @@ def test_parafac2():
     for ii in range(3):
         np.testing.assert_allclose(f1[ii], fT[ii], rtol=0.01, atol=0.01)
         np.testing.assert_allclose(p1[ii], pT[ii], rtol=0.01, atol=0.01)
+
+
+def test_factor_thomson():
+    """Import and factor Thomson."""
+    X = import_thomson()
+
+    X = pf2(X, "Condition", 3, doEmbedding=False)
 
 
 def test_performance():
