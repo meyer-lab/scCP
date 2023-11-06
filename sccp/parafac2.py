@@ -121,7 +121,7 @@ def svd_compress_tensor_slices(tensor_slices, rng, maxrank=500):
 def parafac2_nd(
     X_in: Sequence,
     rank: int,
-    n_iter_max: int = 200,
+    n_iter_max: int = 300,
     tol: float = 1e-7,
     verbose=False,
     random_state=None,
@@ -171,7 +171,6 @@ def parafac2_nd(
         nn_modes=(0,),
         random_state=rng,
         verbose=verbose,
-        n_iter_parafac=10,
         linesearch=True,
     )
     tl.set_backend("numpy")
