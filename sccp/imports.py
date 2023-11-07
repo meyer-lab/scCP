@@ -4,22 +4,31 @@ import pandas as pd
 import anndata
 import scanpy as sc
 from scipy.sparse import spmatrix
+from sklearn.utils.sparsefuncs import inplace_column_scale, mean_variance_axis
 
 
-def prepare_dataset(X: anndata.AnnData) -> anndata.AnnData:
-    assert np.amin(X.X) == 0.0
+def prepare_dataset(X: anndata.AnnData, condition_name: str) -> anndata.AnnData:
+    assert isinstance(X.X, spmatrix)
+    assert np.amin(X.X.data) >= 0.0  # type: ignore
 
-    # Convert to dense to simplify slicing
-    if isinstance(X.X, spmatrix):
-        X.X = X.X.toarray()
+    readSum, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
+    readSum *= X.shape[0]
+    inplace_column_scale(X.X, 1.0 / (readSum + 1.0e-9))
+
+    # Transform values
+    X.X.data = np.log10((1000.0 * X.X.data) + 1.0)  # type: ignore
+
+    # Get the indices for subsetting the data
+    _, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
+    X.obs["condition_unique_idxs"] = sgIndex
+
+    # Pre-calculate gene means
+    means, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
+    X.var["means"] = means
 
     # Filter out genes with too few reads
-    X = X[:, np.sum(X.X, axis=0) > 1000]
+    X = X[:, readSum > 100]
 
-    X.X /= np.sum(X.X, axis=0)
-    X.X = np.log10((1000 * X.X) + 1)
-
-    assert np.all(np.isfinite(X.X))
     return X
 
 
@@ -39,9 +48,14 @@ def import_thomson() -> anndata.AnnData:
         obs, metafile, on="cell_barcode", how="left", validate="one_to_one"
     )
 
-    X.obs = pd.DataFrame({"cell_barcode": metafile["cell_barcode"], "Condition": pd.Categorical(metafile["sample_id"])})
+    X.obs = pd.DataFrame(
+        {
+            "cell_barcode": metafile["cell_barcode"],
+            "Condition": pd.Categorical(metafile["sample_id"]),
+        }
+    )
 
-    return prepare_dataset(X)
+    return prepare_dataset(X, "Condition")
 
 
 def import_lupus() -> anndata.AnnData:
@@ -63,7 +77,10 @@ def import_lupus() -> anndata.AnnData:
     'SLE_status': SLE status: healthy or SLE}
 
     """
-    X = anndata.read_h5ad("/opt/andrew/lupus/lupus.h5ad")
+    X = anndata.read_h5ad("/opt/andrew/lupus/lupusRaw.h5ad")
+
+    # Used to convert back to raw
+    # X = anndata.AnnData(X.raw.X, X.obs, X.raw.var, None, X.obsm)
 
     # rename columns to make more sense
     X.obs = X.obs.rename(
@@ -83,7 +100,7 @@ def import_lupus() -> anndata.AnnData:
     # get rid of IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831 (only 3 cells)
     X = X[X.obs["Condition"] != "IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831"]
 
-    return X
+    return prepare_dataset(X, "Condition")
 
 
 def import_citeseq() -> anndata.AnnData:
@@ -105,4 +122,4 @@ def import_citeseq() -> anndata.AnnData:
 
     X = anndata.concat(data, merge="same", label="Condition")
 
-    return prepare_dataset(X)
+    return prepare_dataset(X, "Condition")
