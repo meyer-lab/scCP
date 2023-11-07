@@ -21,7 +21,6 @@ def makeFigure():
     ax, f = getSetup((16,12), (2, 2))
     subplotLabel(ax)
 
-    # data = data.to_memory(copy=True)
     sampled_data = data[(data.obs['Cell Type'] != 'Monocytes') | (data.obs['Condition'] != 'CTRL4')]
 
     # sampled_data = data.to_memory(copy=True)
@@ -39,5 +38,6 @@ def makeFigure():
     factors = [sampledX.uns["Pf2_A"], sampledX.uns["Pf2_B"], sampledX.varm["Pf2_C"]]
 
     plotFactors(factors, sampledX, ax[0:3], reorder=(0, 2), trim=(2,))
+    plotLabelsUMAP(sampledX, "Cell Type", ax[3])
 
     return f
