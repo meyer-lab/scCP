@@ -5,38 +5,38 @@ import anndata
 import tensorly as tl
 import cupy as cp
 from pacmap import PaCMAP
-from tensorly.parafac2_tensor import parafac2_to_slice
 from tensorly.tenalg.svd import randomized_svd
 from tensorly.decomposition._parafac2 import parafac2
 from tensorly.preprocessing import svd_decompress_parafac2_tensor
-from tensorly.cp_tensor import cp_flip_sign, cp_normalize
+from tensorly.cp_tensor import cp_flip_sign
 from scipy.optimize import linear_sum_assignment
 
 
 def cwSNR(
     X: anndata.AnnData,
-    weights: np.ndarray,
-    factors: list[np.ndarray],
-    projections: list[np.ndarray],
-):
+) -> tuple[np.ndarray, float]:
     """Calculate the columnwise signal-to-noise ratio for each dataset and overall error."""
-    SNR = np.empty((factors[0].shape[0], len(weights)), dtype=float)
+    SNR = np.empty(X.uns["Pf2_A"].shape, dtype=float)
     norm_overall = 0.0
     err_norm = 0.0
 
     # Get the indices for subsetting the data
     sgIndex = X.obs["condition_unique_idxs"]
 
-    for i in range(factors[0].shape[0]):
-        xx = parafac2_to_slice((weights, factors, projections), i, validate=False)
-
+    for i in range(X.uns["Pf2_A"].shape[0]):
         X_cond = X[sgIndex == i, :]
+
+        # Parafac2 to slice
+        a = X.uns["Pf2_A"][i] * X.uns["Pf2_weights"]
+        B_i = X_cond.obsm["weighted_projections"]
+        slice = np.dot(B_i * a, X.varm["Pf2_C"].T)
+
         X_condition_arr = X_cond.X.toarray() - X.var["means"].to_numpy()
-        norm_overall += np.linalg.norm(X_condition_arr) ** 2.0
-        err_norm_here = np.linalg.norm(X_condition_arr - xx) ** 2.0
+        norm_overall += float(np.linalg.norm(X_condition_arr) ** 2.0)
+        err_norm_here = float(np.linalg.norm(X_condition_arr - slice) ** 2.0)
         err_norm += err_norm_here
 
-        SNR[i, :] = (factors[0][i, :] * weights) ** 2.0
+        SNR[i, :] = a**2.0
         SNR[i, :] /= err_norm_here
 
     return SNR, 1.0 - err_norm / norm_overall
@@ -69,21 +69,18 @@ def pf2(
 
     tl.set_backend("numpy")
 
-    weight, factors, projs = parafac2_nd(
+    parafac2_output = parafac2_nd(
         X_pf,
         rank=rank,
     )
 
-    weight, factors, projs = svd_decompress_parafac2_tensor(
-        (weight, factors, projs), loadings_pf
-    )
+    parafac2_output = svd_decompress_parafac2_tensor(parafac2_output, loadings_pf)
 
-    X.uns["Pf2_weights"] = weight
-    X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"] = factors
-    X.uns["cvSNR"], X.uns["R2X"] = cwSNR(X, weight, factors, projs)
+    X.uns["Pf2_weights"] = parafac2_output[0]
+    X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"] = parafac2_output[1]
 
     X.obsm["projections"] = np.zeros((X.shape[0], rank))
-    for i, p in enumerate(projs):
+    for i, p in enumerate(parafac2_output[2]):
         X.obsm["projections"][sgIndex == i, :] = p  # type: ignore
 
     X.obsm["weighted_projections"] = X.obsm["projections"] @ X.uns["Pf2_B"]
@@ -112,7 +109,7 @@ def svd_compress_tensor_slice(tensor_slice, maxrank):
     # we need to transpose it, multiply in the singular values and then transpose
     # it again. This is equivalen to writing diag(s) @ Vh. If we skip the
     # transposes, we would get Vh @ diag(s), which is wrong.
-    return (s * Vh.T).T, U.get() # scores, loadings
+    return (s * Vh.T).T, U.get()  # scores, loadings
 
 
 def parafac2_nd(
@@ -164,9 +161,7 @@ def parafac2_nd(
     factors = [f.get() for f in factors]
     projections = [p.get() for p in projections]
 
-    weights, factors, projections = standardize_pf2(
-        weights, factors, projections
-    )
+    weights, factors, projections = standardize_pf2(weights, factors, projections)
 
     return weights, factors, projections
 
@@ -180,7 +175,7 @@ def standardize_pf2(
     factors = [f[:, gini_idx] for f in factors]
     weights = weights[gini_idx]
 
-    weights, factors = cp_normalize(cp_flip_sign((weights, factors), mode=1))
+    weights, factors = cp_flip_sign((weights, factors), mode=1)
 
     # Order eigen-cells to maximize the diagonal of B
     _, col_ind = linear_sum_assignment(np.abs(factors[1].T), maximize=True)
