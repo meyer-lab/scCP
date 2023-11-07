@@ -10,7 +10,10 @@ from tensorly.parafac2_tensor import parafac2_to_slice
 from tensorly.tenalg.svd import randomized_svd
 from tensorly.decomposition._parafac2 import parafac2, _parafac2_reconstruction_error
 from tensorly.preprocessing import svd_decompress_parafac2_tensor
+from tensorly.cp_tensor import cp_flip_sign, cp_normalize
+from tensorly.decomposition import non_negative_parafac_hals
 from scipy.optimize import linear_sum_assignment
+from sklearn.utils.sparsefuncs import mean_variance_axis
 
 
 def cwSNR(
@@ -31,6 +34,25 @@ def cwSNR(
     return SNR
 
 
+def getCondition(
+    X: anndata.AnnData, condition_name: str, matrix_idx: int
+) -> np.ndarray:
+    """Separate out one condition from within the anndata object. Note that this is
+    dependent on the ordering of cells in the dataset. This also centers based on
+    the whole-dataset mean."""
+    # Get the indices for subsetting the data
+    _, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
+
+    # We are going to center as we make the matrices
+    means, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
+
+    X_condition = X[sgIndex == matrix_idx, :]
+    X_condition_arr = X_condition.X.toarray()
+    assert X_condition_arr.shape == X_condition.shape
+
+    return X_condition_arr - means
+
+
 def pf2(
     X: anndata.AnnData,
     condition_name: str,
@@ -42,26 +64,23 @@ def pf2(
     # Get the indices for subsetting the data
     sgUnique, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
 
-    # We are going to center as we make the matrices
-    means = np.mean(X.X, axis=0)
-
-    X_pf = [X[sgIndex == sgi, :].X.toarray() - means for sgi in range(len(sgUnique))]
+    X_pf = [getCondition(X, condition_name, sgi) for sgi in range(len(sgUnique))]
 
     # Quantify the variation in cross-products since this is an assumption of Pf2
     covs = np.stack([xx.T @ xx for xx in X_pf])
     cov_total = tl.norm(covs) ** 2
     cov_var = tl.norm(covs - np.mean(covs, axis=0)) ** 2
 
-    weight, factors, projs, _ = parafac2_nd(
+    weight, factors, projs, r2x = parafac2_nd(
         X_pf,
         rank=rank,
-        random_state=random_state,
     )
 
     X.uns["Pf2_weights"] = weight
     X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"] = factors
     X.uns["cov_ratio"] = cov_var / cov_total
     X.uns["cvSNR"] = cwSNR(X_pf, weight, factors, projs)
+    X.uns["R2X"] = r2x
 
     X.obsm["projections"] = np.zeros((X.shape[0], rank))
     for i, p in enumerate(projs):
@@ -91,7 +110,7 @@ def runAndSavePf2():
     X.write("Thomson_analyzed_30comps.h5ad")
 
 
-def svd_compress_tensor_slices(tensor_slices, rng, maxrank=500):
+def svd_compress_tensor_slices(tensor_slices, maxrank=500):
     r"""Compress data with the SVD for running PARAFAC2."""
     loading_matrices = [None for _ in tensor_slices]
     score_matrices = [None for _ in tensor_slices]
@@ -105,7 +124,7 @@ def svd_compress_tensor_slices(tensor_slices, rng, maxrank=500):
         U, s, Vh = randomized_svd(
             cp.array(tensor_slice),
             n_eigenvecs=min(n_cols, maxrank),
-            random_state=rng,
+            random_state=1,
         )
 
         # Array broadcasting happens at the last dimension, since Vh is num_svds x n_cols
@@ -124,21 +143,12 @@ def parafac2_nd(
     n_iter_max: int = 300,
     tol: float = 1e-7,
     verbose=False,
-    random_state=None,
 ) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray], float]:
     r"""The same interface as regular PARAFAC2."""
-    rng = np.random.RandomState(random_state)
-
-    # Checks size of each experiment is bigger than rank
-    for i in range(len(X_in)):
-        assert np.shape(X_in[i])[0] > rank
-
-    # Checks size of signal measured is bigger than rank
-    assert np.shape(X_in[0])[1] > rank
 
     print("Compressing tensor slices")
     tl.set_backend("cupy")
-    score_matrices, loading_matrices = svd_compress_tensor_slices(X_in, rng)
+    score_matrices, loading_matrices = svd_compress_tensor_slices(X_in)
 
     # Assemble covariance matrix rather than concatenation
     # This saves memory and should be faster
@@ -169,7 +179,6 @@ def parafac2_nd(
         normalize_factors=True,
         tol=tol,
         nn_modes=(0,),
-        random_state=rng,
         verbose=verbose,
         linesearch=True,
     )
@@ -183,12 +192,29 @@ def parafac2_nd(
         (weights, factors, projections), loading_matrices
     )
 
-    gini_idx = giniIndex(factors[0])
+    weights, factors, projections = standardize_pf2(
+        weights, factors, projections
+    )
 
+    # Calculate R2X
+    err = _parafac2_reconstruction_error(X_in, (weights, factors, projections)) ** 2
+    R2X = 1.0 - err / norm_tensor
+
+    return weights, factors, projections, R2X
+
+
+def standardize_pf2(
+    weights: np.ndarray, factors: list[np.ndarray], projections: list[np.ndarray]
+) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray]]:
+    # Order components by condition variance
+    gini = np.var(factors[0], axis=0) / np.mean(factors[0], axis=0)
+    gini_idx = np.argsort(gini)
     factors = [f[:, gini_idx] for f in factors]
     weights = weights[gini_idx]
 
-    # Maximize the diagonal of B
+    weights, factors = cp_normalize(cp_flip_sign((weights, factors), mode=1))
+
+    # Order eigen-cells to maximize the diagonal of B
     _, col_ind = linear_sum_assignment(np.abs(factors[1].T), maximize=True)
     factors[1] = factors[1][col_ind, :]
     projections = [p[:, col_ind] for p in projections]
@@ -198,16 +224,4 @@ def parafac2_nd(
     factors[1] *= signn[:, np.newaxis]
     projections = [p * signn for p in projections]
 
-    # Calculate R2X
-    err = _parafac2_reconstruction_error(X_in, (weights, factors, projections)) ** 2
-    R2X = 1.0 - err / norm_tensor
-
-    return weights, factors, projections, R2X
-
-
-def giniIndex(X: np.ndarray) -> np.ndarray:
-    """Calculates the Gini Coeff for each component and returns the index rearrangment"""
-    X = np.abs(X)
-    gini = np.var(X, axis=0) / np.mean(X, axis=0)
-
-    return np.argsort(gini)
+    return weights, factors, projections

@@ -4,53 +4,48 @@ import pandas as pd
 import anndata
 import scanpy as sc
 from scipy.sparse import spmatrix
+from sklearn.utils.sparsefuncs import inplace_column_scale, mean_variance_axis
 
 
 def prepare_dataset(X: anndata.AnnData) -> anndata.AnnData:
-    assert np.amin(X.X) == 0.0
+    assert isinstance(X.X, spmatrix)
+    assert np.amin(X.X.data) >= 0.0  # type: ignore
 
-    # Convert to dense to simplify slicing
-    if isinstance(X.X, spmatrix):
-        X.X = X.X.toarray()
+    readSum, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
+    readSum *= X.X.shape[0]
+    inplace_column_scale(X.X, 1.0 / readSum)
 
-    # Filter out genes that show up in very few cells
-    X = X[:, np.sum(X.X > 0, axis=0) > 100]
+    # Transform values
+    X.X.data = np.log10((1000.0 * X.X.data) + 1.0)  # type: ignore
 
     # Filter out genes with too few reads
-    X = X[:, np.sum(X.X, axis=0) > 1000]
+    X = X[:, readSum > 1000]
 
-    # Filter out cells with too few reads
-    X = X[np.sum(X.X, axis=1) > 100, :]
-
-    X.X /= np.sum(X.X, axis=0)
-    X.X = np.log10((1000 * X.X) + 1)
-
-    assert np.all(np.isfinite(X.X))
     return X
 
 
 def import_thomson() -> anndata.AnnData:
     """Import Thompson lab PBMC dataset."""
     # Cell barcodes, sample id of treatment and sample number (33482, 3)
-    metafile = pd.read_csv("sccp/data/Thomson/meta.csv")
-
-    # Cell barcodes (33482)
-    barcodes = pd.read_csv(
-        "sccp/data/Thomson/barcodes.tsv", sep="\t", header=None, names=("cell_barcode",)
-    )
-
-    # Left merging should put the barcodes in order
-    metafile = pd.merge(
-        barcodes, metafile, on="cell_barcode", how="left", validate="one_to_one"
-    )
+    metafile = pd.read_csv("sccp/data/Thomson/meta.csv", usecols=[0, 1])
 
     # read in actual data
     X = sc.read_10x_mtx(
         "/opt/andrew/Thomson/", var_names="gene_symbols", make_unique=True
     )
+    obs = X.obs.reset_index(names="cell_barcode")
 
-    # Workaround to not trigger conversion to dense
-    X._obs = pd.DataFrame({"Condition": pd.Categorical(metafile["sample_id"])})
+    # Left merging should put the barcodes in order
+    metafile = pd.merge(
+        obs, metafile, on="cell_barcode", how="left", validate="one_to_one"
+    )
+
+    X.obs = pd.DataFrame(
+        {
+            "cell_barcode": metafile["cell_barcode"],
+            "Condition": pd.Categorical(metafile["sample_id"]),
+        }
+    )
 
     return prepare_dataset(X)
 
@@ -74,7 +69,10 @@ def import_lupus() -> anndata.AnnData:
     'SLE_status': SLE status: healthy or SLE}
 
     """
-    X = anndata.read_h5ad("/opt/andrew/lupus/lupus.h5ad")
+    X = anndata.read_h5ad("/opt/andrew/lupus/lupusRaw.h5ad")
+
+    # Used to convert back to raw
+    # X = anndata.AnnData(X.raw.X, X.obs, X.raw.var, None, X.obsm)
 
     # rename columns to make more sense
     X.obs = X.obs.rename(
@@ -94,7 +92,7 @@ def import_lupus() -> anndata.AnnData:
     # get rid of IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831 (only 3 cells)
     X = X[X.obs["Condition"] != "IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831"]
 
-    return X
+    return prepare_dataset(X)
 
 
 def import_citeseq() -> anndata.AnnData:
