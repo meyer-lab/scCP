@@ -5,19 +5,16 @@ import anndata
 import tensorly as tl
 import cupy as cp
 from pacmap import PaCMAP
-from .imports import import_citeseq, import_lupus, import_thomson
 from tensorly.parafac2_tensor import parafac2_to_slice
 from tensorly.tenalg.svd import randomized_svd
 from tensorly.decomposition._parafac2 import parafac2
 from tensorly.preprocessing import svd_decompress_parafac2_tensor
 from tensorly.cp_tensor import cp_flip_sign, cp_normalize
 from scipy.optimize import linear_sum_assignment
-from sklearn.utils.sparsefuncs import mean_variance_axis
 
 
 def cwSNR(
     X: anndata.AnnData,
-    condition_name: str,
     weights: np.ndarray,
     factors: list[np.ndarray],
     projections: list[np.ndarray],
@@ -27,11 +24,16 @@ def cwSNR(
     norm_overall = 0.0
     err_norm = 0.0
 
+    # Get the indices for subsetting the data
+    sgIndex = X.obs["condition_unique_idxs"]
+
     for i in range(factors[0].shape[0]):
         xx = parafac2_to_slice((weights, factors, projections), i, validate=False)
-        X_cond = getCondition(X, condition_name, i)
-        norm_overall += np.linalg.norm(X_cond) ** 2.0
-        err_norm_here = np.linalg.norm(X_cond - xx) ** 2.0
+
+        X_cond = X[sgIndex == i, :]
+        X_condition_arr = X_cond.X.toarray() - X.var["means"].to_numpy()
+        norm_overall += np.linalg.norm(X_condition_arr) ** 2.0
+        err_norm_here = np.linalg.norm(X_condition_arr - xx) ** 2.0
         err_norm += err_norm_here
 
         SNR[i, :] = (factors[0][i, :] * weights) ** 2.0
@@ -40,35 +42,16 @@ def cwSNR(
     return SNR, 1.0 - err_norm / norm_overall
 
 
-def getCondition(
-    X: anndata.AnnData, condition_name: str, matrix_idx: int
-) -> np.ndarray:
-    """Separate out one condition from within the anndata object. Note that this is
-    dependent on the ordering of cells in the dataset. This also centers based on
-    the whole-dataset mean."""
-    # Get the indices for subsetting the data
-    _, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
-
-    # We are going to center as we make the matrices
-    means, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
-
-    X_condition = X[sgIndex == matrix_idx, :]
-    X_condition_arr = X_condition.X.toarray()
-    assert X_condition_arr.shape == X_condition.shape
-
-    return X_condition_arr - means
-
-
 def pf2(
     X: anndata.AnnData,
-    condition_name: str,
     rank: int,
     random_state=1,
     doEmbedding: bool = True,
 ):
-    # TensorFy
     # Get the indices for subsetting the data
-    sgUnique, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
+    sgIndex = X.obs["condition_unique_idxs"]
+    nConditions = np.amax(sgIndex) + 1
+    max_rank = 500 if nConditions < 100 else 200
 
     X_pf = []
     loadings_pf = []
@@ -76,9 +59,11 @@ def pf2(
     tl.set_backend("cupy")
 
     print("Loading and compressing tensor slices")
-    for sgi in tqdm(range(len(sgUnique)), total=len(sgUnique)):
-        X_cond = getCondition(X, condition_name, sgi)
-        scores, loadings = svd_compress_tensor_slice(X_cond, maxrank=500)
+    for sgi in tqdm(range(nConditions), total=nConditions):
+        X_cond = X[sgIndex == sgi, :]
+        X_condition_arr = X_cond.X.toarray() - X.var["means"].to_numpy()
+
+        scores, loadings = svd_compress_tensor_slice(X_condition_arr, maxrank=max_rank)
         X_pf.append(scores)
         loadings_pf.append(loadings)
 
@@ -95,8 +80,7 @@ def pf2(
 
     X.uns["Pf2_weights"] = weight
     X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"] = factors
-    X.uns["cvSNR"], X.uns["R2X"] = cwSNR(X, condition_name, weight, factors, projs)
-    print(X.uns["R2X"])
+    X.uns["cvSNR"], X.uns["R2X"] = cwSNR(X, weight, factors, projs)
 
     X.obsm["projections"] = np.zeros((X.shape[0], rank))
     for i, p in enumerate(projs):
@@ -111,22 +95,7 @@ def pf2(
     return X
 
 
-def runAndSavePf2():
-    """Runs the analysis and saves the cache files."""
-    X = import_citeseq()
-    X = pf2(X, "Condition", 80)
-    X.write("CITEseq_analyzed_80comps.h5ad")
-
-    X = import_lupus()
-    X = pf2(X, "Condition", 40)
-    X.write("Lupus_analyzed_40comps.h5ad")
-
-    X = import_thomson()
-    X = pf2(X, "Condition", 30)
-    X.write("Thomson_analyzed_30comps.h5ad")
-
-
-def svd_compress_tensor_slice(tensor_slice, maxrank=500):
+def svd_compress_tensor_slice(tensor_slice, maxrank):
     r"""Compress data with the SVD for running PARAFAC2."""
     n_rows, n_cols = np.shape(tensor_slice)
     n_cols = min(n_cols, maxrank)
@@ -151,7 +120,7 @@ def parafac2_nd(
     rank: int,
     n_iter_max: int = 300,
     tol: float = 1e-7,
-    verbose=False,
+    verbose=True,
 ) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray]]:
     r"""The same interface as regular PARAFAC2."""
 
