@@ -10,6 +10,7 @@ from .commonFuncs.plotFactors import (
     plotFactors,
 )
 from ..imports import import_thomson
+import numpy as np
 # from ..imports import import_thomson
 
 
