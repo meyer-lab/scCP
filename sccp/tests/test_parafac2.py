@@ -5,8 +5,6 @@ import numpy as np
 from scipy import sparse
 from ..parafac2 import pf2, pf2_r2x, svd_compress_tensor_slice
 from ..imports import import_thomson
-from cProfile import Profile
-
 
 
 def test_compress_csr():
