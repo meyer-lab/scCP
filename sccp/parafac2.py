@@ -74,18 +74,14 @@ def pf2(
     X_pf = []
     loadings_pf = []
 
-    tl.set_backend("cupy")
-
     print("Loading and compressing tensor slices")
     for sgi in tqdm(range(nConditions), total=nConditions):
         X_cond = X[sgIndex == sgi, :]
-        X_condition_arr = X_cond.X.toarray() - X.var["means"].to_numpy()
+        means = X.var["means"].to_numpy()
 
-        scores, loadings = svd_compress_tensor_slice(X_condition_arr, maxrank=max_rank)
+        scores, loadings = svd_compress_tensor_slice(X_cond.X, means, maxrank=max_rank)
         X_pf.append(scores)
         loadings_pf.append(loadings)
-
-    tl.set_backend("numpy")
 
     parafac2_output = parafac2_nd(
         X_pf,
@@ -114,18 +110,14 @@ def pf2_r2x(
     X_pf = []
     loadings_pf = []
 
-    tl.set_backend("cupy")
-
     print("Loading and compressing tensor slices")
     for sgi in tqdm(range(nConditions), total=nConditions):
         X_cond = X[sgIndex == sgi, :]
-        X_condition_arr = X_cond.X.toarray() - X.var["means"].to_numpy()
+        means = X.var["means"].to_numpy()
 
-        scores, loadings = svd_compress_tensor_slice(X_condition_arr, maxrank=200)
+        scores, loadings = svd_compress_tensor_slice(X_cond.X, means, maxrank=200)
         X_pf.append(scores)
         loadings_pf.append(loadings)
-
-    tl.set_backend("numpy")
 
     r2x_vec = np.empty(max_rank)
 
@@ -144,24 +136,36 @@ def pf2_r2x(
     return r2x_vec
 
 
-def svd_compress_tensor_slice(tensor_slice, maxrank):
+def svd_compress_tensor_slice(A, means: np.ndarray, maxrank: int, n_iter: int=2):
     r"""Compress data with the SVD for running PARAFAC2."""
-    n_rows, n_cols = np.shape(tensor_slice)
-    n_cols = min(n_cols, maxrank)
-    if n_rows <= n_cols:
-        return cp.array(tensor_slice), None
+    n_rows, n_cols = np.shape(A)
+    n_eigenvecs = min(n_cols, maxrank)
+    if n_rows <= n_eigenvecs:
+        return A.toarray() - means, None
 
-    U, s, Vh = randomized_svd(
-        cp.array(tensor_slice),
-        n_eigenvecs=n_cols,
-        random_state=1,
-    )
+    ### Start randomized SVD
+    n_dims = min(n_eigenvecs, max(n_rows, n_cols))
+
+    rng = np.random.default_rng(1)
+    Q = rng.normal(size=(n_cols, n_dims))
+    Q_H, _ = np.linalg.qr(A @ Q - means @ Q)
+
+    # Perform power iterations when spectrum decays slowly
+    for _ in range(n_iter):
+        Q_H_sum = np.sum(Q_H, axis=0)
+        Q, _ = np.linalg.qr(A.T @ Q_H - np.outer(means, Q_H_sum))
+        Q_H, _ = np.linalg.qr(A @ Q - means @ Q)
+
+    Q_H_sum = np.sum(Q_H, axis=0)
+    matrix_reduced = Q_H.T @ A - np.outer(Q_H_sum, means)
+    U, s, Vh = tl.truncated_svd(matrix_reduced, n_eigenvecs=n_eigenvecs)
+    U = Q_H @ U
 
     # Array broadcasting happens at the last dimension, since Vh is num_svds x n_cols
     # we need to transpose it, multiply in the singular values and then transpose
     # it again. This is equivalen to writing diag(s) @ Vh. If we skip the
     # transposes, we would get Vh @ diag(s), which is wrong.
-    return (s * Vh.T).T, U.get()  # scores, loadings
+    return (s * Vh.T).T, U  # scores, loadings
 
 
 def parafac2_nd(
