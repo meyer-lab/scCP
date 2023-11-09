@@ -22,7 +22,6 @@ def makeFigure():
     rank = 30
     X = openPf2(rank, "Thomson")
 
-
     gateThomsonCells(X)
     plotLabelsUMAP(X, "Cell Type", ax[0])
     plotLabelsUMAP(X, "Cell Type2", ax[1])

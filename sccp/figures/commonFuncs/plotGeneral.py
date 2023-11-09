@@ -87,7 +87,7 @@ def plotCellTypePerExpPerc(dataDF, condition, ax: Axes):
 def plotGenePerCellType(genes, adata, ax):
     """Plots average gene expression across cell types for all conditions"""
     genesV = adata[:, genes]
-    dataDF = genesV.to_df()#pd.DataFrame(columns=genes, data=np.array(genesV.X))
+    dataDF = genesV.to_df()
     dataDF["Condition"] = genesV.obs["Condition"].values
     dataDF["Cell Type"] = genesV.obs["Cell Type"].values
     print(dataDF)
@@ -110,7 +110,7 @@ def plotGenePerCellType(genes, adata, ax):
 def plotGenePerCategCond(conds, categoryCond, genes, adata, axs, mean=True):
     """Plots average gene expression across cell types for a category of drugs"""
     genesV = adata[:, genes]
-    dataDF = genesV.to_df() #pd.DataFrame(columns=genes, data=genesV.X)
+    dataDF = genesV.to_df()
     dataDF["Condition"] = genesV.obs["Condition"].values
     dataDF["Cell Type"] = genesV.obs["Cell Type"].values
 
