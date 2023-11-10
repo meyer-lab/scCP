@@ -14,7 +14,6 @@ import numpy as np
 from ..parafac2 import pf2_fms
 
 
-
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
@@ -25,7 +24,7 @@ def makeFigure():
     rank = 30
     X = openPf2(rank, "Thomson")
 
-    #plotfms(X, 30, ax[0])
+    # plotfms(X, 30, ax[0])
     gateThomsonCells(X)
     plotLabelsUMAP(X, "Cell Type", ax[1])
     plotLabelsUMAP(X, "Cell Type2", ax[2])

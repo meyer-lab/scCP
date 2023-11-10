@@ -246,15 +246,15 @@ def standardize_pf2(
 def pf2_fms(
     X: anndata.AnnData,
     max_rank: int,
-    random_state = 1,
+    random_state=1,
 ) -> np.ndarray:
     # Get the indices for subsetting the data
-    np.seed=random_state
-    indices = np.arange(X.X.shape[0])
-    np.random.shuffle(indices)
-    X1 = X[indices[0: int(np.floor(X.X.shape[0] / 2))], :].to_memory()
-    X2 = X[indices[int(np.floor(X.X.shape[0] / 2))::], :].to_memory()
-    
+    rng = np.random.default_rng(random_state)
+    indices = rng.choice(2, size=X.shape[0])
+
+    X1 = X[indices == 0, :].to_memory()
+    X2 = X[indices == 1, :].to_memory()
+
     sgIndex1 = X1.obs["condition_unique_idxs"]
     sgIndex2 = X2.obs["condition_unique_idxs"]
     nConditions = np.amax(sgIndex1) + 1
@@ -295,14 +295,15 @@ def pf2_fms(
             rank=i + 1,
         )
 
-        parafac2_output1 = svd_decompress_parafac2_tensor(parafac2_output1, loadings_pf1)
-        parafac2_output2 = svd_decompress_parafac2_tensor(parafac2_output2, loadings_pf2)
+        parafac2_output1 = svd_decompress_parafac2_tensor(
+            parafac2_output1, loadings_pf1
+        )
+        parafac2_output2 = svd_decompress_parafac2_tensor(
+            parafac2_output2, loadings_pf2
+        )
 
-        X1 = store_pf2(X1, parafac2_output1)
-        X2 = store_pf2(X2, parafac2_output2)
-
-        X1cp = CPTensor((X1.uns["Pf2_weights"], [X1.uns["Pf2_A"], X1.uns["Pf2_B"], X1.varm["Pf2_C"]]))
-        X2cp = CPTensor((X2.uns["Pf2_weights"], [X2.uns["Pf2_A"], X2.uns["Pf2_B"], X2.varm["Pf2_C"]]))
+        X1cp = CPTensor((parafac2_output1.weights, parafac2_output1.factors))
+        X2cp = CPTensor((parafac2_output2.weights, parafac2_output2.factors))
 
         fms_vec[i] = fms(X1cp, X2cp, consider_weights=True, skip_mode=None)
 

@@ -48,17 +48,15 @@ def plotfms(data, rank, ax: Axes):
     ax.scatter(
         rank_vec,
         fms_vec,
-        c='k',
+        c="k",
         s=30.0,
-        )
+    )
 
     ax.set(
         ylabel="Factor Match Score",
         xlabel="Number of Components",
         xticks=np.linspace(0, rank, num=8, dtype=int),
-        yticks=np.linspace(
-            0, np.max(np.append(fms_vec[0], fms_vec[1])) + 0.01, num=5
-        ),
+        yticks=np.linspace(0, np.max(np.append(fms_vec[0], fms_vec[1])) + 0.01, num=5),
     )
 
 
