@@ -4,11 +4,10 @@ from tqdm import tqdm
 import anndata
 import tensorly as tl
 import cupy as cp
+from cupyx.scipy.sparse.linalg._norm import norm
 from pacmap import PaCMAP
-from tensorly.tenalg.svd import randomized_range_finder
-from tensorly.decomposition._parafac2 import parafac2
-from tensorly.preprocessing import svd_decompress_parafac2_tensor
-from tensorly.cp_tensor import cp_flip_sign
+from tensorly.decomposition import parafac, constrained_parafac
+from tensorly.cp_tensor import cp_flip_sign, cp_normalize
 from scipy.optimize import linear_sum_assignment
 
 
@@ -66,14 +65,12 @@ def pf2(
     random_state=1,
     doEmbedding: bool = True,
 ):
-    X_pf, loadings_pf = compress_tensor_slices(X)
+    X_pf = compress_tensor_slices(X)
 
     parafac2_output = parafac2_nd(
         X_pf,
         rank=rank,
     )
-
-    parafac2_output = svd_decompress_parafac2_tensor(parafac2_output, loadings_pf)
 
     X = store_pf2(X, parafac2_output)
 
@@ -88,7 +85,7 @@ def pf2_r2x(
     X: anndata.AnnData,
     max_rank: int,
 ) -> np.ndarray:
-    X_pf, loadings_pf = compress_tensor_slices(X)
+    X_pf = compress_tensor_slices(X)
 
     r2x_vec = np.empty(max_rank)
 
@@ -98,8 +95,6 @@ def pf2_r2x(
             rank=i + 1,
         )
 
-        parafac2_output = svd_decompress_parafac2_tensor(parafac2_output, loadings_pf)
-
         X = store_pf2(X, parafac2_output)
 
         _, r2x_vec[i] = cwSNR(X)
@@ -107,91 +102,123 @@ def pf2_r2x(
     return r2x_vec
 
 
-def compress_tensor_slices(X) -> tuple[list, list]:
+def compress_tensor_slices(X: anndata.AnnData) -> list:
     r"""Compress data with the randomized range finder for running PARAFAC2."""
     # Get the indices for subsetting the data
     sgIndex = X.obs["condition_unique_idxs"]
     nConditions = np.amax(sgIndex) + 1
-    max_rank = 500 if nConditions < 100 else 200
 
     X_pf: list = []
-    loadings_pf: list = []
-
-    n_cols = min(np.shape(X)[1], max_rank)
+    Xarr = X.X
 
     tl.set_backend("cupy")
 
-    for sgi in tqdm(range(nConditions), total=nConditions, desc="Compressing tensor slices"):
-        X_cond = X[sgIndex == sgi, :]
-        X_condition_arr = X_cond.X.toarray() - X.var["means"].to_numpy()
+    for sgi in tqdm(
+        range(nConditions), total=nConditions, desc="Compressing tensor slices"
+    ):
+        X_condition_arr = Xarr[sgIndex == sgi, :]
 
-        matrix = cp.array(X_condition_arr)
-
-        if np.shape(X_condition_arr)[0] <= n_cols:
-            X_pf.append(matrix)
-            loadings_pf.append(None)
-            continue
-
-        Q = randomized_range_finder(matrix, n_cols, random_state=1, n_iter=5)
-
-        X_pf.append(Q.T @ matrix)  # scores
-        loadings_pf.append(Q.get())  # loadings
+        X_pf.append(cp.sparse.csr_matrix(X_condition_arr, dtype=cp.float64))
 
     tl.set_backend("numpy")
 
-    return X_pf, loadings_pf
+    return X_pf
+
+
+def _cmf_reconstruction_error(matrices: Sequence, factors: list, norm_X_sq):
+    A, B, C = factors
+
+    norm_sq_err = norm_X_sq.copy()
+    CtC = C.T @ C
+    projections = []
+    projected_X = []
+
+    for i, mat in enumerate(matrices):
+        lhs = B @ (A[i] * C).T
+        U, _, Vh = cp.linalg.svd(mat @ lhs.T, full_matrices=False)
+        proj = U @ Vh
+
+        projections.append(proj)
+        projected_X.append(proj.T @ mat)
+
+        B_i = (proj @ B) * A[i]
+
+        # trace of the multiplication products
+        norm_sq_err -= 2.0 * cp.trace(A[i][:, np.newaxis] * B.T @ projected_X[-1] @ C)
+        norm_sq_err += ((B_i.T @ B_i) * CtC).sum()
+
+    return norm_sq_err, projections, projected_X
 
 
 def parafac2_nd(
     X_in: Sequence,
     rank: int,
     n_iter_max: int = 200,
-    tol: float = 1e-8,
-    verbose=False,
+    tol: float = 1e-6,
+    verbose=True,
 ) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray]]:
     r"""The same interface as regular PARAFAC2."""
+    norm_tensor = cp.sum(cp.array([norm(xx) ** 2 for xx in X_in]))
 
     tl.set_backend("cupy")
+    _, _, C = tl.truncated_svd(cp.array(X_in[0].toarray()), rank)
 
-    if isinstance(X_in[0], np.ndarray):
-        X_in = [cp.array(x) for x in X_in]
+    factors = [
+        tl.ones((len(X_in), rank)),
+        tl.eye(rank),
+        C.T,
+    ]
 
-    # Assemble covariance matrix rather than concatenation
-    # This saves memory and should be faster
-    covM = X_in[0].T @ X_in[0]
-    for i in range(1, len(X_in)):
-        covM += X_in[i].T @ X_in[i]
+    errs = []
 
-    _, C = cp.linalg.eigh(cp.asarray(covM))
+    tq = tqdm(range(n_iter_max), disable=(not verbose))
+    for iter in tq:
+        err, projections, projected_X = _cmf_reconstruction_error(
+            X_in, factors, norm_tensor
+        )
 
-    CPinit = (
-        None,
-        [
-            cp.ones((len(X_in), rank)),
-            cp.eye(rank),
-            C[:, -rank:],
-        ],
-    )
+        errs.append(tl.to_numpy((err / norm_tensor)))
 
-    weights, factors, projections = parafac2(
-        X_in,
-        rank,
-        n_iter_max=n_iter_max,
-        init=CPinit,  # type: ignore
-        svd="truncated_svd",
-        normalize_factors=True,
-        tol=tol,
-        nn_modes=(0,),
-        verbose=verbose,
-        linesearch=True,
-    )
+        # Project tensor slices
+        projected_X = tl.stack(projected_X)
+
+        _, factors = constrained_parafac(
+            projected_X,
+            rank,
+            n_iter_max=2,
+            tol_outer=None,
+            non_negative={0: True},
+            init=(None, list(factors)),
+        )
+
+        if iter > 1:
+            delta = errs[-2] - errs[-1]
+            tq.set_postfix(R2X=1.0 - errs[-1], Δ=delta, refresh=False)
+
+            if delta < tol:
+                break
+
     tl.set_backend("numpy")
 
-    weights = weights.get()
+    weights = np.ones(rank)
     factors = [f.get() for f in factors]
     projections = [p.get() for p in projections]
 
+    import tlviz
+
+    print(
+        f"Degeneracy score: {tlviz.factor_tools.degeneracy_score((weights, factors))}"
+    )
+
     weights, factors, projections = standardize_pf2(weights, factors, projections)
+
+
+    tucker_congruence_scores = np.ones(shape=(rank, rank))
+
+    for factor in factors:
+        tucker_congruence_scores *= tlviz.utils.normalise(factor).T @ tlviz.utils.normalise(factor)
+
+    print(np.argwhere(tucker_congruence_scores < -0.6))
 
     return weights, factors, projections
 
@@ -205,7 +232,7 @@ def standardize_pf2(
     factors = [f[:, gini_idx] for f in factors]
     weights = weights[gini_idx]
 
-    weights, factors = cp_flip_sign((weights, factors), mode=1)
+    weights, factors = cp_normalize(cp_flip_sign((weights, factors), mode=1))
 
     # Order eigen-cells to maximize the diagonal of B
     _, col_ind = linear_sum_assignment(np.abs(factors[1].T), maximize=True)
