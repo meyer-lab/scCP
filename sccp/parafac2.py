@@ -5,8 +5,9 @@ import anndata
 import tensorly as tl
 import cupy as cp
 from cupyx.scipy.sparse.linalg._norm import norm
+from cupyx.scipy.sparse.linalg._eigen import svds
 from pacmap import PaCMAP
-from tensorly.decomposition import parafac, constrained_parafac
+from tensorly.decomposition import constrained_parafac
 from tensorly.cp_tensor import cp_flip_sign, cp_normalize
 from scipy.optimize import linear_sum_assignment
 
@@ -70,6 +71,7 @@ def pf2(
     parafac2_output = parafac2_nd(
         X_pf,
         rank=rank,
+        means=cp.array(X.var["means"].to_numpy())
     )
 
     X = store_pf2(X, parafac2_output)
@@ -93,6 +95,7 @@ def pf2_r2x(
         parafac2_output = parafac2_nd(
             X_pf,
             rank=i + 1,
+            means=cp.array(X.var["means"].to_numpy())
         )
 
         X = store_pf2(X, parafac2_output)
@@ -118,14 +121,14 @@ def compress_tensor_slices(X: anndata.AnnData) -> list:
     ):
         X_condition_arr = Xarr[sgIndex == sgi, :]
 
-        X_pf.append(cp.sparse.csr_matrix(X_condition_arr, dtype=cp.float64))
+        X_pf.append(cp.sparse.csr_matrix(X_condition_arr, dtype=cp.float32))
 
     tl.set_backend("numpy")
 
     return X_pf
 
 
-def _cmf_reconstruction_error(matrices: Sequence, factors: list, norm_X_sq):
+def _cmf_reconstruction_error(matrices: Sequence, factors: list, means, norm_X_sq):
     A, B, C = factors
 
     norm_sq_err = norm_X_sq.copy()
@@ -135,11 +138,14 @@ def _cmf_reconstruction_error(matrices: Sequence, factors: list, norm_X_sq):
 
     for i, mat in enumerate(matrices):
         lhs = B @ (A[i] * C).T
-        U, _, Vh = cp.linalg.svd(mat @ lhs.T, full_matrices=False)
+        U, _, Vh = cp.linalg.svd(mat @ lhs.T - means @ lhs.T, full_matrices=False)
         proj = U @ Vh
 
         projections.append(proj)
-        projected_X.append(proj.T @ mat)
+
+        # Account for centering
+        centering = cp.outer(cp.sum(proj, axis=0), means)
+        projected_X.append(proj.T @ mat - centering)
 
         B_i = (proj @ B) * A[i]
 
@@ -153,6 +159,7 @@ def _cmf_reconstruction_error(matrices: Sequence, factors: list, norm_X_sq):
 def parafac2_nd(
     X_in: Sequence,
     rank: int,
+    means: cp.ndarray,
     n_iter_max: int = 200,
     tol: float = 1e-6,
     verbose=True,
@@ -161,7 +168,8 @@ def parafac2_nd(
     norm_tensor = cp.sum(cp.array([norm(xx) ** 2 for xx in X_in]))
 
     tl.set_backend("cupy")
-    _, _, C = tl.truncated_svd(cp.array(X_in[0].toarray()), rank)
+
+    _, _, C = svds(X_in[0], k=rank, return_singular_vectors=True)
 
     factors = [
         tl.ones((len(X_in), rank)),
@@ -174,7 +182,7 @@ def parafac2_nd(
     tq = tqdm(range(n_iter_max), disable=(not verbose))
     for iter in tq:
         err, projections, projected_X = _cmf_reconstruction_error(
-            X_in, factors, norm_tensor
+            X_in, factors, means, norm_tensor
         )
 
         errs.append(tl.to_numpy((err / norm_tensor)))
