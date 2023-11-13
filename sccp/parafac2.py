@@ -187,7 +187,7 @@ def parafac2_nd(
             rank,
             n_iter_max=2,
             tol_outer=None,
-            non_negative={0: True},
+            l2_reg={0: 0.001, 1: 0.001, 2: 0.001},
             init=(None, list(factors)),
         )
 
