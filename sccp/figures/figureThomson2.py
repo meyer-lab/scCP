@@ -13,7 +13,6 @@ import scanpy as sc
 import numpy as np
 from ..parafac2 import pf2_fms
 
-
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
