@@ -4,6 +4,7 @@ from tqdm import tqdm
 import anndata
 import tensorly as tl
 import cupy as cp
+import scipy.sparse as sps
 from cupyx.scipy.sparse.linalg._norm import norm
 from cupyx.scipy.sparse.linalg._eigen import svds
 from pacmap import PaCMAP
@@ -22,16 +23,17 @@ def cwSNR(
 
     # Get the indices for subsetting the data
     sgIndex = X.obs["condition_unique_idxs"]
+    Xarr = sps.csr_array(X.X)
+    W_proj = np.array(X.obsm["weighted_projections"])
 
     for i in range(X.uns["Pf2_A"].shape[0]):
-        X_cond = X[sgIndex == i, :]
 
         # Parafac2 to slice
         a = X.uns["Pf2_A"][i] * X.uns["Pf2_weights"]
-        B_i = X_cond.obsm["weighted_projections"]
+        B_i = W_proj[sgIndex == i]
         slice = np.dot(B_i * a, X.varm["Pf2_C"].T)
 
-        X_condition_arr = X_cond.X.toarray() - X.var["means"].to_numpy()
+        X_condition_arr = Xarr[sgIndex == i] - X.var["means"].to_numpy()
         norm_overall += float(np.linalg.norm(X_condition_arr) ** 2.0)
         err_norm_here = float(np.linalg.norm(X_condition_arr - slice) ** 2.0)
         err_norm += err_norm_here
@@ -105,25 +107,14 @@ def pf2_r2x(
     return r2x_vec
 
 
-def compress_tensor_slices(X: anndata.AnnData) -> list:
+def compress_tensor_slices(X: anndata.AnnData) -> list[cp.sparse.csr_matrix]:
     r"""Compress data with the randomized range finder for running PARAFAC2."""
     # Get the indices for subsetting the data
     sgIndex = X.obs["condition_unique_idxs"]
-    nConditions = np.amax(sgIndex) + 1
+    n_cond = np.amax(sgIndex) + 1
 
-    X_pf: list = []
-    Xarr = X.X
-
-    tl.set_backend("cupy")
-
-    for sgi in tqdm(
-        range(nConditions), total=nConditions, desc="Compressing tensor slices"
-    ):
-        X_condition_arr = Xarr[sgIndex == sgi, :]
-
-        X_pf.append(cp.sparse.csr_matrix(X_condition_arr, dtype=cp.float32))
-
-    tl.set_backend("numpy")
+    Xarr = sps.csr_array(X.X)
+    X_pf = [cp.sparse.csr_matrix(Xarr[sgIndex == i]) for i in range(n_cond)]
 
     return X_pf
 
