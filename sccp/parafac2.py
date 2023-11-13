@@ -1,81 +1,82 @@
-import os
-from tqdm import tqdm
-from copy import deepcopy
 from typing import Sequence
 import numpy as np
+from tqdm import tqdm
 import anndata
 import tensorly as tl
 import cupy as cp
 from pacmap import PaCMAP
-from .imports import import_citeseq, import_lupus, import_thomson
-from tensorly.parafac2_tensor import parafac2_to_slice
-from tensorly.cp_tensor import cp_flip_sign, CPTensor, cp_normalize
-from tensorly.decomposition import non_negative_parafac_hals
+from tensorly.tenalg.svd import randomized_range_finder
+from tensorly.decomposition._parafac2 import parafac2
+from tensorly.preprocessing import svd_decompress_parafac2_tensor
+from tensorly.cp_tensor import cp_flip_sign, CPTensor
 from scipy.optimize import linear_sum_assignment
-from sklearn.utils.sparsefuncs import mean_variance_axis
+from tlviz.factor_tools import factor_match_score as fms
 
 
 def cwSNR(
-    matrices: Sequence,
-    weights: np.ndarray,
-    factors: list[np.ndarray],
-    projections: list[np.ndarray],
-):
-    """Calculate the columnwise signal-to-noise ratio for each dataset."""
-    SNR = np.empty((len(matrices), len(weights)), dtype=float)
+    X: anndata.AnnData,
+) -> tuple[np.ndarray, float]:
+    """Calculate the columnwise signal-to-noise ratio for each dataset and overall error."""
+    SNR = np.empty(X.uns["Pf2_A"].shape, dtype=float)
+    norm_overall = 0.0
+    err_norm = 0.0
 
-    for i, mat in enumerate(matrices):
-        xx = parafac2_to_slice((weights, factors, projections), i, validate=False)
+    # Get the indices for subsetting the data
+    sgIndex = X.obs["condition_unique_idxs"]
 
-        SNR[i, :] = (factors[0][i, :] * weights) ** 2.0
-        SNR[i, :] /= np.linalg.norm(mat - xx) ** 2.0
+    for i in range(X.uns["Pf2_A"].shape[0]):
+        X_cond = X[sgIndex == i, :]
 
-    return SNR
+        # Parafac2 to slice
+        a = X.uns["Pf2_A"][i] * X.uns["Pf2_weights"]
+        B_i = X_cond.obsm["weighted_projections"]
+        slice = np.dot(B_i * a, X.varm["Pf2_C"].T)
+
+        X_condition_arr = X_cond.X.toarray() - X.var["means"].to_numpy()
+        norm_overall += float(np.linalg.norm(X_condition_arr) ** 2.0)
+        err_norm_here = float(np.linalg.norm(X_condition_arr - slice) ** 2.0)
+        err_norm += err_norm_here
+
+        SNR[i, :] = a**2.0
+        SNR[i, :] /= err_norm_here
+
+    return SNR, 1.0 - err_norm / norm_overall
+
+
+def store_pf2(
+    X: anndata.AnnData, parafac2_output: tuple[np.ndarray, list, list]
+) -> anndata.AnnData:
+    """Store the Pf2 results into the anndata object."""
+    sgIndex = X.obs["condition_unique_idxs"]
+
+    X.uns["Pf2_weights"] = parafac2_output[0]
+    X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"] = parafac2_output[1]
+
+    X.obsm["projections"] = np.zeros((X.shape[0], len(X.uns["Pf2_weights"])))
+    for i, p in enumerate(parafac2_output[2]):
+        X.obsm["projections"][sgIndex == i, :] = p  # type: ignore
+
+    X.obsm["weighted_projections"] = X.obsm["projections"] @ X.uns["Pf2_B"]
+
+    return X
 
 
 def pf2(
     X: anndata.AnnData,
-    condition_name: str,
     rank: int,
     random_state=1,
     doEmbedding: bool = True,
 ):
-    # TensorFy
-    # Get the indices for subsetting the data
-    sgUnique, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
+    X_pf, loadings_pf = compress_tensor_slices(X)
 
-    # We are going to center as we make the matrices
-    means, _ = mean_variance_axis(X.X, axis=0) # type: ignore
-
-    X_pf = []
-
-    for sgi in range(len(sgUnique)):
-        X_condition = X[sgIndex == sgi, :]
-        X_condition_arr = X_condition.X.toarray()
-        assert X_condition_arr.shape == X_condition.shape
-        X_pf.append(X_condition_arr - means)
-
-    # Quantify the variation in cross-products since this is an assumption of Pf2
-    covs = np.stack([xx.T @ xx for xx in X_pf])
-    cov_total = tl.norm(covs) ** 2
-    cov_var = tl.norm(covs - np.mean(covs, axis=0)) ** 2
-
-    weight, factors, projs, r2x = parafac2_nd(
+    parafac2_output = parafac2_nd(
         X_pf,
         rank=rank,
     )
 
-    X.uns["Pf2_weights"] = weight
-    X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"] = factors
-    X.uns["cov_ratio"] = cov_var / cov_total
-    X.uns["cvSNR"] = cwSNR(X_pf, weight, factors, projs)
-    X.uns["R2X"] = r2x
+    parafac2_output = svd_decompress_parafac2_tensor(parafac2_output, loadings_pf)
 
-    X.obsm["projections"] = np.zeros((X.shape[0], rank))
-    for i, p in enumerate(projs):
-        X.obsm["projections"][sgIndex == i, :] = p  # type: ignore
-
-    X.obsm["weighted_projections"] = X.obsm["projections"] @ X.uns["Pf2_B"]
+    X = store_pf2(X, parafac2_output)
 
     if doEmbedding:
         pcm = PaCMAP(random_state=random_state)
@@ -84,72 +85,77 @@ def pf2(
     return X
 
 
-def runAndSavePf2():
-    """Runs the analysis and saves the cache files."""
-    X = import_citeseq()
-    X = pf2(X, "Condition", 80)
-    X.write("CITEseq_analyzed_80comps.h5ad")
+def pf2_r2x(
+    X: anndata.AnnData,
+    max_rank: int,
+) -> np.ndarray:
+    X_pf, loadings_pf = compress_tensor_slices(X)
 
-    X = import_lupus()
-    X = pf2(X, "Condition", 40)
-    X.write("Lupus_analyzed_40comps.h5ad")
+    r2x_vec = np.empty(max_rank)
 
-    X = import_thomson()
-    X = pf2(X, "Condition", 30)
-    X.write("Thomson_analyzed_30comps.h5ad")
+    for i in tqdm(range(len(r2x_vec)), total=len(r2x_vec)):
+        parafac2_output = parafac2_nd(
+            X_pf,
+            rank=i + 1,
+        )
+
+        parafac2_output = svd_decompress_parafac2_tensor(parafac2_output, loadings_pf)
+
+        X = store_pf2(X, parafac2_output)
+
+        _, r2x_vec[i] = cwSNR(X)
+
+    return r2x_vec
 
 
-def _cmf_reconstruction_error(matrices: Sequence, factors: list, norm_X_sq):
-    A, B, C = factors
+def compress_tensor_slices(X) -> tuple[list, list]:
+    r"""Compress data with the randomized range finder for running PARAFAC2."""
+    # Get the indices for subsetting the data
+    sgIndex = X.obs["condition_unique_idxs"]
+    nConditions = np.amax(sgIndex) + 1
+    max_rank = 500 if nConditions < 100 else 200
 
-    norm_sq_err = norm_X_sq
-    CtC = C.T @ C
-    projections = []
-    projected_X = []
+    X_pf: list = []
+    loadings_pf: list = []
 
-    for i, mat in enumerate(matrices):
-        if isinstance(B, cp.ndarray):
-            mat_gpu = cp.asarray(mat)
-        else:
-            mat_gpu = mat
+    n_cols = min(np.shape(X)[1], max_rank)
 
-        lhs = B @ (A[i] * C).T
-        U, _, Vh = cp.linalg.svd(mat_gpu @ lhs.T, full_matrices=False)
-        proj = U @ Vh
+    tl.set_backend("cupy")
 
-        projections.append(proj)
-        projected_X.append(proj.T @ mat_gpu)
+    for sgi in tqdm(range(nConditions), total=nConditions, desc="Compressing tensor slices"):
+        X_cond = X[sgIndex == sgi, :]
+        X_condition_arr = X_cond.X.toarray() - X.var["means"].to_numpy()
 
-        B_i = (proj @ B) * A[i]
+        matrix = cp.array(X_condition_arr)
 
-        # trace of the multiplication products
-        norm_sq_err -= 2.0 * tl.trace(A[i][:, np.newaxis] * B.T @ projected_X[-1] @ C)
-        norm_sq_err += ((B_i.T @ B_i) * CtC).sum()
+        if np.shape(X_condition_arr)[0] <= n_cols:
+            X_pf.append(matrix)
+            loadings_pf.append(None)
+            continue
 
-    return norm_sq_err, projections, projected_X
+        Q = randomized_range_finder(matrix, n_cols, random_state=1, n_iter=5)
+
+        X_pf.append(Q.T @ matrix)  # scores
+        loadings_pf.append(Q.get())  # loadings
+
+    tl.set_backend("numpy")
+
+    return X_pf, loadings_pf
 
 
 def parafac2_nd(
     X_in: Sequence,
     rank: int,
     n_iter_max: int = 200,
-    tol: float = 1e-7,
-) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray], float]:
+    tol: float = 1e-8,
+    verbose=False,
+) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray]]:
     r"""The same interface as regular PARAFAC2."""
-    # Verbose if this is not an automated build
-    verbose = "CI" not in os.environ
 
-    acc_pow: float = 2.0  # Extrapolate to the iteration^(1/acc_pow) ahead
-    acc_fail: int = 0  # How many times acceleration have failed
+    tl.set_backend("cupy")
 
-    norm_tensor = np.sum([np.linalg.norm(xx) ** 2 for xx in X_in])
-
-    # Checks size of each experiment is bigger than rank
-    for i in range(len(X_in)):
-        assert np.shape(X_in[i])[0] > rank
-
-    # Checks size of signal measured is bigger than rank
-    assert np.shape(X_in[0])[1] > rank
+    if isinstance(X_in[0], np.ndarray):
+        X_in = [cp.array(x) for x in X_in]
 
     # Assemble covariance matrix rather than concatenation
     # This saves memory and should be faster
@@ -157,89 +163,38 @@ def parafac2_nd(
     for i in range(1, len(X_in)):
         covM += X_in[i].T @ X_in[i]
 
-    tl.set_backend("cupy")
-
     _, C = cp.linalg.eigh(cp.asarray(covM))
 
-    CP = CPTensor(
-        (
-            None,
-            [cp.ones((len(X_in), rank)), cp.eye(rank), C[:, -rank:]],
-        )
+    CPinit = (
+        None,
+        [
+            cp.ones((len(X_in), rank)),
+            cp.eye(rank),
+            C[:, -rank:],
+        ],
     )
 
-    errs = []
-
-    tq = tqdm(range(n_iter_max), disable=(not verbose))
-    for iter in tq:
-        err, projections, projected_X = _cmf_reconstruction_error(
-            X_in, CP.factors, norm_tensor
-        )
-
-        # Initiate line search
-        if iter % 2 == 0 and iter > 5:
-            jump = iter ** (1.0 / acc_pow)
-
-            # Estimate error with line search
-            CP_ls = deepcopy(CP)
-            CP_ls.factors = [
-                CP_old.factors[ii] + (CP.factors[ii] - CP_old.factors[ii]) * jump
-                for ii in range(3)
-            ]
-            err_ls, projections_ls, projected_X_ls = _cmf_reconstruction_error(
-                X_in, CP_ls.factors, norm_tensor
-            )
-
-            if err_ls < err:
-                acc_fail = 0
-                err = err_ls
-                projections = projections_ls
-                projected_X = projected_X_ls
-                CP = CP_ls
-            else:
-                acc_fail += 1
-
-                if acc_fail >= 4:
-                    acc_pow += 1.0
-                    acc_fail = 0
-
-                    if verbose:
-                        print("Reducing acceleration.")
-
-        errs.append((err / norm_tensor).get())
-
-        # Project tensor slices
-        projected_X = tl.stack(projected_X)
-
-        CP_old: CPTensor = deepcopy(CP)
-        CP = non_negative_parafac_hals(
-            projected_X,
-            rank,
-            n_iter_max=20,
-            nn_modes=(0,),
-            init=CP,
-            tol=False,
-            normalize_factors=False,
-        )
-
-        if iter > 1:
-            delta = errs[-2] - errs[-1]
-            tq.set_postfix(R2X=1.0 - errs[-1], Δ=delta, refresh=False)
-
-            if delta < tol:
-                break
-
-    R2X = 1 - errs[-1]
+    weights, factors, projections = parafac2(
+        X_in,
+        rank,
+        n_iter_max=n_iter_max,
+        init=CPinit,  # type: ignore
+        svd="truncated_svd",
+        normalize_factors=True,
+        tol=tol,
+        nn_modes=(0,),
+        verbose=verbose,
+        linesearch=True,
+    )
     tl.set_backend("numpy")
 
-    factors = [f.get() for f in CP.factors]
+    weights = weights.get()
+    factors = [f.get() for f in factors]
     projections = [p.get() for p in projections]
 
-    weights, factors, projections = standardize_pf2(
-        CP.weights.get(), factors, projections
-    )
+    weights, factors, projections = standardize_pf2(weights, factors, projections)
 
-    return weights, factors, projections, R2X
+    return weights, factors, projections
 
 
 def standardize_pf2(
@@ -251,7 +206,7 @@ def standardize_pf2(
     factors = [f[:, gini_idx] for f in factors]
     weights = weights[gini_idx]
 
-    weights, factors = cp_normalize(cp_flip_sign((weights, factors), mode=1))
+    weights, factors = cp_flip_sign((weights, factors), mode=1)
 
     # Order eigen-cells to maximize the diagonal of B
     _, col_ind = linear_sum_assignment(np.abs(factors[1].T), maximize=True)
@@ -264,3 +219,70 @@ def standardize_pf2(
     projections = [p * signn for p in projections]
 
     return weights, factors, projections
+
+
+def pf2_fms(
+    X: anndata.AnnData,
+    max_rank: int,
+    random_state=1,
+) -> np.ndarray:
+    # Get the indices for subsetting the data
+    rng = np.random.default_rng(random_state)
+    indices = rng.choice(2, size=X.shape[0])
+
+    X1 = X[indices == 0, :].to_memory()
+    X2 = X[indices == 1, :].to_memory()
+
+    sgIndex1 = X1.obs["condition_unique_idxs"]
+    sgIndex2 = X2.obs["condition_unique_idxs"]
+    nConditions = np.amax(sgIndex1) + 1
+
+    X_pf1 = []
+    X_pf2 = []
+    loadings_pf1 = []
+    loadings_pf2 = []
+
+    tl.set_backend("cupy")
+
+    print("Loading and compressing tensor slices")
+    for sgi in tqdm(range(nConditions), total=nConditions):
+        X_cond1 = X1[sgIndex1 == sgi, :]
+        X_cond2 = X2[sgIndex2 == sgi, :]
+        X_condition_arr1 = X_cond1.X.toarray() - X1.var["means"].to_numpy()
+        X_condition_arr2 = X_cond2.X.toarray() - X2.var["means"].to_numpy()
+
+        scores1, loadings1 = compress_tensor_slices(X_condition_arr1, maxrank=200)
+        scores2, loadings2 = compress_tensor_slices(X_condition_arr2, maxrank=200)
+        X_pf1.append(scores1)
+        X_pf2.append(scores2)
+        loadings_pf1.append(loadings1)
+        loadings_pf2.append(loadings2)
+
+    tl.set_backend("numpy")
+
+    fms_vec = np.empty(max_rank)
+
+    for i in tqdm(range(len(fms_vec)), total=len(fms_vec)):
+        parafac2_output1 = parafac2_nd(
+            X_pf1,
+            rank=i + 1,
+        )
+
+        parafac2_output2 = parafac2_nd(
+            X_pf2,
+            rank=i + 1,
+        )
+
+        parafac2_output1 = svd_decompress_parafac2_tensor(
+            parafac2_output1, loadings_pf1
+        )
+        parafac2_output2 = svd_decompress_parafac2_tensor(
+            parafac2_output2, loadings_pf2
+        )
+
+        X1cp = CPTensor((parafac2_output1.weights, parafac2_output1.factors))
+        X2cp = CPTensor((parafac2_output2.weights, parafac2_output2.factors))
+
+        fms_vec[i] = fms(X1cp, X2cp, consider_weights=True, skip_mode=None)
+
+    return fms_vec
