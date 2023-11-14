@@ -17,7 +17,7 @@ def cwSNR(
 ) -> tuple[np.ndarray, float]:
     """Calculate the columnwise signal-to-noise ratio for each dataset and overall error."""
     SNR = np.empty(X.uns["Pf2_A"].shape, dtype=float)
-    norm_overall = 0.0
+    norm_overall = calc_total_norm(X) 
     err_norm = 0.0
 
     # Get the indices for subsetting the data
@@ -32,7 +32,6 @@ def cwSNR(
         slice = np.dot(B_i * a, np.array(X.varm["Pf2_C"]).T)
 
         X_condition_arr = Xarr[sgIndex == i] - X.var["means"].to_numpy()
-        norm_overall += float(np.linalg.norm(X_condition_arr) ** 2.0)
         err_norm_here = float(np.linalg.norm(X_condition_arr - slice) ** 2.0)
         err_norm += err_norm_here
 
