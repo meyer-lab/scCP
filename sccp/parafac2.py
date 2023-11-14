@@ -5,13 +5,13 @@ import anndata
 import tensorly as tl
 import cupy as cp
 import scipy.sparse as sps
-from cupyx.scipy.sparse.linalg._norm import norm
+from scipy.sparse.linalg import norm
 from cupyx.scipy.sparse.linalg._eigen import svds
 from pacmap import PaCMAP
-from tensorly.decomposition import constrained_parafac
+from tensorly.decomposition import parafac
 from tensorly.cp_tensor import cp_flip_sign, cp_normalize, CPTensor
 from scipy.optimize import linear_sum_assignment
-from tlviz.factor_tools import factor_match_score as fms
+from tlviz.factor_tools import factor_match_score as fms, degeneracy_score
 
 
 def cwSNR(
@@ -28,11 +28,10 @@ def cwSNR(
     W_proj = np.array(X.obsm["weighted_projections"])
 
     for i in range(X.uns["Pf2_A"].shape[0]):
-
         # Parafac2 to slice
         a = X.uns["Pf2_A"][i] * X.uns["Pf2_weights"]
         B_i = W_proj[sgIndex == i]
-        slice = np.dot(B_i * a, X.varm["Pf2_C"].T)
+        slice = np.dot(B_i * a, np.array(X.varm["Pf2_C"]).T)
 
         X_condition_arr = Xarr[sgIndex == i] - X.var["means"].to_numpy()
         norm_overall += float(np.linalg.norm(X_condition_arr) ** 2.0)
@@ -69,12 +68,9 @@ def pf2(
     random_state=1,
     doEmbedding: bool = True,
 ):
-    X_pf = compress_tensor_slices(X)
-
     parafac2_output = parafac2_nd(
-        X_pf,
+        X,
         rank=rank,
-        means=cp.array(X.var["means"].to_numpy())
     )
 
     X = store_pf2(X, parafac2_output)
@@ -91,15 +87,13 @@ def pf2_r2x(
     max_rank: int,
 ) -> np.ndarray:
     X = X.to_memory()
-    X_pf = compress_tensor_slices(X)
 
     r2x_vec = np.empty(max_rank)
 
     for i in tqdm(range(len(r2x_vec)), total=len(r2x_vec)):
         parafac2_output = parafac2_nd(
-            X_pf,
+            X,
             rank=i + 1,
-            means=cp.array(X.var["means"].to_numpy())
         )
 
         X = store_pf2(X, parafac2_output)
@@ -109,19 +103,9 @@ def pf2_r2x(
     return r2x_vec
 
 
-def compress_tensor_slices(X: anndata.AnnData) -> list[cp.sparse.csr_matrix]:
-    r"""Compress data with the randomized range finder for running PARAFAC2."""
-    # Get the indices for subsetting the data
-    sgIndex = X.obs["condition_unique_idxs"]
-    n_cond = np.amax(sgIndex) + 1
-
-    Xarr = sps.csr_array(X.X)
-    X_pf = [cp.sparse.csr_matrix(Xarr[sgIndex == i]) for i in range(n_cond)]
-
-    return X_pf
-
-
-def _cmf_reconstruction_error(matrices: Sequence, factors: list, means, norm_X_sq):
+def _cmf_reconstruction_error(
+    matrices: Sequence, factors: list, means: cp.ndarray, norm_X_sq
+):
     A, B, C = factors
 
     norm_sq_err = norm_X_sq.copy()
@@ -150,23 +134,36 @@ def _cmf_reconstruction_error(matrices: Sequence, factors: list, means, norm_X_s
 
 
 def parafac2_nd(
-    X_in: Sequence,
+    X: anndata.AnnData,
     rank: int,
-    means: cp.ndarray,
     n_iter_max: int = 200,
     tol: float = 1e-6,
-    verbose=True,
+    verbose=False,
 ) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray]]:
     r"""The same interface as regular PARAFAC2."""
-    norm_tensor = cp.sum(cp.array([norm(xx) ** 2 for xx in X_in]))
+    # Index dataset to a list of conditions
+    sgIndex = X.obs["condition_unique_idxs"]
+    n_cond = np.amax(sgIndex) + 1
+
+    Xarr = sps.csr_array(X.X)
+    X_in = [
+        cp.sparse.csr_matrix(Xarr[sgIndex == i], dtype=cp.float32)
+        for i in range(n_cond)
+    ]
+
+    means = cp.array(X.var["means"].to_numpy())
+
+    # Calculate the norm of the dataset
+    norm_tensor = norm(Xarr) ** 2
+    # TODO: This norm isn't quite right because it doesn't account for centering
 
     tl.set_backend("cupy")
 
     _, _, C = svds(X_in[0], k=rank, return_singular_vectors=True)
 
     factors = [
-        tl.ones((len(X_in), rank)),
-        tl.eye(rank),
+        tl.ones((len(X_in), rank), dtype=cp.float32),
+        tl.eye(rank, dtype=cp.float32),
         C.T,
     ]
 
@@ -183,13 +180,13 @@ def parafac2_nd(
         # Project tensor slices
         projected_X = tl.stack(projected_X)
 
-        _, factors = constrained_parafac(
+        _, factors = parafac(
             projected_X,
             rank,
-            n_iter_max=2,
-            tol_outer=None,
-            l2_reg={0: 0.01, 1: 0.01, 2: 0.01},
-            init=(None, list(factors)),
+            n_iter_max=3,
+            tol=None,  # type: ignore
+            l2_reg=0.01,  # type: ignore
+            init=(None, list(factors)),  # type: ignore
         )
 
         if iter > 1:
@@ -203,25 +200,11 @@ def parafac2_nd(
 
     weights = np.ones(rank)
     factors = [f.get() for f in factors]
-    projections = [p.get() for p in projections]
+    projections = [p.get() for p in projections]  # type: ignore
 
-    import tlviz
+    print(f"Degeneracy score: {degeneracy_score((weights, factors))}")
 
-    print(
-        f"Degeneracy score: {tlviz.factor_tools.degeneracy_score((weights, factors))}"
-    )
-
-    weights, factors, projections = standardize_pf2(weights, factors, projections)
-
-
-    tucker_congruence_scores = np.ones(shape=(rank, rank))
-
-    for factor in factors:
-        tucker_congruence_scores *= tlviz.utils.normalise(factor).T @ tlviz.utils.normalise(factor)
-
-    print(np.argwhere(tucker_congruence_scores < -0.6))
-
-    return weights, factors, projections
+    return standardize_pf2(weights, factors, projections)
 
 
 def standardize_pf2(
@@ -260,23 +243,17 @@ def pf2_fms(
     X1 = X[indices == 0, :].to_memory()
     X2 = X[indices == 1, :].to_memory()
 
-    X1_pf = compress_tensor_slices(X1)
-    X2_pf = compress_tensor_slices(X2)
-
     fms_vec = np.empty(max_rank)
 
     for i in tqdm(range(len(fms_vec)), total=len(fms_vec)):
         parafac2_output1 = parafac2_nd(
-            X1_pf,
+            X1,
             rank=i + 1,
-            means=cp.array(X1.var["means"].to_numpy())
         )
         parafac2_output2 = parafac2_nd(
-            X2_pf,
+            X2,
             rank=i + 1,
-            means=cp.array(X2.var["means"].to_numpy())
         )
-
 
         X1cp = CPTensor((parafac2_output1[0], parafac2_output1[1]))
         X2cp = CPTensor((parafac2_output2[0], parafac2_output2[1]))
