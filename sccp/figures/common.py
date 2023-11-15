@@ -81,5 +81,5 @@ def genFigure():
 def openPf2(rank: int, dataName: str) -> anndata.AnnData:
     """Opens weight factors and projections for one dataset for a component as numpy arrays"""
     return anndata.read_h5ad(
-        f"/opt/pf2/{dataName}_analyzed_{rank}comps.h5ad", backed="r"
+        "/opt/pf2/lupus_40comp_raw.h5ad", backed="r"
     )

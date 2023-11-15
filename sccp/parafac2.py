@@ -22,7 +22,7 @@ def cwSNR(
 
     # Get the indices for subsetting the data
     sgIndex = X.obs["condition_unique_idxs"]
-    Xarr = sps.csr_array(X.X)
+    Xarr = X.X.to_memory().toarray()
     W_proj = np.array(X.obsm["weighted_projections"])
 
     for i in range(X.uns["Pf2_A"].shape[0]):

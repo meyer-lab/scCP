@@ -43,6 +43,13 @@ def import_thomson() -> anndata.AnnData:
     # )
     # Just immediately written from above line, to make loading faster
     X = anndata.read_h5ad("/opt/andrew/thomson_raw.h5ad")
+       
+    # print(X.to_df())
+    data = X.to_df()
+    
+    print(np.max(data,axis=0).values)
+    print(np.min(data,axis=0).values)
+    
     obs = X.obs.reset_index(names="cell_barcode")
 
     # Left merging should put the barcodes in order
@@ -80,6 +87,14 @@ def import_lupus() -> anndata.AnnData:
 
     """
     X = anndata.read_h5ad("/opt/andrew/lupus/lupusRaw.h5ad")
+    
+    data = X.to_df()
+    
+    print(np.max(data,axis=1))
+    print(np.min(data,axis=0))
+    
+    
+    
 
     # Used to convert back to raw
     # X = anndata.AnnData(X.raw.X, X.obs, X.raw.var, None, X.obsm)
