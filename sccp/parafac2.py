@@ -12,13 +12,10 @@ from scipy.optimize import linear_sum_assignment
 from tlviz.factor_tools import factor_match_score as fms, degeneracy_score
 
 
-def cwSNR(
-    X: anndata.AnnData,
-) -> tuple[np.ndarray, float]:
+def cwSNR(X: anndata.AnnData) -> np.ndarray:
     """Calculate the columnwise signal-to-noise ratio for each dataset and overall error."""
     a = X.uns["Pf2_A"] * X.uns["Pf2_weights"]
     SNR = a
-    norm_overall = calc_total_norm(X)
     err_norm = 0.0
 
     # Get the indices for subsetting the data
@@ -33,11 +30,19 @@ def cwSNR(
 
         X_condition_arr = Xarr[sgIndex == i] - X.var["means"].to_numpy()
         err_norm_here = float(np.linalg.norm(X_condition_arr - slice) ** 2.0)
-        err_norm += err_norm_here
 
         SNR[i, :] /= err_norm_here
 
-    return SNR, 1.0 - err_norm / norm_overall
+    return SNR
+
+
+def get_R2X(X: anndata.AnnData) -> float:
+    norm_tensor = calc_total_norm(X)
+
+    A, B, C = [X.uns["Pf2_A"], X.obsm["weighted_projections"], X.varm["Pf2_C"]]
+
+    raise NotImplementedError("To be added.")
+    return 0.0
 
 
 def calc_total_norm(X: anndata.AnnData) -> float:
@@ -103,8 +108,6 @@ def pf2_r2x(
     X: anndata.AnnData,
     max_rank: int,
 ) -> np.ndarray:
-    X = X.to_memory()
-
     r2x_vec = np.empty(max_rank)
 
     for i in tqdm(range(len(r2x_vec)), total=len(r2x_vec)):
@@ -115,7 +118,7 @@ def pf2_r2x(
 
         X = store_pf2(X, parafac2_output)
 
-        _, r2x_vec[i] = cwSNR(X)
+        r2x_vec[i] = get_R2X(X)
 
     return r2x_vec
 
