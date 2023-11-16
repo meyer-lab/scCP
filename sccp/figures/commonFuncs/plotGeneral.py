@@ -5,7 +5,7 @@ import scanpy as sc
 import anndata
 from matplotlib.axes import Axes
 from ...crossVal import CrossVal
-from ...parafac2 import pf2_r2x, pf2_fms
+from ...parafac2 import pf2_r2x, pf2_fms_boot
 
 
 def plotR2X(data, rank, ax: Axes):
@@ -63,7 +63,7 @@ def plotR2X_pf2(data, rank, ax: Axes):
 
 def plotfms(data, rank, ax: Axes):
     """Creates R2X plot for parafac2 tensor decomposition"""
-    fms_vec = pf2_fms(data, rank)
+    fms_vec = pf2_fms_boot(data, rank)
 
     rank_vec = np.arange(1, rank + 1)
 
