@@ -61,7 +61,7 @@ def calc_total_norm(X: anndata.AnnData) -> float:
     return zero_norm + centered_nonzero_norm
 
 
-def   pppf2(
+def store_pf2(
     X: anndata.AnnData, parafac2_output: tuple[np.ndarray, list, list]
 ) -> anndata.AnnData:
     """Store the Pf2 results into the anndata object."""
