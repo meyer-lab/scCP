@@ -6,12 +6,12 @@ from .common import subplotLabel, getSetup, openPf2
 from .commonFuncs.plotUMAP import plotGeneUMAP, plotLabelsUMAP
 import pacmap
 import numpy as np
-
+from ..gating import gateThomsonCells
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((15, 13), (3, 3))
+    ax, f = getSetup((15, 13), (3, 4))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -27,6 +27,10 @@ def makeFigure():
     for i, drug in enumerate(drugs):
         plotLabelsUMAP(X, "Condition", ax[i + 2], drug, cmap="Set1")
         ax[i + 2].set(title=f"Pf2-Based Decomposition")
+        
+    gateThomsonCells(X)
+    plotLabelsUMAP(X, "Cell Type", ax[8])
+    plotLabelsUMAP(X, "Cell Type2", ax[9])
 
     # PCA dimension reduction
     pc = PCA(n_components=rank)
@@ -39,5 +43,7 @@ def makeFigure():
     for i, drug in enumerate(drugs):
         plotLabelsUMAP(X, "Condition", ax[i + 6], drug, cmap="Set1")
         ax[i + 6].set(title=f"PCA-Based Decomposition")
+        
+
 
     return f

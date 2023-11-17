@@ -10,6 +10,8 @@ from sklearn.utils.sparsefuncs import inplace_column_scale, mean_variance_axis
 def prepare_dataset(X: anndata.AnnData, condition_name: str) -> anndata.AnnData:
     assert isinstance(X.X, spmatrix)
     assert np.amin(X.X.data) >= 0.0  # type: ignore
+    
+    sc.pp.normalize_total(X)
 
     readSum, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
     readSum *= X.shape[0]
@@ -101,6 +103,31 @@ def import_lupus() -> anndata.AnnData:
 
     # get rid of IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831 (only 3 cells)
     X = X[X.obs["Condition"] != "IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831"]
+    
+    
+    # X.var["Mitochondrial"] = X.var_names.str.startswith("MT-") 
+    # X.var["Ribosomal"] = X.var_names.str.startswith(("RPS","RPL"))
+    
+    # sc.pp.calculate_qc_metrics(X, qc_vars=["Mitochondrial", "Ribosomal"], percent_top=None, log1p=False, inplace=True)
+    
+    
+    # X = X[X.obs['pct_counts_Mitochondrial'] < 20, :]
+
+    # # filter for percent ribo > 0.05
+    # X = X[X.obs['pct_counts_Ribosomal'] > 5, :]
+    
+    
+    # malat1 = X.var_names.str.startswith('MALAT1')
+    # mito_genes = X.var_names.str.startswith('MT-')
+    # ribo_genes = X.var_names.str.startswith(("RPS","RPL"))
+    # hb_genes = X.var_names.str.contains('^HB[^(P)]')
+
+    # remove = np.add(mito_genes, malat1)
+    # remove = np.add(remove, hb_genes)
+    # remove = np.add(remove, ribo_genes)
+    # keep = np.invert(remove)
+
+    # X = X[:,keep]
 
     return prepare_dataset(X, "Condition")
 
