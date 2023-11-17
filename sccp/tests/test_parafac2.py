@@ -21,8 +21,9 @@ def test_total_norm():
 
     normBefore = calc_total_norm(X)
 
+    # De-mean since we aim to subtract off the means
     means = np.mean(X.X.toarray(), axis=0)  # type: ignore
-    X.X -= means
+    X.X += means
     X.var["means"] = means
 
     normAfter = calc_total_norm(X)
@@ -53,9 +54,9 @@ def test_pf2_proj_centering():
     )
     np.testing.assert_allclose(norm_sq_err.get() / norm_X_sq, 0.0, atol=1e-6)
 
+    # De-mean since we aim to subtract off the means
     means = np.mean(XX, axis=0)
-    XX = XX - means
-    np.testing.assert_allclose(np.mean(XX, axis=0), 0.0, atol=1e-6)
+    XX = XX + means
 
     norm_sq_err_centered, _, _ = _cmf_reconstruction_error(
         csr_array(XX), sgIndex, cp.array(means), factors, norm_X_sq
