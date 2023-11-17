@@ -133,14 +133,14 @@ def _cmf_reconstruction_error(Xarr, sgIndex, means, factors: list, norm_X_sq: fl
         mat = cp.sparse.csr_matrix(Xarr[sgIndex == i])
 
         lhs = B @ (A[i] * C).T
-        U, _, Vh = cp.linalg.svd(mat @ lhs.T - means @ lhs.T, full_matrices=False)
+        U, _, Vh = cp.linalg.svd(mat @ lhs.T + means @ lhs.T, full_matrices=False)
         proj = U @ Vh
 
         projections.append(proj)
 
         # Account for centering
         centering = cp.outer(cp.sum(proj, axis=0), means)
-        projected_X.append(proj.T @ mat - centering)
+        projected_X.append(proj.T @ mat + centering)
 
         B_i = (proj @ B) * A[i]
 
