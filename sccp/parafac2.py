@@ -61,7 +61,7 @@ def calc_total_norm(X: anndata.AnnData) -> float:
     return zero_norm + centered_nonzero_norm
 
 
-def store_pf2(
+def   pppf2(
     X: anndata.AnnData, parafac2_output: tuple[np.ndarray, list, list]
 ) -> anndata.AnnData:
     """Store the Pf2 results into the anndata object."""
@@ -254,11 +254,8 @@ def pf2_fms(
     rng1 = np.random.default_rng(random_state)
     indices1 = rng1.choice(indices, size=X.shape[0], replace=True)
 
-    rng2 = np.random.default_rng(random_state + 1)
-    indices2 = rng2.choice(indices, size=X.shape[0], replace=True)
-
     X1 = X[indices1, :].to_memory()
-    X2 = X[indices2, :].to_memory()
+    X2 = X.to_memory()
 
     fms_vec = np.empty(max_rank)
 
