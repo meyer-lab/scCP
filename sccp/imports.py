@@ -10,11 +10,10 @@ from sklearn.utils.sparsefuncs import inplace_column_scale, mean_variance_axis
 def prepare_dataset(X: anndata.AnnData, condition_name: str) -> anndata.AnnData:
     assert isinstance(X.X, spmatrix)
     assert np.amin(X.X.data) >= 0.0  # type: ignore
-    X.X.data = X.X.data.astype(np.float64)
 
     # Filter out genes with too few reads
     readmean, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
-    X = X[:, readmean * X.shape[0] > 50]
+    X = X[:, readmean > 0.01]
 
     # Normalize read depth
     sc.pp.normalize_total(X, exclude_highly_expressed=False, inplace=True)

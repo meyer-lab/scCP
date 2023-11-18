@@ -131,7 +131,7 @@ def _cmf_reconstruction_error(Xarr, sgIndex, means, factors: list, norm_X_sq: fl
 
     for i in range(np.amax(sgIndex) + 1):
         # Prepare CuPy matrix
-        mat = cupy_sparse.csr_matrix(Xarr[sgIndex == i])
+        mat = cupy_sparse.csr_matrix(Xarr[sgIndex == i], dtype=cp.float32)
 
         lhs = B @ (A[i] * C).T
         U, _, Vh = cp.linalg.svd(mat @ lhs.T - means @ lhs.T, full_matrices=False)
