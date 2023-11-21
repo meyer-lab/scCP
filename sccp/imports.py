@@ -5,18 +5,25 @@ import anndata
 import scanpy as sc
 from scipy.sparse import spmatrix
 from sklearn.utils.sparsefuncs import inplace_column_scale, mean_variance_axis
+from cupyx.scipy import sparse as cupy_sparse
+import cupy as cp
+import scipy.sparse as sps
 
-
-def prepare_dataset(X: anndata.AnnData, condition_name: str) -> anndata.AnnData:
+def prepare_dataset(X: anndata.AnnData, condition_name: str, normalize) -> anndata.AnnData:
     assert isinstance(X.X, spmatrix)
     assert np.amin(X.X.data) >= 0.0  # type: ignore
 
     # Filter out genes with too few reads
     readmean, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
     X = X[:, readmean > 0.01]
+    
+    # np.unique(X.obs_vector(condition_name), 
+    # for 
+    # np.sum(
 
     # Normalize read depth
-    sc.pp.normalize_total(X, exclude_highly_expressed=False, inplace=True)
+    if normalize is True:
+        sc.pp.normalize_total(X, exclude_highly_expressed=False, inplace=True)
 
     # Scale genes by sum
     readmean, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
@@ -27,17 +34,20 @@ def prepare_dataset(X: anndata.AnnData, condition_name: str) -> anndata.AnnData:
     X.X.data = np.log10((1000.0 * X.X.data) + 1.0)  # type: ignore
 
     # Get the indices for subsetting the data
-    _, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
+    cond, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
+  
+    
+    numb = np.zeros((np.shape(X.X)[0], len(np.unique(sgIndex))))
     X.obs["condition_unique_idxs"] = sgIndex
 
     # Pre-calculate gene means
     means, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
     X.var["means"] = means
 
-    return X
+    return X, cond
 
 
-def import_thomson() -> anndata.AnnData:
+def import_thomson(normalize=True) -> anndata.AnnData:
     """Import Thompson lab PBMC dataset."""
     # Cell barcodes, sample id of treatment and sample number (33482, 3)
     metafile = pd.read_csv("sccp/data/Thomson/meta.csv", usecols=[0, 1])
@@ -62,7 +72,7 @@ def import_thomson() -> anndata.AnnData:
         }
     )
 
-    return prepare_dataset(X, "Condition")
+    return prepare_dataset(X, "Condition", normalize)
 
 
 def import_lupus() -> anndata.AnnData:

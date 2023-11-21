@@ -14,7 +14,8 @@ from .commonFuncs.plotGeneral import (
     gene_plot_cells,
 )
 from ..gating import gateThomsonCells
-
+from ..imports import import_thomson
+from ..factorization import pf2
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
@@ -24,59 +25,27 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
     rank = 30
-    X = openPf2(rank, "Thomson")
-
-    # plotfms(X, 30, ax[0])
-    # plotR2X_pf2(X, 15, ax[1])
-
+    # X = openPf2(rank, "Thomson")
+    X, cond = import_thomson(normalize=True)
+    X = pf2(X, rank)
+    # X = openPf2(rank, "Thomson")
     gateThomsonCells(X)
-    plotLabelsUMAP(X, "Cell Type", ax[0])
-    plotLabelsUMAP(X, "Cell Type2", ax[1])
-    plotCmpUMAP(X, 3, ax[2], 0.2)  # NK
-    plotCmpUMAP(X, 23, ax[3], 0.2)  # Gluco
-    plotCmpUMAP(X, 13, ax[4], 0.2)  # B Cell
-    plotCmpUMAP(X, 26, ax[5], 0.2)  # Dex Hcl
+    
+    X = X
 
-    plotGeneFactors(3, X, ax[6], geneAmount=10, top=True)
-    plotGeneFactors(23, X, ax[7], geneAmount=10, top=False)
-    plotGeneFactors(13, X, ax[8], geneAmount=10, top=False)
-    plotGeneFactors(26, X, ax[9], geneAmount=10, top=False)
-    plotGeneFactors(26, X, ax[10], geneAmount=10, top=True)
 
-    geneSet1 = ["NKG7", "GNLY", "GZMB", "GZMH", "PRF1", "CD3D"]
-    geneSet2 = ["MS4A1", "CD79A", "CD79B", "TNFRSF13B", "BANK1"]
+    # cmp20 = ["UBE2C", "TOP2A", "TPX2", "ASPM", "BIRC5", "CXCL10", "GBP5", "ANKRD22", "FCGR1A", "ETV7"]
 
-    genes = [geneSet1, geneSet2]
-    for i in range(len(genes)):
-        plotGenePerCellType(genes[i], X, ax[i + 11])
+    cmp26 = ["MT1G", "MT1H", "MT1M", "NCCRP1", "FBN1", "SLC30A3", "VPREB3", "IL2RA", "LTA", "GINS2"]
 
-    glucs = [
-        "Betamethasone Valerate",
-        "Loteprednol etabonate",
-        "Budesonide",
-        "Triamcinolone Acetonide",
-        "Meprednisone",
-    ]
-    geneSet3 = ["CD163"]
-    plotGenePerCategCond(glucs, "Gluco", geneSet3, X, [ax[13]])
+    # cmp29 = ["GINS2", "KIAA0101", "TYMS", "BCAS4", "MS4A1", "CCL19","RSAD2", "IFIT1", "SIGLEC1", "CXCL11"]
+    
+    cmp29 = ["MS4A1"]
 
-    DexGenes1 = X[:, ["MT1G", "MT1H"]].to_memory()
-    gene_plot_cells(
-        DexGenes1,
-        hue="Condition",
-        ax=ax[14],
-        unique="Dexrazoxane HCl (ICRF-187, ADR-529)",
-        average=True,
-    )
 
-    ax[15].clear()
-    DexGenes2 = X[:, ["MT1G", "ZNF311"]].to_memory()
-    gene_plot_cells(
-        DexGenes2,
-        hue="Condition",
-        ax=ax[15],
-        unique="Dexrazoxane HCl (ICRF-187, ADR-529)",
-        average=True,
-    )
+
+    print(X)
+    plotGenePerCategCond(["CTRL6"], "CTRL6", cmp29, X, ax[0:len(cmp29)])
+
 
     return f

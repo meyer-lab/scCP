@@ -93,6 +93,24 @@ def plotFactors(
                 )
             # add a little legend
             axs[i].legend(handles=legend_elements, bbox_to_anchor=(0.18, 1.07))
+            
+        # if i==2:
+        #     yt = np.reshape(yt, (np.shape(yt)[0]))
+        #     print(np.shape(X))
+        #     print(np.shape(yt))
+        #     df = pd.DataFrame(data=X, index=yt, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+        #     geneAmount=20
+        #     genesTop = np.empty((geneAmount, X.shape[1]), dtype="<U10")
+        #     genesBottom = np.empty((geneAmount, X.shape[1]), dtype="<U10")
+        #     sort_idx = np.argsort(X, axis=0)
+        #     for j in range(rank):
+        #         sortGenes = yt[sort_idx[:, j]]
+        #         genesTop[:, j] = np.flip(sortGenes[-geneAmount:])
+        #         genesBottom[:, j] = sortGenes[:geneAmount]
+        #     dfTop = pd.DataFrame(data=genesTop, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+        #     dfBot = pd.DataFrame(data=genesBottom, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+        #     dfTop.to_csv("sccp/data/TopGenes_Cmp"+str(rank)+".csv")
+        #     dfBot.to_csv("sccp/data/BotGenes_Cmp"+str(rank)+".csv")
 
         axs[i].set_title(title)
         axs[i].tick_params(axis="y", rotation=0)
