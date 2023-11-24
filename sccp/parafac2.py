@@ -83,6 +83,7 @@ def parafac2_nd(
     n_iter_max: int = 200,
     tol: float = 1e-7,
     verbose=True,
+    random_state=None,
 ) -> tuple[tuple[np.ndarray, list[np.ndarray], list[np.ndarray]], float]:
     r"""The same interface as regular PARAFAC2."""
     # Index dataset to a list of conditions
@@ -96,6 +97,8 @@ def parafac2_nd(
     norm_tensor = calc_total_norm(X)
 
     xInit = cupy_sparse.csr_matrix(Xarr[::10])
+
+    cp.random.set_random_state(cp.random.RandomState(random_state))
     _, _, C = svds(xInit, k=rank, return_singular_vectors=True)
 
     tl.set_backend("cupy")

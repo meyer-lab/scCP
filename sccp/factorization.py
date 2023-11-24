@@ -80,6 +80,7 @@ def pf2(
     pf_out, _ = parafac2_nd(
         X,
         rank=rank,
+        random_state=random_state
     )
 
     X = store_pf2(X, pf_out)

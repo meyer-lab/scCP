@@ -1,7 +1,8 @@
 """
 Lupus: Plot 2 Pf2 factors for conditions
 """
-from .common import subplotLabel, getSetup, openPf2
+import anndata
+from .common import subplotLabel, getSetup
 from .commonFuncs.plotGeneral import (
     gene_plot_cells,
     gene_plot_conditions,
@@ -17,8 +18,9 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    rank = 40
-    X = openPf2(rank=rank, dataName="Lupus")
+    X = anndata.read_h5ad(
+        f"/opt/pf2/Lupus_analyzed_40comps.h5ad", backed="r"
+    )
 
     X_genes = X[:, ["PPBP", "FHIT"]].to_memory()
     gene_plot_cells(X_genes, hue="SLE_status", ax=ax[0], kde=True)
