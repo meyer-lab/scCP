@@ -82,7 +82,7 @@ def parafac2_nd(
     rank: int,
     n_iter_max: int = 200,
     tol: float = 1e-7,
-    verbose=True,
+    verbose=False,
     random_state=None,
 ) -> tuple[tuple[np.ndarray, list[np.ndarray], list[np.ndarray]], float]:
     r"""The same interface as regular PARAFAC2."""
