@@ -18,9 +18,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = anndata.read_h5ad(
-        f"/opt/pf2/Lupus_analyzed_40comps.h5ad", backed="r"
-    )
+    X = anndata.read_h5ad(f"/opt/pf2/Lupus_analyzed_40comps.h5ad", backed="r")
 
     X_genes = X[:, ["PPBP", "FHIT"]].to_memory()
     gene_plot_cells(X_genes, hue="SLE_status", ax=ax[0], kde=True)

@@ -17,9 +17,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = anndata.read_h5ad(
-        f"/opt/pf2/Lupus_analyzed_40comps.h5ad", backed="r"
-    )
+    X = anndata.read_h5ad(f"/opt/pf2/Lupus_analyzed_40comps.h5ad", backed="r")
 
     df = X.obs[["Cell Type", "SLE_status", "Condition"]].reset_index(drop=True)
 

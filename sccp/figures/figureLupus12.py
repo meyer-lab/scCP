@@ -18,9 +18,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = anndata.read_h5ad(
-        f"/opt/pf2/Lupus_analyzed_40comps.h5ad", backed="r"
-    )
+    X = anndata.read_h5ad(f"/opt/pf2/Lupus_analyzed_40comps.h5ad", backed="r")
 
     status = X.obs[
         ["pool", "patient", "SLE_status", "Processing_Cohort"]
