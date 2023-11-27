@@ -20,7 +20,6 @@ def makeFigure():
     subplotLabel(ax)
 
     X = read_h5ad("factor_cache/Thomson.h5ad", backed="r")
-    print(X)
 
     drugNames = groupDrugs(X.obs["Condition"])
 
