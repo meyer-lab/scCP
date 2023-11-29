@@ -73,7 +73,7 @@ def makeFigure():
         # fmsScore = fms(dataXcp, sampledXcp, consider_weights=True, skip_mode=None)
 
     ax[0].plot(range(10, 100, 5), fmsScores)
-    ax[0].set_title("Factor Match Score for 5-95% percent of data")
+    ax[0].set_title("Factor Match Score for 10-95% percent of data")
     ax[0].set_xlabel("Percent of data")
     ax[0].set_ylabel("Factor Match Score")
 
