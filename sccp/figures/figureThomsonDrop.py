@@ -22,8 +22,6 @@ def makeFigure():
 
     plotFactors(origX, ax[0:3], reorder=(0, 2))
 
-    # sampled_data = data
-
     sampledX = pf2(sampled_data, rank, doEmbedding=False)
 
     plotFactors(sampledX, ax[3:6], reorder=(0, 2))
