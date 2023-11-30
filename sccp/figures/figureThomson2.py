@@ -30,21 +30,20 @@ def makeFigure():
     plotLabelsUMAP(X, "Cell Type", ax[0])
     plotLabelsUMAP(X, "Cell Type2", ax[1])
 
-    plotCmpUMAP(X, 12, ax[2], 0.2)  
-    plotCmpUMAP(X, 19, ax[4], 0.2)  
-    plotCmpUMAP(X, 20, ax[5], 0.2)  
+    plotCmpUMAP(X, 13, ax[2], 0.2)  
+    plotCmpUMAP(X, 19, ax[3], 0.2)  
+    plotCmpUMAP(X, 20, ax[4], 0.2)  
 
-    plotGeneFactors(12, X, ax[6], geneAmount=10, top=True)
-    plotGeneFactors(19, X, ax[7], geneAmount=10, top=False)
-    plotGeneFactors(20, X, ax[8], geneAmount=10, top=False)
+    plotGeneFactors(13, X, ax[5], geneAmount=10, top=False)
+    plotGeneFactors(19, X, ax[6], geneAmount=10, top=True)
+    plotGeneFactors(20, X, ax[7], geneAmount=10, top=True)
 
 
     geneSet1 = ["NKG7", "GNLY", "GZMB", "GZMH", "PRF1", "CD3D"]
     geneSet2 = ["MS4A1", "CD79A", "CD79B", "TNFRSF13B", "BANK1"]
-
     genes = [geneSet1, geneSet2]
     for i in range(len(genes)):
-        plotGenePerCellType(genes[i], X, ax[i + 11])
+        plotGenePerCellType(genes[i], X, ax[i+8])
 
     glucs = [
         "Betamethasone Valerate",
@@ -53,10 +52,12 @@ def makeFigure():
         "Triamcinolone Acetonide",
         "Meprednisone",
     ]
-    geneSet3 = ["CD163"]
-    plotGenePerCategCond(glucs, "Gluco", geneSet3, X, [ax[13]])
+    geneSet3 = ["CD163", "ADORA3"]
+    for i in range(len(geneSet3)):
+        plotGenePerCategCond(glucs, "Gluco", geneSet3[i], X, ax[i+10])
     
-    geneSet4 = ["CD163"]
-    plotGenePerCategCond(glucs, "Gluco", geneSet3, X, [ax[13]])
+    geneSet4 = ["THBS1", "VMO1"]
+    for i in range(len(geneSet4)):
+        plotGenePerCategCond(["Alprostadil"], "Alpo", geneSet4[i], X, ax[i+12])
 
     return f
