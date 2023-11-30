@@ -1,16 +1,14 @@
 from .common import getSetup
-from ..gating import gateThomsonCells
+from ..imports import import_thomson
 from ..factorization import pf2
 from .commonFuncs.plotFactors import (
     plotFactors,
 )
-from ..imports import import_thomson
 
 
 def makeFigure():
     rank = 20
     data = import_thomson()
-    gateThomsonCells(data)
 
     sampled_data = data[
         (data.obs["Cell Type"] != "T Cells") | (data.obs["Condition"] != "CTRL4")
