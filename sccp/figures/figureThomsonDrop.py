@@ -7,7 +7,7 @@ from .commonFuncs.plotFactors import (
     plotGeneFactors,
 )
 from ..imports import import_thomson
-from figureThomson1 import groupDrugs
+from .figureThomson1 import groupDrugs
 
 
 def makeFigure():

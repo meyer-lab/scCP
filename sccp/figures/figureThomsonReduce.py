@@ -11,7 +11,7 @@ from .commonFuncs.plotFactors import (
 from ..imports import import_thomson
 from tlviz.factor_tools import factor_match_score as fms
 from tensorly.cp_tensor import CPTensor
-from figureThomson1 import groupDrugs
+from .figureThomson1 import groupDrugs
 
 
 def makeFigure():
