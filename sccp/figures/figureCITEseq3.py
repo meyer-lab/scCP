@@ -1,10 +1,10 @@
 """
 CITEseq: UMAP weighted by protein expression
 """
+from anndata import read_h5ad
 from .common import (
     subplotLabel,
     getSetup,
-    openPf2,
 )
 from .commonFuncs.plotUMAP import plotGeneUMAP
 
@@ -17,13 +17,11 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = openPf2(80, "CITEseq")
+    X = read_h5ad("factor_cache/CITEseq.h5ad", backed="r")
 
     names = X.var_names[X.var["feature_types"] == "Antibody Capture"]
 
-    protNames = names[0:4].tolist()
-
-    for i, name in enumerate(protNames):
+    for i, name in enumerate(names[0:4]):
         plotGeneUMAP(name, "Pf2", X, ax[i])
 
     return f

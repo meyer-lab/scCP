@@ -4,8 +4,9 @@ import seaborn as sns
 import scanpy as sc
 import anndata
 from matplotlib.axes import Axes
-from ...crossVal import CrossVal
-from ...parafac2 import pf2_r2x, pf2_fms
+
+from ...factorization import pf2_r2x
+from ...factorization import pf2_fms
 
 
 def plotR2X(data, rank, ax: Axes):
@@ -82,35 +83,6 @@ def plotfms(data, rank, ax: Axes):
     )
 
 
-def plotCV(data, rank, trainPerc, ax: Axes):
-    """Creates variance explained plot for parafac2 tensor decomposition CV"""
-    cvError = CrossVal(data, rank, trainPerc=trainPerc)
-
-    rank_vec = np.arange(1, rank + 1)
-    labelNames = ["CV: Pf2", "CV: PCA"]
-    colorDecomp = ["r", "b"]
-    markerShape = ["o", "o"]
-
-    for i in range(2):
-        ax.scatter(
-            rank_vec,
-            cvError[i],
-            label=labelNames[i],
-            marker=markerShape[i],
-            c=colorDecomp[i],
-            s=30.0,
-        )
-
-    ax.set(
-        ylabel="Variance Explained",
-        xlabel="Number of Components",
-        xticks=np.linspace(0, rank, num=8, dtype=int),
-        yticks=np.linspace(0, np.max(np.append(cvError[0], cvError[1])) + 0.01, num=5),
-    )
-
-    ax.legend()
-
-
 def plotCellTypePerExpCount(dataDF, condition, ax: Axes):
     """Plots historgram of cell counts per experiment"""
     sns.histplot(data=dataDF, x="Cell Type", hue="Cell Type", ax=ax)
@@ -182,7 +154,7 @@ def plotGenePerCategCond(conds, categoryCond, genes, adata, axs, mean=True):
 
 
 def plotGeneFactors(
-    cmp: int, dataIn: anndata.AnnData, axs: list[Axes], geneAmount: int = 20
+    cmp: int, dataIn: anndata.AnnData, ax: Axes, geneAmount: int = 20, top=True
 ):
     """Plotting weights for gene factors for both most negatively/positively weighted terms"""
     cmpName = f"Cmp. {cmp}"
@@ -194,12 +166,14 @@ def plotGeneFactors(
     df = df.reset_index(names="Gene")
     df = df.sort_values(by=cmpName)
 
-    sns.barplot(data=df.iloc[:geneAmount, :], x="Gene", y=cmpName, color="k", ax=axs[0])
-    sns.barplot(
-        data=df.iloc[-geneAmount:, :], x="Gene", y=cmpName, color="k", ax=axs[1]
-    )
-    axs[0].tick_params(axis="x", rotation=90)
-    axs[1].tick_params(axis="x", rotation=90)
+    if top:
+        sns.barplot(
+            data=df.iloc[-geneAmount:, :], x="Gene", y=cmpName, color="k", ax=ax
+        )
+    else:
+        sns.barplot(data=df.iloc[:geneAmount, :], x="Gene", y=cmpName, color="k", ax=ax)
+
+    ax.tick_params(axis="x", rotation=90)
 
 
 def population_bar_chart(
@@ -223,7 +197,13 @@ def cell_comp_hist(X, category: str, comp: int, unique, ax: Axes):
         # obsDF[category] = obsDF[category].astype(str)
         histDF = pd.DataFrame({"Component " + str(comp): w_proj, category: labels})
         sns.histplot(
-            data=histDF, x="Component " + str(comp), hue=category, kde=True, ax=ax
+            data=histDF,
+            x="Component " + str(comp),
+            hue=category,
+            kde=True,
+            ax=ax,
+            stat="density",
+            common_norm=False,
         )
 
 
@@ -233,16 +213,19 @@ def gene_plot_cells(
     """Plots two genes on either a per cell or per cell type basis"""
     assert X.shape[1] == 2
     genes = X.var_names
-    sc.pp.subsample(X, fraction=0.01, random_state=0)
+    sc.pp.subsample(X, fraction=1, random_state=0)
     dataDF = X.to_df()
     dataDF[hue] = X.obs[hue].values
     alpha = 0.3
+
+    if average:
+        dataDF = dataDF.groupby([hue], observed=True).mean().reset_index()
+        alpha = 1
+
     if unique is not None:
         dataDF[hue] = dataDF[hue].astype(str)
         dataDF.loc[dataDF[hue] != unique, hue] = "Other"
-    if average:
-        dataDF = dataDF.groupby([hue], observed=True).mean()
-        alpha = 1
+
     sns.scatterplot(
         data=dataDF, x=genes[0], y=genes[1], hue=hue, ax=ax, size=-0.1, alpha=alpha
     )

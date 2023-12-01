@@ -1,9 +1,12 @@
 """
 Thomson: Plotting Pf2 factors and weights
 """
-from .common import subplotLabel, getSetup, openPf2
+from anndata import read_h5ad
+from .common import subplotLabel, getSetup
 from .commonFuncs.plotFactors import (
-    plotFactors,
+    plotConditionsFactors,
+    plotCellState,
+    plotGeneFactors,
     plotWeight,
 )
 import numpy as np
@@ -18,15 +21,14 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    rank = 30
-    X = openPf2(rank, "Thomson")
+    X = read_h5ad("factor_cache/Thomson.h5ad", backed="r")
+
     drugNames = groupDrugs(X.obs["Condition"])
 
-    factors = [X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"]]
-    plotFactors(
-        factors, X, ax[0:3], reorder=(0, 2), trim=(2,), cond_group_labels=drugNames
-    )
-    plotWeight(X.uns["Pf2_weights"], ax[3])
+    plotConditionsFactors(X, ax[0], drugNames, ThomsonNorm=True)
+    plotCellState(X, ax[1])
+    plotGeneFactors(X, ax[2])
+    plotWeight(X, ax[3])
 
     return f
 
@@ -49,9 +51,9 @@ def groupDrugs(labels):
     for i in ctrl:
         names[names == i] = "Control"
 
-    names[names == "Everolimus (RAD001)"] = "Prostaglandin"
-    names[names == "Rapamycin (Sirolimus)"] = "Prostaglandin"
-    names[names == "Alprostadil"] = "mTOR Inhibitor"
+    names[names == "Everolimus (RAD001)"] = "mTOR Inhibitor"
+    names[names == "Rapamycin (Sirolimus)"] = "mTOR Inhibitor"
+    names[names == "Alprostadil"] = "Prostaglandin"
     names[names == "Cyclosporine"] = "Calcineruin Inhibitor"
 
     condition = [

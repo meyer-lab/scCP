@@ -1,12 +1,14 @@
 import numpy.typing as npt
-import scanpy
+import scanpy as sc
 import pandas as pd
+import anndata as an
+import doubletdetection
 
 
 def gateThomsonCellsLeiden(X) -> npt.ArrayLike:
     """Manually gates cell types for Thomson UMAP"""
-    scanpy.pp.neighbors(X, n_neighbors=15, use_rep="projections", random_state=0)
-    scanpy.tl.leiden(X, resolution=3, random_state=0)
+    sc.pp.neighbors(X, n_neighbors=15, use_rep="projections", random_state=0)
+    sc.tl.leiden(X, resolution=3, random_state=0)
     X.obs["Cell Type"] = X.obs.leiden.replace(thomson_layer1).astype(str)
     X.obs["Cell Type2"] = X.obs.leiden.replace(thomson_layer2).astype(str)
 
@@ -23,6 +25,23 @@ def gateThomsonCells(X) -> npt.ArrayLike:
     X.obs["Cell Type2"] = X.obs["Cell Type2"].values.astype(str)
 
     return X
+
+
+def Thomson_Doublet():
+    X = an.read_h5ad("/opt/andrew/thomson_raw.h5ad")
+    sc.pp.filter_genes(X, min_cells=1)
+    clf = doubletdetection.BoostClassifier(
+        n_iters=10,
+        clustering_algorithm="louvain",
+        standard_scaling=True,
+        pseudocount=0.1,
+        n_jobs=-1,
+    )
+    doublets = clf.fit(X.X).predict(p_thresh=1e-16, voter_thresh=0.5)
+    doublet_score = clf.doublet_score()
+    X.obs["doublet"] = doublets
+    X.obs["doublet_score"] = doublet_score
+    X.obs["doublet"].to_csv("sccp/data/Thomson/ThomsonDoublets.csv")
 
 
 thomson_layer1 = {
