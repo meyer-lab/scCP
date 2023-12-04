@@ -114,11 +114,14 @@ def parafac2_nd(
     ]
 
     errs = []
+    err = float("NaN")
 
     tq = tqdm(range(n_iter_max), disable=(not verbose))
     for iter in tq:
+        lineIter = iter % 2 == 0 and iter > 5
+
         # Initiate line search
-        if iter % 2 == 0 and iter > 5:
+        if lineIter:
             jump = iter ** (1.0 / acc_pow)
 
             # Estimate error with line search
@@ -139,6 +142,7 @@ def parafac2_nd(
                 projected_X = projected_X_ls
                 factors = factors_ls
             else:
+                lineIter = False
                 acc_fail += 1
 
                 if acc_fail >= 4:
@@ -147,7 +151,8 @@ def parafac2_nd(
 
                     if verbose:
                         print("Reducing acceleration.")
-        else:
+
+        if lineIter is False:
             projections, projected_X = project_data(Xarr, sgIndex, means, factors)
             err = reconstruction_error(factors, projections, projected_X, norm_tensor)
 
@@ -155,7 +160,7 @@ def parafac2_nd(
 
         factors_old = deepcopy(factors)
         _, factors = parafac(
-            projected_X,
+            projected_X,  # type: ignore
             rank,
             n_iter_max=5,
             tol=False,
@@ -173,25 +178,23 @@ def parafac2_nd(
 
     tl.set_backend("numpy")
 
-    weights = np.ones(rank)
     factors = [f.get() for f in factors]
     projections = [p.get() for p in projections]  # type: ignore
 
-    print(f"Degeneracy score: {degeneracy_score((weights, factors))}")
+    print(f"Degeneracy score: {degeneracy_score((None, factors))}")
 
-    return standardize_pf2(weights, factors, projections), 1.0 - errs[-1]
+    return standardize_pf2(factors, projections), 1.0 - errs[-1]
 
 
 def standardize_pf2(
-    weights: np.ndarray, factors: list[np.ndarray], projections: list[np.ndarray]
+    factors: list[np.ndarray], projections: list[np.ndarray]
 ) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray]]:
     # Order components by condition variance
     gini = np.var(factors[0], axis=0) / np.mean(factors[0], axis=0)
     gini_idx = np.argsort(gini)
     factors = [f[:, gini_idx] for f in factors]
-    weights = weights[gini_idx]
 
-    weights, factors = cp_normalize(cp_flip_sign((weights, factors), mode=1))
+    weights, factors = cp_flip_sign(cp_normalize((None, factors)), mode=1)
 
     # Order eigen-cells to maximize the diagonal of B
     _, col_ind = linear_sum_assignment(np.abs(factors[1].T), maximize=True)
