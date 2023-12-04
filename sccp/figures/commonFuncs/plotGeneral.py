@@ -128,7 +128,7 @@ def plotGenePerCategCond(conds, categoryCond, genes, adata, axs, mean=True):
     dataDF = genesV.to_df()
     dataDF = dataDF.subtract(genesV.var["means"].values)
     dataDF["Condition"] = genesV.obs["Condition"].values
-    dataDF["Cell Type"] = genesV.obs["Cell Type2"].values
+    dataDF["Cell Type"] = genesV.obs["Cell Type"].values
 
     df = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=genes).rename(
         columns={"variable": "Gene", "value": "Value"}
@@ -225,7 +225,6 @@ def gene_plot_cells(
     if unique is not None:
         dataDF[hue] = dataDF[hue].astype(str)
         dataDF.loc[~dataDF[hue].isin(unique), hue] = "Other"
-    print(dataDF)
 
     sns.scatterplot(
         data=dataDF, x=genes[0], y=genes[1], hue=hue, ax=ax, size=-0.1, alpha=alpha
