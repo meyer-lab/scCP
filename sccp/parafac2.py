@@ -1,4 +1,5 @@
 import numpy as np
+from copy import deepcopy
 from tqdm import tqdm
 import anndata
 import tensorly as tl
@@ -82,7 +83,7 @@ def parafac2_nd(
     rank: int,
     n_iter_max: int = 200,
     tol: float = 1e-7,
-    verbose=False,
+    verbose=True,
     random_state=None,
 ) -> tuple[tuple[np.ndarray, list[np.ndarray], list[np.ndarray]], float]:
     r"""The same interface as regular PARAFAC2."""
@@ -93,10 +94,13 @@ def parafac2_nd(
     Xarr = sps.csr_array(X.X)
     means = cp.array(X.var["means"].to_numpy())
 
+    acc_pow: float = 2.0  # Extrapolate to the iteration^(1/acc_pow) ahead
+    acc_fail: int = 0  # How many times acceleration have failed
+
     # Calculate the norm of the dataset
     norm_tensor = calc_total_norm(X)
 
-    xInit = cupy_sparse.csr_matrix(Xarr[::10])
+    xInit = cupy_sparse.csr_matrix(Xarr[::4])
 
     cp.random.set_random_state(cp.random.RandomState(random_state))
     _, _, C = svds(xInit, k=rank, return_singular_vectors=True)
@@ -113,21 +117,54 @@ def parafac2_nd(
 
     tq = tqdm(range(n_iter_max), disable=(not verbose))
     for iter in tq:
-        projections, projected_X = project_data(Xarr, sgIndex, means, factors)
+        # Initiate line search
+        if iter % 2 == 0 and iter > 5:
+            jump = iter ** (1.0 / acc_pow)
 
-        err = reconstruction_error(factors, projections, projected_X, norm_tensor)
+            # Estimate error with line search
+            factors_ls = [
+                factors_old[ii] + (factors[ii] - factors_old[ii]) * jump  # type: ignore
+                for ii in range(3)
+            ]
+
+            projections_ls, projected_X_ls = project_data(Xarr, sgIndex, means, factors)
+            err_ls = reconstruction_error(
+                factors_ls, projections_ls, projected_X_ls, norm_tensor
+            )
+
+            if err_ls < errs[-1] * norm_tensor:
+                acc_fail = 0
+                err = err_ls
+                projections = projections_ls
+                projected_X = projected_X_ls
+                factors = factors_ls
+            else:
+                acc_fail += 1
+
+                if acc_fail >= 4:
+                    acc_pow += 1.0
+                    acc_fail = 0
+
+                    if verbose:
+                        print("Reducing acceleration.")
+        else:
+            projections, projected_X = project_data(Xarr, sgIndex, means, factors)
+            err = reconstruction_error(factors, projections, projected_X, norm_tensor)
+
         errs.append(err / norm_tensor)
 
+        factors_old = deepcopy(factors)
         _, factors = parafac(
             projected_X,
             rank,
-            n_iter_max=3,
-            tol=None,  # type: ignore
+            n_iter_max=5,
+            tol=False,
+            normalize_factors=False,
             l2_reg=0.01,  # type: ignore
-            init=(None, list(factors)),  # type: ignore
+            init=(None, factors),  # type: ignore
         )
 
-        if iter > 1:
+        if iter > 1 and iter % 2 == 1:
             delta = errs[-2] - errs[-1]
             tq.set_postfix(R2X=1.0 - errs[-1], Δ=delta, refresh=False)
 
