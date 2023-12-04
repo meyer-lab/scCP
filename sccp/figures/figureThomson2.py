@@ -6,7 +6,7 @@ from .common import (
     subplotLabel,
     getSetup,
 )
-from .commonFuncs.plotUMAP import plotLabelsUMAP, plotCmpUMAP
+from .commonFuncs.plotUMAP import plotLabelsUMAP, plotCmpUMAP, plotGeneUMAP
 from .commonFuncs.plotGeneral import (
     plotGenePerCellType,
     plotGenePerCategCond,
@@ -38,15 +38,16 @@ def makeFigure():
     # plotLabelsUMAP(X, "doublet", ax[2], cmap='viridis')
     # plotLabelsUMAP(X, "doublet_score", ax[3], cmap='viridis')
 
-    plotCmpUMAP(X, 4, ax[2], 0.2)  # NK
-    plotCmpUMAP(X, 23, ax[4], 0.2)  # Gluco
-    plotCmpUMAP(X, 25, ax[5], 0.2)  # B Cell
+    plotCmpUMAP(X, 12, ax[2], 0.2)  # pDCs
+    plotCmpUMAP(X, 19, ax[3], 0.2)  # Alpro
+    plotCmpUMAP(X, 20, ax[4], 0.2)  # Gluco
 
-    plotCmpUMAP(X, 24, ax[5], 0.2)  # Dex Hcl
-
-    plotGeneFactors(3, X, ax[6], geneAmount=10, top=True)
-    plotGeneFactors(23, X, ax[7], geneAmount=10, top=False)
-    plotGeneFactors(13, X, ax[8], geneAmount=10, top=False)
+    plotGeneFactors(12, X, ax[6], geneAmount=10, top=True)
+    plotGeneFactors(12, X, ax[7], geneAmount=10, top=False)
+    plotGeneFactors(19, X, ax[8], geneAmount=10, top=True)
+    plotGeneFactors(19, X, ax[9], geneAmount=10, top=False)
+    plotGeneFactors(20, X, ax[10], geneAmount=10, top=True)
+    plotGeneFactors(20, X, ax[11], geneAmount=10, top=False)
     # plotGeneFactors(26, X, ax[9], geneAmount=10, top=False)
     # plotGeneFactors(26, X, ax[10], geneAmount=10, top=True)
 
@@ -65,6 +66,23 @@ def makeFigure():
         "Meprednisone",
     ]
     geneSet3 = ["CD163"]
+    #geneSet3 = ["NDRG2"]
     plotGenePerCategCond(glucs, "Gluco", geneSet3, X, [ax[13]])
+
+    geneSet3 = ["C1QC"]
+    #geneSet3 = ["NDRG2"]
+    #plotGenePerCategCond(glucs, "Gluco", geneSet3, X, [ax[14]])
+
+    X.obs["Drug Type"] = "Other"
+    X.obs.loc[X.obs.Condition.isin(glucs), "Drug Type"] = "Gluco"
+
+    #X_genes = X[:, ["NDRG2", "CD163"]].to_memory()
+    #gene_plot_cells(X_genes, hue="Condition", unique=glucs, ax=ax[14], kde=False, average=True)
+
+    #X_genes = X[:, ["NDRG2", "CD163"]].to_memory()
+    #gene_plot_cells(X_genes, hue="Cell Type", ax=ax[14], kde=False, average=True)
+
+    X_genes = X[:, ["CCL7", "CD163"]].to_memory()
+    gene_plot_cells(X_genes, hue="Cell Type", ax=ax[14], kde=False, average=True)
 
     return f
