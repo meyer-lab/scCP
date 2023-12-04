@@ -83,7 +83,7 @@ def parafac2_nd(
     rank: int,
     n_iter_max: int = 200,
     tol: float = 1e-7,
-    verbose=True,
+    verbose=False,
     random_state=None,
 ) -> tuple[tuple[np.ndarray, list[np.ndarray], list[np.ndarray]], float]:
     r"""The same interface as regular PARAFAC2."""
@@ -100,7 +100,7 @@ def parafac2_nd(
     # Calculate the norm of the dataset
     norm_tensor = calc_total_norm(X)
 
-    xInit = cupy_sparse.csr_matrix(Xarr[::4])
+    xInit = cupy_sparse.csr_matrix(Xarr[::3])
 
     cp.random.set_random_state(cp.random.RandomState(random_state))
     _, _, C = svds(xInit, k=rank, return_singular_vectors=True)
