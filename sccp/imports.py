@@ -4,38 +4,52 @@ import numpy as np
 import pandas as pd
 import anndata
 import scanpy as sc
-from scipy.sparse import spmatrix
-from sklearn.utils.sparsefuncs import inplace_column_scale, mean_variance_axis
+from scipy.sparse import csc_matrix, csr_matrix
+from sklearn.utils.sparsefuncs import (
+    inplace_column_scale,
+    mean_variance_axis,
+    inplace_row_scale,
+)
 from .factorization import pf2
 from .gating import gateThomsonCells
 
 
+def normalize_transform(X: csr_matrix | csc_matrix) -> np.ndarray:
+    # Normalize read depth
+    cell_counts = mean_variance_axis(X, axis=1)[0]
+    cell_counts = np.ravel(cell_counts)
+    assert np.all(cell_counts > 0)
+
+    rescale = np.median(cell_counts) / cell_counts
+    inplace_row_scale(X, rescale)
+
+    # Scale genes by sum
+    readmean = mean_variance_axis(X, axis=0)[0]
+    readsum = X.shape[0] * readmean
+    inplace_column_scale(X, 1.0 / readsum)
+
+    # Transform values
+    X.data = np.log10((1000.0 * X.data) + 1.0)
+
+    # Pre-calculate gene means
+    means = mean_variance_axis(X, axis=0)[0]
+    return means
+
+
 def prepare_dataset(X: anndata.AnnData, condition_name: str) -> anndata.AnnData:
-    assert isinstance(X.X, spmatrix)
+    assert isinstance(X.X, (csr_matrix, csc_matrix))
     assert np.amin(X.X.data) >= 0.0  # type: ignore
 
     # Filter out genes with too few reads
     readmean, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
     X = X[:, readmean > 0.002]
 
-    # Normalize read depth
-    sc.pp.normalize_total(X, exclude_highly_expressed=False, inplace=True)
-
-    # Scale genes by sum
-    readmean, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
-    readsum = X.shape[0] * readmean
-    inplace_column_scale(X.X, 1.0 / readsum)
-
-    # Transform values
-    X.X.data = np.log10((1000.0 * X.X.data) + 1.0)  # type: ignore
+    # Normalize, transform data and record column means
+    X.var["means"] = normalize_transform(X.X)  # type: ignore
 
     # Get the indices for subsetting the data
     _, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
     X.obs["condition_unique_idxs"] = sgIndex
-
-    # Pre-calculate gene means
-    means, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
-    X.var["means"] = means
 
     return X
 
@@ -65,7 +79,7 @@ def import_thomson() -> anndata.AnnData:
         }
     )
     gateThomsonCells(X)
-    
+
     doubletDF = pd.read_csv("sccp/data/Thomson/ThomsonDoublets.csv", index_col=0)
     doubletDF.index.name = "cell_barcode"
     X.obs = X.obs.join(doubletDF, on="cell_barcode", how="inner")
@@ -74,7 +88,7 @@ def import_thomson() -> anndata.AnnData:
     X.obs = X.obs.reset_index()
     X = X[singlet_indices, :]
     X.obs = X.obs.set_index("cell_barcode")
-    
+
     return prepare_dataset(X, "Condition")
 
 
