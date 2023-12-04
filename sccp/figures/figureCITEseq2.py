@@ -14,7 +14,7 @@ from .commonFuncs.plotUMAP import (
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((10, 10), (3, 3))
+    ax, f = getSetup((13, 13), (6, 6))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -22,6 +22,6 @@ def makeFigure():
     X = read_h5ad("factor_cache/CITEseq.h5ad", backed="r")
 
     for i, axi in enumerate(ax):
-        plotCmpUMAP(X, i + 1, axi)
+        plotCmpUMAP(X, i + 1, axi, showcbar=i == 0)
 
     return f

@@ -81,7 +81,7 @@ def plotGeneUMAP(gene: str, decompType: str, X: anndata.AnnData, ax: Axes):
     ax.set(title=f"{gene}-{decompType}-Based Decomposition")
 
 
-def plotCmpUMAP(X: anndata.AnnData, cmp: int, ax: Axes, cbarMax=1):
+def plotCmpUMAP(X: anndata.AnnData, cmp: int, ax: Axes, cbarMax=1, showcbar=True):
     """Scatterplot of UMAP visualization weighted by
     projections for a component and cell state"""
     values = X.obsm["weighted_projections"][:, cmp - 1]
@@ -93,7 +93,7 @@ def plotCmpUMAP(X: anndata.AnnData, cmp: int, ax: Axes, cbarMax=1):
     data = pd.DataFrame(points, columns=("x", "y"))
 
     # Color by values
-    values /= np.max(np.abs(values))
+    values /= np.quantile(np.abs(values), 0.99)
 
     data["val_cat"] = values
     result = tf.shade(
@@ -107,8 +107,10 @@ def plotCmpUMAP(X: anndata.AnnData, cmp: int, ax: Axes, cbarMax=1):
 
     ds_show(result, ax)
 
-    psm = plt.pcolormesh([[-cbarMax, cbarMax], [-cbarMax, cbarMax]], cmap=cmap)
-    plt.colorbar(psm, ax=ax)
+    if showcbar:
+        psm = plt.pcolormesh([[-cbarMax, cbarMax], [-cbarMax, cbarMax]], cmap=cmap)
+        plt.colorbar(psm, ax=ax)
+
     ax.set(title="Cmp. " + str(cmp))
     ax = assignAxes(ax)
 
