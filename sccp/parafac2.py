@@ -113,7 +113,7 @@ def parafac2_nd(
         C.T,
     ]
 
-    errs = []
+    errs: list[float] = []
     err = float("NaN")
 
     tq = tqdm(range(n_iter_max), disable=(not verbose))
