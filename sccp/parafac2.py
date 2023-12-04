@@ -169,7 +169,7 @@ def parafac2_nd(
             init=(None, factors),  # type: ignore
         )
 
-        if iter > 1 and iter % 2 == 1:
+        if iter > 1:
             delta = errs[-2] - errs[-1]
             tq.set_postfix(R2X=1.0 - errs[-1], Δ=delta, refresh=False)
 
