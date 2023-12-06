@@ -1,0 +1,95 @@
+from .common import getSetup
+from ..imports import import_thomson
+from ..factorization import pf2
+from .commonFuncs.plotFactors import (
+    plotConditionsFactors,
+    plotCellState,
+    plotGeneFactors,
+)
+from ..imports import import_thomson
+from .figureThomson1 import groupDrugs
+import numpy as np
+
+
+def makeFigure():
+    rank = 20
+    data = import_thomson()
+
+    drug_to_drop = "CTRL4"
+
+    sampled_data_tcells = data[
+        (data.obs["Cell Type"] != "T Cells") | (data.obs["Condition"] != drug_to_drop)
+    ]
+
+    sampled_data_bcells = data[
+        (data.obs["Cell Type"] != "B Cells") | (data.obs["Condition"] != drug_to_drop)
+    ]
+
+    sampled_data_nkcells = data[
+        (data.obs["Cell Type"] != "NK Cells") | (data.obs["Condition"] != drug_to_drop)
+    ]
+
+    sampled_data_monocytes = data[
+        (data.obs["Cell Type"] != "Monocytes") | (data.obs["Condition"] != drug_to_drop)
+    ]
+
+    sampled_data_DCs = data[
+        (data.obs["Cell Type"] != "DCs") | (data.obs["Condition"] != drug_to_drop)
+    ]
+
+    sampled_data_thelpers = data[
+        (data.obs["Cell Type"] != "T Helpers") | (data.obs["Condition"] != drug_to_drop)
+    ]
+
+    ax, f = getSetup((12, 12), (7, 3))
+
+    all_sampled_data = [
+        data,
+        sampled_data_bcells,
+        sampled_data_tcells,
+        sampled_data_nkcells,
+        sampled_data_monocytes,
+        sampled_data_DCs,
+        sampled_data_thelpers,
+    ]
+    all_sampled_data_names = [
+        "All",
+        "B Cells",
+        "T Cells",
+        "NK Cells",
+        "Monocytes",
+        "DCs",
+        "T Helpers",
+    ]
+
+    for sampled_data, name, i in zip(
+        all_sampled_data, all_sampled_data_names, np.arange(7)
+    ):
+        sampledX = pf2(sampled_data, rank, doEmbedding=False)
+        plotConditionsFactors(
+            sampledX, ax[3 * i], groupDrugs(sampledX.obs["Condition"]), ThomsonNorm=True
+        )
+        plotCellState(sampledX, ax[3 * i + 1])
+        plotGeneFactors(sampledX, ax[3 * i + 2])
+        ax[3 * i].set_title(f"Conditions Factors (dropping {drug_to_drop}): " + name)
+        ax[3 * i + 1].set_title(
+            f"Cell State Factors (dropping {drug_to_drop}): " + name
+        )
+        ax[3 * i + 2].set_title(f"Gene Factors (dropping {drug_to_drop}): " + name)
+    # origX = pf2(data, rank, doEmbedding=False)
+
+    # plotConditionsFactors(
+    #     origX, ax[0], groupDrugs(origX.obs["Condition"]), ThomsonNorm=True
+    # )
+    # plotCellState(origX, ax[1])
+    # plotGeneFactors(origX, ax[2])
+
+    # sampledX = pf2(sampled_data, rank, doEmbedding=False)
+
+    # plotConditionsFactors(
+    #     sampledX, ax[3], groupDrugs(origX.obs["Condition"]), ThomsonNorm=True
+    # )
+    # plotCellState(sampledX, ax[4])
+    # plotGeneFactors(sampledX, ax[5])
+
+    return f
