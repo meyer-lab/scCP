@@ -41,7 +41,7 @@ def makeFigure():
         (data.obs["Cell Type"] != "T Helpers") | (data.obs["Condition"] != drug_to_drop)
     ]
 
-    ax, f = getSetup((12, 12), (7, 3))
+    ax, f = getSetup((120, 120), (7, 3))
 
     all_sampled_data = [
         data,
@@ -76,20 +76,5 @@ def makeFigure():
             f"Cell State Factors (dropping {drug_to_drop}): " + name
         )
         ax[3 * i + 2].set_title(f"Gene Factors (dropping {drug_to_drop}): " + name)
-    # origX = pf2(data, rank, doEmbedding=False)
-
-    # plotConditionsFactors(
-    #     origX, ax[0], groupDrugs(origX.obs["Condition"]), ThomsonNorm=True
-    # )
-    # plotCellState(origX, ax[1])
-    # plotGeneFactors(origX, ax[2])
-
-    # sampledX = pf2(sampled_data, rank, doEmbedding=False)
-
-    # plotConditionsFactors(
-    #     sampledX, ax[3], groupDrugs(origX.obs["Condition"]), ThomsonNorm=True
-    # )
-    # plotCellState(sampledX, ax[4])
-    # plotGeneFactors(sampledX, ax[5])
 
     return f
