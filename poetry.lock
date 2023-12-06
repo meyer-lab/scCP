@@ -695,13 +695,13 @@ woff = ["brotli (>=1.0.1)", "brotlicffi (>=0.8.0)", "zopfli (>=0.1.4)"]
 
 [[package]]
 name = "fsspec"
-version = "2023.12.0"
+version = "2023.12.1"
 description = "File-system specification"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "fsspec-2023.12.0-py3-none-any.whl", hash = "sha256:f807252ee2018f2223760315beb87a2166c2b9532786eeca9e6548dfcf2cfac9"},
-    {file = "fsspec-2023.12.0.tar.gz", hash = "sha256:8e0bb2db2a94082968483b7ba2eaebf3949835e2dfdf09243dda387539464b31"},
+    {file = "fsspec-2023.12.1-py3-none-any.whl", hash = "sha256:6271f1d3075a378bfe432f6f42bf7e1d2a6ba74f78dd9b512385474c579146a0"},
+    {file = "fsspec-2023.12.1.tar.gz", hash = "sha256:c4da01a35ac65c853f833e43f67802c25213f560820d54ddf248f92eddd5e990"},
 ]
 
 [package.extras]
@@ -1652,6 +1652,29 @@ test = ["hypothesis (>=6.46.1)", "pytest (>=7.3.2)", "pytest-xdist (>=2.2.0)"]
 xml = ["lxml (>=4.8.0)"]
 
 [[package]]
+name = "parafac2"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = ">=3.10,<3.13"
+files = []
+develop = false
+
+[package.dependencies]
+anndata = "^0.10.3"
+cupy-cuda12x = "^12.2.0"
+numpy = "^1.26"
+scipy = "^1.11"
+tensorly = "0.8.1"
+tqdm = "^4.66.1"
+
+[package.source]
+type = "git"
+url = "https://github.com/meyer-lab/parafac2.git"
+reference = "5b4e7db91155cacdc5c6e435cfecd88a2f0fb250"
+resolved_reference = "5b4e7db91155cacdc5c6e435cfecd88a2f0fb250"
+
+[[package]]
 name = "param"
 version = "2.0.1"
 description = "Make your Python code clearer and more reliable by declaring Parameters."
@@ -2407,18 +2430,14 @@ version = "0.8.1"
 description = "Tensor learning in Python."
 optional = false
 python-versions = "*"
-files = []
-develop = false
+files = [
+    {file = "tensorly-0.8.1-py3-none-any.whl", hash = "sha256:08988dbc5e433c3f255d0e00855f99a613fe273d50a1627b7e82b03ff2a6da9a"},
+    {file = "tensorly-0.8.1.tar.gz", hash = "sha256:cf78e4ffe612feca3510214002845c6831b267b1f2c1181154d41430310b237d"},
+]
 
 [package.dependencies]
 numpy = "*"
 scipy = "*"
-
-[package.source]
-type = "git"
-url = "https://github.com/meyer-lab/tensorly.git"
-reference = "ad5eb92622da21a0ff3c1a02626ef2ba071d9510"
-resolved_reference = "ad5eb92622da21a0ff3c1a02626ef2ba071d9510"
 
 [[package]]
 name = "texttable"
@@ -2638,4 +2657,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "a7fe9316c0678b80a2c6e0d0b2fc98ecdb64d1ed3cf20972911b32e89eef1461"
+content-hash = "61d4d03a816a15b09f571ec8f467b841ce7554bbc1b53631d8e727ee95d60d7f"
