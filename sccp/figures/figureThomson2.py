@@ -36,7 +36,7 @@ def makeFigure():
     plotGeneFactors(16, X, ax[5], geneAmount=10, top=True)
     plotGeneFactors(19, X, ax[6], geneAmount=10, top=True)
     plotGeneFactors(20, X, ax[7], geneAmount=10, top=True)
-    plotGeneFactors(20, X, ax[8], geneAmount=10, top=False)
+    plotGeneFactors(20, X, ax[8], geneAmount=15, top=False)
 
     geneSet1 = ["FXYD2", "SERPINF1", "RARRES2"]
 
