@@ -81,7 +81,7 @@ def pf2(
         pf_out, _ = parafac2_nd(X, rank=rank, random_state=random_state)
     else:
         sgIndex = X.obs["condition_unique_idxs"]
-        XX = [X[sgIndex == i, :].X.toarray() for i in range(np.amax(sgIndex))]
+        XX = [X[sgIndex == i, :].X.toarray() - X.var["means"] for i in range(np.amax(sgIndex))]
 
         pf_out, _ = parafac2_nd(XX, rank=rank, random_state=random_state)
 
