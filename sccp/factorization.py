@@ -75,23 +75,18 @@ def pf2(
     X: anndata.AnnData,
     rank: int,
     random_state=1,
-    doEmbedding: bool=True,
-    dense: bool=False
+    doEmbedding: bool = True,
 ):
-
-    if dense is True:
-        sort_idx = np.argsort(X.obs_vector("Condition"))
-        sgUnique, sgIndex = np.unique(X.obs_vector("Condition"), return_inverse=True)
-        XX = X[sort_idx, :]
-        XX = [XX[sgIndex == sgi, :].X.toarray() for sgi in range(len(sgUnique))]
+    if isinstance(X.X, sps.sparray):
+        pf_out, _ = parafac2_nd(X, rank=rank, random_state=random_state)
+    else:
+        sgIndex = X.obs["condition_unique_idxs"]
+        XX = [X[sgIndex == i, :].X.toarray() for i in range(np.amax(sgIndex))]
 
         pf_out, _ = parafac2_nd(XX, rank=rank, random_state=random_state)
-        
-    else: 
-        pf_out, _ = parafac2_nd(X, rank=rank, random_state=random_state)
-        
+
     X = store_pf2(X, pf_out)
-        
+
     print(f"Degeneracy score: {degeneracy_score((pf_out[0], pf_out[1]))}")
 
     if doEmbedding:
