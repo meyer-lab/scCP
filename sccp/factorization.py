@@ -78,12 +78,14 @@ def pf2(
     doEmbedding: bool = True,
 ):
     if isinstance(X.X, sps.sparray):
-        pf_out, _ = parafac2_nd(X, rank=rank, random_state=random_state)
+        XX = X
     else:
-        sgIndex = X.obs["condition_unique_idxs"]
-        XX = [X[sgIndex == i, :].X.toarray() - X.var["means"].to_numpy() for i in range(np.amax(sgIndex+1))]
+        sgi = X.obs["condition_unique_idxs"]
+        means = X.var["means"].to_numpy()
 
-        pf_out, _ = parafac2_nd(XX, rank=rank, random_state=random_state)
+        XX = [X[sgi == i, :].X.toarray() - means for i in range(np.amax(sgi) + 1)]  # type: ignore
+
+    pf_out, _ = parafac2_nd(XX, rank=rank, random_state=random_state)
 
     X = store_pf2(X, pf_out)
 
