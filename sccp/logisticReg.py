@@ -51,15 +51,46 @@ def testPf2Ranks(
             random_state=0,
             max_iter=5000,
             cv=cvs,  # type: ignore
-            penalty="l1",
+            penalty="elasticnet",
             solver="saga",
             scoring=error_metric,
             n_jobs=5,
+            l1_ratios=[.1, .5, .7, .9, .95, .99, 1]
         )
+        # log_reg = LogisticRegressionCV(
+        #     random_state=0,
+        #     max_iter=5000,
+        #     cv=cvs,  # type: ignore
+        #     penalty="l1",
+        #     solver="saga",
+        #     scoring=error_metric,
+        #     n_jobs=5,
+        #     # l1_ratios=[.1, .5, .7, .9, .95, .99, 1]
+        # )
 
         log_fit = log_reg.fit(A_matrix, condition_labels.to_numpy())
-
+        
+        
+        # print(log_fit)
         # grab fit results as a pandas dataframe, indicate which rank these are from
+        df = pd.DataFrame([])
+        fit = log_fit.scores_["SLE"].mean(axis=0)
+        for i in range(fit.shape[1]):
+            df1= pd.DataFrame(data=np.vstack(fit[:, i], np.repeat(log_fit.l1_ratios_[i]), np.repeat(log_fit.Cs[i]), columns = "Fit", "L1 Ratio"
+     
+        print(df)
+
+        # print(log_fit.scores_["SLE"].mean(axis=0))
+        # print(np.shape(log_fit.scores_["SLE"]))
+        # print(log_fit.Cs_)
+        # print(np.shape(log_fit.Cs_))
+
+        # print(log_fit)
+        # # grab fit results as a pandas dataframe, indicate which rank these are from
+        # print(log_fit.scores_["SLE"].mean(axis=0))
+        # print(np.shape(log_fit.scores_["SLE"]))
+        # print(log_fit.Cs_)
+        # print(np.shape(log_fit.Cs_))
         initial_results = pd.DataFrame(
             {"penalty": log_fit.Cs_, error_metric: log_fit.scores_["SLE"].mean(axis=0)}
         )
@@ -75,7 +106,7 @@ def testPf2Ranks(
 def getCompContribs(A_matrix, target, penalty_amt: float = 50) -> pd.DataFrame:
     """Fit logistic regression model, return coefficients of that model"""
     log_fit = LogisticRegression(
-        random_state=0, max_iter=5000, penalty="l1", solver="saga", C=penalty_amt
+        random_state=0, max_iter=5000, penalty="elasticnet", solver="saga", C=penalty_amt
     ).fit(A_matrix, target)
 
     coefs = pd.DataFrame(
@@ -102,10 +133,14 @@ def getPf2ROC(
     log_reg = LogisticRegressionCV(
         random_state=0,
         max_iter=10000,
-        penalty="l1",
+        penalty="elasticnet",
+        l1_ratios=[.2, .5, .8],
         solver="saga",
         scoring="roc_auc",
     )
+    
+    print(A_matrix[cohort_four])
+    print(y[cohort_four])
     log_fit = log_reg.fit(A_matrix[cohort_four], y[cohort_four])
 
     # get decision function for ROC AUC

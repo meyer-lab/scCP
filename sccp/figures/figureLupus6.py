@@ -18,15 +18,21 @@ def makeFigure():
 
     X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
 
+
+
+
     condStatus = X.obs[
         ["Condition", "SLE_status", "Processing_Cohort"]
     ].drop_duplicates()
 
     y_test, sle_decisions = getPf2ROC(np.array(X.uns["Pf2_A"]), condStatus)
 
+    print(y_test)
+    print(sle_decisions)
     RocCurveDisplay.from_predictions(
         y_test, sle_decisions, pos_label="SLE", plot_chance_level=True, ax=ax[0]
     )
+
 
     ax[0].set_title("OOS ROC: " + str(X.uns["Pf2_A"].shape[1]) + " Component LASSO")
 

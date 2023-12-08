@@ -20,6 +20,7 @@ def makeFigure():
     condStatus = X.obs[["Condition", predict, "Processing_Cohort"]].drop_duplicates()
     condStatus = condStatus.set_index("Condition")
 
+
     plotROCAcrossGroups(
         X.uns["Pf2_A"],
         condStatus,
