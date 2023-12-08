@@ -13,15 +13,15 @@ output/figure%.svg: sccp/figures/figure%.py
 	@ mkdir -p ./output
 	poetry run fbuild $*
 
-output/figureLupus%.svg: sccp/figures/figureLupus%.py 
+output/figureLupus%.svg: sccp/figures/figureLupus%.py factor_cache/Lupus.h5ad
 	@ mkdir -p ./output
 	poetry run fbuild Lupus$*
 
-output/figureCITEseq%.svg: sccp/figures/figureCITEseq%.py 
+output/figureCITEseq%.svg: sccp/figures/figureCITEseq%.py factor_cache/CITEseq.h5ad
 	@ mkdir -p ./output
 	poetry run fbuild CITEseq$*
 
-output/figureThomson%.svg: sccp/figures/figureThomson%.py 
+output/figureThomson%.svg: sccp/figures/figureThomson%.py factor_cache/Thomson.h5ad
 	@ mkdir -p ./output
 	poetry run fbuild Thomson$*
 
