@@ -35,7 +35,6 @@ def makeFigure():
     geneSet1 = ["FXYD2", "SERPINF1", "RARRES2"]
     plotGenePerCellType(geneSet1, X, ax[4], cellType="Cell Type2")
 
-
     plotCmpUMAP(X, 19, ax[5], 0.2)  # Alpro
     X_genes = X[:, ["THBS1", "VEGFA"]].to_memory()
     X_genes = X_genes[X_genes.obs["Cell Type"] == "DCs", :]
