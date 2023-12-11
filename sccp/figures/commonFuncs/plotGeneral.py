@@ -247,6 +247,7 @@ def gene_plot_cells(
     assert X.shape[1] == 2
     genes = X.var_names
     dataDF = X.to_df()
+    dataDF = dataDF.subtract(X.var["means"].values)
     dataDF[hue] = X.obs[hue].values
     dataDF["Cell Type"] = X.obs[cellType].values
     alpha = 1
@@ -355,6 +356,7 @@ def plot_cell_gene_corr(
     assert X.shape[1] == 2
     genes = X.var_names
     dataDF = X.to_df()
+    dataDF = dataDF.subtract(X.var["means"].values)
     dataDF[hue] = X.obs[hue].values
     dataDF["Cell Type"] = X.obs[cellType].values
     alpha = 0.3
