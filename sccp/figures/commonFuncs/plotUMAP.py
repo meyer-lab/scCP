@@ -21,8 +21,8 @@ def _get_canvas(points: np.ndarray) -> ds.Canvas:
     maxs = np.round(max_xy + 0.05 * (max_xy - min_xy))
 
     canvas = ds.Canvas(
-        plot_width=500,
-        plot_height=500,
+        plot_width=900,
+        plot_height=900,
         x_range=(mins[0], maxs[0]),
         y_range=(mins[1], maxs[1]),
     )
