@@ -149,6 +149,7 @@ def plotGenePerCategCond(
         y="Average Gene Expression For Drugs",
         hue="Condition",
         ax=ax,
+        showfliers = False
     )
     ax.set(title=gene)
     ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=45)

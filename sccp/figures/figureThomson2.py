@@ -29,7 +29,7 @@ def makeFigure():
 
     plotLabelsUMAP(X, "Cell Type", ax[0])
     plotLabelsUMAP(X, "Cell Type2", ax[1])
-    #heatmapGeneFactors([15, 19, 20], X, ax[2], geneAmount=5)
+    heatmapGeneFactors([15, 19, 20], X, ax[2], geneAmount=5)
 
     plotCmpUMAP(X, 15, ax[3], 0.4)  # pDC
     geneSet1 = ["FXYD2", "SERPINF1", "RARRES2"]
@@ -62,7 +62,7 @@ def makeFigure():
         ax=ax[10],
     )
 
-    ax[6].set(xlim=(-0.05, 0.8), ylim=(-.05, 0.8))
+    ax[6].set(xlim=(-0.05, 0.6), ylim=(-.05, 0.6))
     ax[8].set(ylim=(-0.05, 0.2))
     ax[9].set(ylim=(-0.05, 0.3))
     ax[10].set(xlim=(-0.05, 0.3), ylim=(-0.05, 0.3))
