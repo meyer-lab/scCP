@@ -37,7 +37,7 @@ factor_cache/Thomson.h5ad: sccp/factorization.py
 
 factor_cache/Lupus.h5ad: sccp/factorization.py
 	@ mkdir -p ./factor_cache
-	poetry run factor Lupus 40
+	poetry run factor Lupus 25
 
 test:
 	poetry run pytest -s -x -v
