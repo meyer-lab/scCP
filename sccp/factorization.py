@@ -1,8 +1,8 @@
 from pacmap import PaCMAP
 import scipy.sparse as sps
 from tensorly.cp_tensor import CPTensor
-from tlviz.factor_tools import factor_match_score as fms
-from sccp.parafac2 import parafac2_nd
+from tlviz.factor_tools import factor_match_score as fms, degeneracy_score
+from parafac2.parafac2 import parafac2_nd
 
 
 import anndata
@@ -25,10 +25,10 @@ def cwSNR(
     for i in range(X.uns["Pf2_A"].shape[0]):
         # Parafac2 to slice
         B_i = W_proj[sgIndex == i]
-        slice = np.dot(B_i * a[i], np.array(X.varm["Pf2_C"]).T)
+        tslice = np.dot(B_i * a[i], np.array(X.varm["Pf2_C"]).T)
 
         X_condition_arr = Xarr[sgIndex == i] - X.var["means"].to_numpy()
-        err_norm_here = float(np.linalg.norm(X_condition_arr - slice) ** 2.0)
+        err_norm_here = float(np.linalg.norm(X_condition_arr - tslice) ** 2.0)
         SNR[i, :] /= err_norm_here
 
     return SNR
@@ -80,6 +80,8 @@ def pf2(
     pf_out, _ = parafac2_nd(X, rank=rank, random_state=random_state)
 
     X = store_pf2(X, pf_out)
+
+    print(f"Degeneracy score: {degeneracy_score((pf_out[0], pf_out[1]))}")
 
     if doEmbedding:
         pcm = PaCMAP(random_state=random_state)

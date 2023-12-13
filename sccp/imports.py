@@ -1,3 +1,4 @@
+from pathlib import Path
 import sys
 from concurrent.futures import ProcessPoolExecutor
 import numpy as np
@@ -64,8 +65,7 @@ def import_thomson() -> anndata.AnnData:
             "Condition": pd.Categorical(metafile["sample_id"]),
         }
     )
-    
-    
+
     doubletDF = pd.read_csv("sccp/data/Thomson/ThomsonDoublets.csv", index_col=0)
     doubletDF.index.name = "cell_barcode"
     X.obs = X.obs.join(doubletDF, on="cell_barcode", how="inner")
@@ -73,10 +73,10 @@ def import_thomson() -> anndata.AnnData:
     singlet_indices = X.obs.loc[X.obs["doublet"] == 0].index.values
     X.obs = X.obs.reset_index(drop=True)
     X = X[singlet_indices, :]
-    
+
     X.obs = X.obs.set_index("cell_barcode")
     gateThomsonCells(X)
-    
+
     return prepare_dataset(X, "Condition")
 
 
@@ -90,7 +90,7 @@ def import_lupus() -> anndata.AnnData:
     'louvain': louvain cluster group assignment,
     'cg_cov': broad cell type,
     'ct_cov': lymphocyte-specific cell type,
-    'L3': not super clear,
+    'L3': marks a balanced subset of batch 4 used for model training,
     'ind_cov_batch_cov': combination of patient and pool, proxy for sample ID,
     'Age':	age of patient,
     'Sex': sex of patient,
@@ -155,10 +155,14 @@ def factorSave():
     if sys.argv[1] == "CITEseq":
         X = import_citeseq()
         pf2(X, int(sys.argv[2]))
-        X.write("factor_cache/CITEseq.h5ad")
+        X.write(Path("factor_cache/CITEseq.h5ad"))
     elif sys.argv[1] == "Thomson":
         X = import_thomson()
         pf2(X, int(sys.argv[2]))
-        X.write("factor_cache/Thomson.h5ad")
+        X.write(Path("factor_cache/Thomson.h5ad"))
+    elif sys.argv[1] == "Lupus":
+        X = import_lupus()
+        pf2(X, int(sys.argv[2]))
+        X.write(Path("factor_cache/Lupus.h5ad"))
     else:
         raise RuntimeError("Dataset not recognized.")

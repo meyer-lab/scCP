@@ -5,9 +5,6 @@ from anndata import read_h5ad
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotFactors import (
     plotConditionsFactors,
-    plotCellState,
-    plotGeneFactors,
-    plotWeight,
 )
 from .commonFuncs.plotLupus import getSamplesObs
 
@@ -15,20 +12,20 @@ from .commonFuncs.plotLupus import getSamplesObs
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8, 8), (2, 2))
+    ax, f = getSetup((8, 8), (1, 3))
 
     # Add subplot labels
     subplotLabel(ax)
 
     X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
 
+    df = getSamplesObs(X.obs)
 
-    lupusStatus = getSamplesObs(X.obs)["SLE_status"]
-
-    plotConditionsFactors(X, ax[0], lupusStatus)
+    plotConditionsFactors(X, ax[0], df["pool"], groupConditions=True)
     ax[0].set(yticks=[])
-    plotCellState(X, ax[1])
-    plotGeneFactors(X, ax[2])
-    plotWeight(X, ax[3])
+    plotConditionsFactors(X, ax[1], df["Processing_Cohort"], groupConditions=True)
+    ax[1].set(yticks=[])
+    plotConditionsFactors(X, ax[2], df["Status"], groupConditions=True)
+    ax[2].set(yticks=[])
 
     return f
