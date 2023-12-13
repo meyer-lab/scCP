@@ -1,0 +1,54 @@
+poetry run factor Thomson 20
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/anndata/_core/anndata.py:850: UserWarning: 
+AnnData expects .obs.index to contain strings, but got values like:
+    [0, 1, 2, 3, 4]
+
+    Inferred to be: integer
+
+  value_idx = self._prep_dim_index(value.index, attr)
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/anndata/_core/anndata.py:183: ImplicitModificationWarning: Transforming to str index.
+  warnings.warn("Transforming to str index.", ImplicitModificationWarning)
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/scanpy/preprocessing/_normalization.py:169: UserWarning: Received a view of an AnnData. Making a copy.
+  view_to_actual(adata)
+poetry run factor Thomson 20
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/anndata/_core/anndata.py:850: UserWarning: 
+AnnData expects .obs.index to contain strings, but got values like:
+    [0, 1, 2, 3, 4]
+
+    Inferred to be: integer
+
+  value_idx = self._prep_dim_index(value.index, attr)
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/anndata/_core/anndata.py:183: ImplicitModificationWarning: Transforming to str index.
+  warnings.warn("Transforming to str index.", ImplicitModificationWarning)
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/scanpy/preprocessing/_normalization.py:169: UserWarning: Received a view of an AnnData. Making a copy.
+  view_to_actual(adata)
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/pacmap/pacmap.py:819: UserWarning: Warning: random state is set to 1
+  warnings.warn(f'Warning: random state is set to {_RANDOM_STATE}')
+Degeneracy score: -0.758032219255221
+poetry run fbuild ThomsonFactorsbyCell
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/pacmap/pacmap.py:819: UserWarning: Warning: random state is set to 1
+  warnings.warn(f'Warning: random state is set to {_RANDOM_STATE}')
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/anndata/_core/anndata.py:850: UserWarning: 
+AnnData expects .obs.index to contain strings, but got values like:
+    [0, 1, 2, 3, 4]
+
+    Inferred to be: integer
+
+  value_idx = self._prep_dim_index(value.index, attr)
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/anndata/_core/anndata.py:183: ImplicitModificationWarning: Transforming to str index.
+  warnings.warn("Transforming to str index.", ImplicitModificationWarning)
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/scanpy/preprocessing/_normalization.py:169: UserWarning: Received a view of an AnnData. Making a copy.
+  view_to_actual(adata)
+Degeneracy score: -0.7580330028275858
+poetry run fbuild ThomsonBenchmarkPerDrop
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/anndata/_core/anndata.py:850: UserWarning: 
+AnnData expects .obs.index to contain strings, but got values like:
+    [0, 1, 2, 3, 4]
+
+    Inferred to be: integer
+
+  value_idx = self._prep_dim_index(value.index, attr)
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/anndata/_core/anndata.py:183: ImplicitModificationWarning: Transforming to str index.
+  warnings.warn("Transforming to str index.", ImplicitModificationWarning)
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/scanpy/preprocessing/_normalization.py:169: UserWarning: Received a view of an AnnData. Making a copy.
+  view_to_actual(adata)

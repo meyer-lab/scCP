@@ -6,6 +6,8 @@ from .commonFuncs.plotFactors import (
     plotCellState,
     plotGeneFactors,
 )
+from tlviz.factor_tools import factor_match_score as fms
+from tensorly.cp_tensor import CPTensor
 from ..imports import import_thomson
 from .figureThomson1 import groupDrugs
 import numpy as np
@@ -41,7 +43,7 @@ def makeFigure():
         (data.obs["Cell Type"] != "T Helpers") | (data.obs["Condition"] != drug_to_drop)
     ]
 
-    ax, f = getSetup((120, 120), (7, 3))
+    ax, f = getSetup((20, 20), (2, 3))
 
     all_sampled_data = [
         data,
@@ -62,10 +64,15 @@ def makeFigure():
         "T Helpers",
     ]
 
+    all_X = []
+
     for sampled_data, name, i in zip(
         all_sampled_data, all_sampled_data_names, np.arange(7)
     ):
         sampledX = pf2(sampled_data, rank, doEmbedding=False)
+        all_X.append(sampledX)
+        if 3 * i >= 6:
+            continue
         plotConditionsFactors(
             sampledX, ax[3 * i], groupDrugs(sampledX.obs["Condition"]), ThomsonNorm=True
         )
@@ -76,5 +83,36 @@ def makeFigure():
             f"Cell State Factors (dropping {drug_to_drop}): " + name
         )
         ax[3 * i + 2].set_title(f"Gene Factors (dropping {drug_to_drop}): " + name)
+
+    factors = [all_X[0].uns["Pf2_A"], all_X[0].uns["Pf2_B"], all_X[0].varm["Pf2_C"]]
+    dataXcp = CPTensor(
+        (
+            all_X[0].uns["Pf2_weights"],
+            factors,
+        )
+    )
+
+    for i in range(1, 7):
+        sampled_factors = [
+            all_X[i].uns["Pf2_A"],
+            all_X[i].uns["Pf2_B"],
+            all_X[i].varm["Pf2_C"],
+        ]
+        sampledXcp = CPTensor(
+            (
+                all_X[i].uns["Pf2_weights"],
+                sampled_factors,
+            )
+        )
+        fmsScore, permuted_factors = fms(
+            dataXcp,
+            sampledXcp,
+            consider_weights=True,
+            skip_mode=None,
+            return_permutation=True,
+        )
+
+        print(f"Factor score match for {all_sampled_data_names[i]}: {fmsScore}")
+        print(f"Permutation: {permuted_factors}")
 
     return f
