@@ -14,11 +14,13 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
+
     X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
 
-    comps = [13, 16, 26, 32]
+    comps = [13, 15, 19, 38]
     for i, cmp in enumerate(comps):
-        plotCmpPerCellType(X, cmp, ax[(2 * i)])
-        plotCmpUMAP(X, cmp, ax[(2 * i) + 1])
+        plotCmpPerCellType(X, cmp, ax[(2 * i)], cellType="louvain")
+        plotCmpUMAP(X, cmp, ax[(2 * i) + 1], cbarMax=.2)
+
 
     return f

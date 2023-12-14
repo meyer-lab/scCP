@@ -166,10 +166,10 @@ def plotCmpPerCellType(
         showfliers=outliers,
         ax=ax,
     )
-    maxvalue = 0.75  # np.max(np.abs(ax.get_xticks()))
-    ax.set(
-        xticks=np.linspace(-maxvalue, maxvalue, num=5), xlabel="Cell Specific Weight"
-    )
+    # maxvalue = 0.75  # np.max(np.abs(ax.get_xticks()))
+    # ax.set(
+    #     xticks=np.linspace(-maxvalue, maxvalue, num=5), xlabel="Cell Specific Weight"
+    # )
     ax.set_title(cmpName)
 
 

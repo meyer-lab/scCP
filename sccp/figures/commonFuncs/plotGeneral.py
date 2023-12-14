@@ -122,34 +122,47 @@ def plotGenePerCellType(genes, adata, ax, cellType="Cell Type"):
 
 
 def plotGenePerCategCond(
-    conds, categoryCond, gene, adata, ax, mean=True, cellType="Cell Type"
+    conds, categoryCond, gene, adata, ax, obs, mean=True, cellType="Cell Type", raw=False
 ):
     """Plots average gene expression across cell types for a category of drugs"""
+    adata = adata.to_memory()
     genesV = adata[:, gene]
+    # genesV = genesV.to_memory()
     dataDF = genesV.to_df()
+
     dataDF = dataDF.subtract(genesV.var["means"].values)
+    if raw is True:
+        names = adata.var_names.values
+        idx = np.where(names == gene)
+        a = genesV.raw.X.todense()
+        print(np.shape(a))
+ 
+        dataDF[gene] = a[:, idx[0]]
+        print("YUP")
+        
+    dataDF[obs] = genesV.obs[obs].values
     dataDF["Condition"] = genesV.obs["Condition"].values
     dataDF["Cell Type"] = genesV.obs[cellType].values
 
-    df = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=gene).rename(
+    df = pd.melt(dataDF, id_vars=[obs, "Cell Type", "Condition"], value_vars=gene).rename(
         columns={"variable": "Gene", "value": "Value"}
     )
     if mean is True:
-        df = df.groupby(["Condition", "Cell Type", "Gene"], observed=False).mean()
+        df = df.groupby([obs, "Cell Type", "Gene", "Condition"], observed=False).mean()
 
     df = df.rename(columns={"Value": "Average Gene Expression For Drugs"}).reset_index()
 
-    df["Condition"] = np.where(df["Condition"].isin(conds), df["Condition"], "Other")
+    df[obs] = np.where(df[obs].isin(conds), df[obs], "Other")
     for i in conds:
-        df = df.replace({"Condition": {i: categoryCond}})
+        df = df.replace({obs: {i: categoryCond}})
 
     sns.boxplot(
         data=df.loc[df["Gene"] == gene],
         x="Cell Type",
         y="Average Gene Expression For Drugs",
-        hue="Condition",
+        hue=obs,
         ax=ax,
-        showfliers=False,
+        showfliers=True,
     )
     ax.set(title=gene)
     ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=45)

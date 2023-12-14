@@ -13,9 +13,9 @@ def makeFigure():
     ax, f = getSetup((24, 24), (10, 8))
 
     X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
-
-    for i in np.arange(0, 3):
-        plotGeneFactors(i + 1, X, ax[2 * i], geneAmount=5, top=True)
-        plotGeneFactors(i + 1, X, ax[2 * i + 1], geneAmount=5, top=False)
+    comps = [13, 15, 19, 38]
+    for i, cmp in enumerate(comps):
+        plotGeneFactors(cmp, X, ax[2 * i], geneAmount=10, top=True)
+        plotGeneFactors(cmp, X, ax[2 * i + 1], geneAmount=10, top=False)
 
     return f
