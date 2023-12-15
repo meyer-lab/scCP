@@ -17,7 +17,7 @@ from ..imports import import_lupus
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((12, 10), (3, 4))
+    ax, f = getSetup((12, 10), (2, 3))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -26,20 +26,22 @@ def makeFigure():
 
     # X = import_lupus()
     cmp = 15
-    # plotLabelsUMAP(X, "louvain", ax[0])
+    # plotLabelsUMAP(X, "Cell Type", ax[0])
 
-    ind = X.obsm["weighted_projections"] < -.03
-    X = X[ind[:, cmp-1], :]
+    # # ind = X.obsm["weighted_projections"] < -.03
+    # # X = X[ind[:, cmp-1], :]
 
-    # X = sc.pp.subsample(X, fraction=0.1, random_state=0, copy=True)
-    # plotPartialCmpUMAP(X, cmp, ax[0])
-    # print(X)
-    # plotPartialLabelUMAP(X, ax[0], obslabel="Cell Type")
-    # plotPartialLabelUMAP(X, ax[1], obslabel="louvain")
-    # plotPartialLabelUMAP(X, ax[2], obslabel="SLE_status")
+    # # # X = sc.pp.subsample(X, fraction=0.1, random_state=0, copy=True)
+    # # # plotPartialCmpUMAP(X, cmp, ax[0])
+    # # # print(X)
+    # # # plotPartialLabelUMAP(X, ax[0], obslabel="Cell Type")
+    # # # plotPartialLabelUMAP(X, ax[1], obslabel="louvain")
+    # # # plotPartialLabelUMAP(X, ax[2], obslabel="SLE_status")
     
     genes = ["TUBB1", "PF4", "CLU", "PPBP", "HIST1H2AC", "ISG15", "LY6E", "IFI44L", "ANXA1", "IFI6"]
     
+    genes = ["KLRB1", "GZMK", "KLRG1"]
+             
     for i, gene in enumerate(genes):
         plotGenePerCategCond(["SLE"], "lupus", gene, X, ax[i], obs = "SLE_status", mean=True, cellType="Cell Type", raw=False)
         print(i)

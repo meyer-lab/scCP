@@ -9,6 +9,7 @@ import datashader.transfer_functions as tf
 from matplotlib.patches import Patch
 import anndata
 from scipy.sparse import spmatrix
+import scanpy as sc
 
 
 def _get_canvas(points: np.ndarray) -> ds.Canvas:
@@ -44,9 +45,23 @@ def ds_show(result, ax):
     ax.imshow(mpl_img)
 
 
-def plotGeneUMAP(gene: str, decompType: str, X: anndata.AnnData, ax: Axes):
+def plotGeneUMAP(gene: str, decompType: str, X: anndata.AnnData, XX, ax: Axes):
     """Scatterplot of UMAP visualization weighted by gene"""
-    geneList = X[:, gene].X
+    # geneList = X[:, gene].raw.X
+    # X = sc.pp.subsample(X, fraction=0.1, random_state=0, copy=True)
+    adata = X.to_memory()
+    genesV = adata[:, gene]
+    # genesV = genesV.to_memory()
+    dataDF = genesV.to_df()
+
+    dataDF = dataDF.subtract(genesV.var["means"].values)
+   
+    # names = adata.var_names.values
+    # idx = np.where(names == gene)
+    # a = genesV.raw.X.todense()
+ 
+    # dataDF[gene] = a[:, idx[0]]
+    geneList = dataDF[gene].values
     if isinstance(geneList, spmatrix):
         geneList = geneList.toarray()
 
@@ -55,7 +70,7 @@ def plotGeneUMAP(gene: str, decompType: str, X: anndata.AnnData, ax: Axes):
 
     values = geneList
 
-    points = np.array(X.obsm["embedding"])
+    points = np.array(XX.obsm["embedding"])
 
     canvas = _get_canvas(points)
     data = pd.DataFrame(points, columns=("x", "y"))
@@ -165,6 +180,7 @@ def plotCmpPerCellType(
         y="Cell Type",
         showfliers=outliers,
         ax=ax,
+        hue="Cell Type"
     )
     # maxvalue = 0.75  # np.max(np.abs(ax.get_xticks()))
     # ax.set(

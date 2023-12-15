@@ -150,7 +150,7 @@ def plotGenePerCategCond(
     if mean is True:
         df = df.groupby([obs, "Cell Type", "Gene", "Condition"], observed=False).mean()
 
-    df = df.rename(columns={"Value": "Average Gene Expression For Drugs"}).reset_index()
+    df = df.rename(columns={"Value": "Average Gene Expression"}).reset_index()
 
     df[obs] = np.where(df[obs].isin(conds), df[obs], "Other")
     for i in conds:
@@ -159,7 +159,7 @@ def plotGenePerCategCond(
     sns.boxplot(
         data=df.loc[df["Gene"] == gene],
         x="Cell Type",
-        y="Average Gene Expression For Drugs",
+        y="Average Gene Expression",
         hue=obs,
         ax=ax,
         showfliers=True,
