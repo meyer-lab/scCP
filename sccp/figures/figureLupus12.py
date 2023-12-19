@@ -1,12 +1,14 @@
 """
 Lupus: Plot factor weights correlations for donor SLE prediction
 """
+from anndata import read_h5ad
 import itertools
 import numpy as np
 import seaborn as sns
 from sklearn.linear_model import LogisticRegression
 from sklearn import preprocessing
-from .common import subplotLabel, getSetup, openPf2
+from .common import subplotLabel, getSetup
+from .commonFuncs.plotLupus import getSamplesObs
 
 
 def makeFigure():
@@ -17,11 +19,9 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = openPf2(rank=40, dataName="Lupus")
+    X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
 
-    status = X.obs[
-        ["pool", "patient", "SLE_status", "Processing_Cohort"]
-    ].drop_duplicates()
+    status = getSamplesObs(X.obs)
 
     Lupus_comp_scan_plot(ax[0], X.uns["Pf2_A"], status)
 

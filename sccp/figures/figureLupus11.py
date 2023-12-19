@@ -1,11 +1,11 @@
 """
 Lupus: Gene ontology for gene factors of Pf2
 """
+from anndata import read_h5ad
 from .common import (
     subplotLabel,
     getSetup,
 )
-from .commonFuncs.plotGeneOntology import plotCombGO, plotPvalGO
 from ..geneontology import geneOntology
 
 
@@ -17,12 +17,10 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    # value = "Underexpressed"
-    value = "Overexpressed"
+    X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
 
-    # combDF, pvalDF = geneOntology(cmpNumb=32, dataName="lupus", rank=40, geneAmount=20, goTerms=5, geneValue=value)
+    df = geneOntology(X, 32)
 
-    # plotCombGO(combDF, geneValue=value, axs=ax[0:3])
-    # plotPvalGO(pvalDF, geneValue=value, axs=ax[3:6])
+    print(df)
 
     return f

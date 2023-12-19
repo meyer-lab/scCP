@@ -1,8 +1,9 @@
 """
 Lupus: Plot 2 Pf2 factors for conditions
 """
-from .common import subplotLabel, getSetup, openPf2
-from .commonFuncs.plotLupus import plot2DSeparationByComp
+from anndata import read_h5ad
+from .common import subplotLabel, getSetup
+from .commonFuncs.plotLupus import plot2DSeparationByComp, getSamplesObs
 import numpy as np
 import pandas as pd
 
@@ -15,15 +16,15 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    rank = 40
-    X = openPf2(rank=rank, dataName="Lupus")
+    X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
+
     predict = "SLE_status"
-    condStatus = X.obs[["Condition", predict]].drop_duplicates()
+    condStatus = getSamplesObs(X.obs)
     condStatus = condStatus.set_index("Condition")
 
     df = pd.DataFrame(
         X.uns["Pf2_A"],
-        columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)],
+        columns=[f"Cmp. {i}" for i in np.arange(1, X.uns["Pf2_A"].shape[1] + 1)],
         index=condStatus.index,
     )
     df = df.merge(condStatus, left_index=True, right_index=True)

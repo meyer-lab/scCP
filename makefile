@@ -3,12 +3,41 @@ SHELL := /bin/bash
 .PHONY: clean test
 
 flist = $(wildcard sccp/figures/figure*.py)
+allOutput = $(patsubst sccp/figures/figure%.py, output/figure%.svg, $(flist))
 
-all: $(patsubst sccp/figures/figure%.py, output/figure%.svg, $(flist))
+all: $(allOutput)
+
+allThomson: $(filter output/figureThomson%, $(allOutput))
+
+allLupus: $(filter output/figureLupus%, $(allOutput))
 
 output/figure%.svg: sccp/figures/figure%.py
 	@ mkdir -p ./output
 	poetry run fbuild $*
+
+output/figureLupus%.svg: sccp/figures/figureLupus%.py factor_cache/Lupus.h5ad
+	@ mkdir -p ./output
+	poetry run fbuild Lupus$*
+
+output/figureCITEseq%.svg: sccp/figures/figureCITEseq%.py factor_cache/CITEseq.h5ad
+	@ mkdir -p ./output
+	poetry run fbuild CITEseq$*
+
+output/figureThomson%.svg: sccp/figures/figureThomson%.py factor_cache/Thomson.h5ad
+	@ mkdir -p ./output
+	poetry run fbuild Thomson$*
+
+factor_cache/CITEseq.h5ad: sccp/factorization.py
+	@ mkdir -p ./factor_cache
+	poetry run factor CITEseq 80
+
+factor_cache/Thomson.h5ad: sccp/factorization.py
+	@ mkdir -p ./factor_cache
+	poetry run factor Thomson 20
+
+factor_cache/Lupus.h5ad: sccp/factorization.py
+	@ mkdir -p ./factor_cache
+	poetry run factor Lupus 40
 
 test:
 	poetry run pytest -s -x -v
@@ -18,6 +47,7 @@ coverage.xml:
 
 clean:
 	rm -rf output profile profile.svg
+	rm -rf factor_cache
 
 testprofile:
 	poetry run python3 -m cProfile -o profile -m pytest -s -v -x

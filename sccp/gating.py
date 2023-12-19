@@ -1,12 +1,14 @@
 import numpy.typing as npt
-import scanpy
+import scanpy as sc
 import pandas as pd
+import anndata as an
+import doubletdetection
 
 
 def gateThomsonCellsLeiden(X) -> npt.ArrayLike:
     """Manually gates cell types for Thomson UMAP"""
-    scanpy.pp.neighbors(X, n_neighbors=15, use_rep="projections", random_state=0)
-    scanpy.tl.leiden(X, resolution=3, random_state=0)
+    sc.pp.neighbors(X, n_neighbors=15, use_rep="projections", random_state=0)
+    sc.tl.leiden(X, resolution=3, random_state=0)
     X.obs["Cell Type"] = X.obs.leiden.replace(thomson_layer1).astype(str)
     X.obs["Cell Type2"] = X.obs.leiden.replace(thomson_layer2).astype(str)
 
@@ -16,10 +18,30 @@ def gateThomsonCellsLeiden(X) -> npt.ArrayLike:
 def gateThomsonCells(X) -> npt.ArrayLike:
     """Manually gates cell types for Thomson UMAP"""
     cellTypeDF = pd.read_csv("sccp/data/Thomson/ThomsonCellTypes.csv", index_col=0)
-    X.obs["Cell Type"] = cellTypeDF["Cell Type"].values.astype(str)
-    X.obs["Cell Type2"] = cellTypeDF["Cell Type2"].values.astype(str)
+    cellTypeDF.index.name = "cell_barcode"
+    X.obs = X.obs.join(cellTypeDF, on="cell_barcode", how="inner")
+
+    X.obs["Cell Type"] = X.obs["Cell Type"].values.astype(str)
+    X.obs["Cell Type2"] = X.obs["Cell Type2"].values.astype(str)
 
     return X
+
+
+def Thomson_Doublet():
+    X = an.read_h5ad("/opt/andrew/thomson_raw.h5ad")
+    sc.pp.filter_genes(X, min_cells=1)
+    clf = doubletdetection.BoostClassifier(
+        n_iters=10,
+        clustering_algorithm="louvain",
+        standard_scaling=True,
+        pseudocount=0.1,
+        n_jobs=-1,
+    )
+    doublets = clf.fit(X.X).predict(p_thresh=1e-16, voter_thresh=0.5)
+    doublet_score = clf.doublet_score()
+    X.obs["doublet"] = doublets
+    X.obs["doublet_score"] = doublet_score
+    X.obs["doublet"].to_csv("sccp/data/Thomson/ThomsonDoublets.csv")
 
 
 thomson_layer1 = {
@@ -155,20 +177,33 @@ marker_genes_1 = {
 # This is a list of genes which I assembled to label the second layer of cell annotation. I assembled this using several sources.
 marker_genes_2 = {
     "B cells": ["PXK", "MS4A1", "CD19", "CD74", "CD79A", "BANK1", "PTPRC", "CR2"],
-    "B Memory": ["NPIB15", "BACH2", "IL7", "NMBR", "MS4A1", "MBL2", "LY86" "CD27"],
+    "B Memory": ["NPIB15", "BACH2", "IL7", "NMBR", "MS4A1", "MBL2", "LY86", "CD27"],
     "B Naive": ["P2RX5", "SIK1", "SLC12A1", "SELL", "RALGPS2", "PTPRCAP", "PSG2"],
     "Basophils": ["CCL4", "NPL", "WRN", "NFIL3", "TEC", "OTUB2", "FAR2"],
-    "DCs": ["ITGAX", "ZBTB46", "LAMP3", "CXCR1", "ITGAM", "FCER1A", "IL6"],
+    "cDCs": ["ITGAX", "ZBTB46", "LAMP3", "CXCR1", "ITGAM", "FCER1A", "IL6", "IRF4"],
     "Macrophages": ["CD68", "FCGR1", "NAAA", "JAML", "TYROBP", "LYZ2", "H2-DMA"],
-    "Monocytes": [
+    "Classical Monocytes": [
         "APOBEC3A",
         "LYZ",
         "CD14",
         "CFP",
-        "HLA-DRA",
         "S100A9",
         "S100A8",
         "CSF3R",
+    ],
+    "Intermediate Monocytes": [
+        "APOBEC3A",
+        "LYZ",
+        "CD14",
+        "CFP",
+        "S100A9",
+        "S100A8",
+        "CSF3R",
+        "CD16",
+    ],
+    "Myeloid DCs": [
+        "CSF3R",
+        "CD52",
     ],
     "Myeloid Suppressors": [
         "S100A4",
@@ -181,7 +216,7 @@ marker_genes_2 = {
         "FCGR3A",
     ],
     "NK": ["NKG7", "GNLY", "KLRD1", "KLRF1", "NCR1", "DOCK2", "GZMA", "IRF7"],
-    "pDCs": ["BST2", "CLEC4C", "MAP3K2", "KLK1", "CMAH", "TRADD", "LILRA4"],
+    "pDCs": ["BST2", "CLEC4C", "MAP3K2", "KLK1", "CMAH", "TRADD", "LILRA4", "TCF4"],
     "T Cells": ["TRBC2", "CD3D", "CD3G", "CD3E", "LTB", "IL7R", "LEF1"],
     "Cytotoxic T": ["TRAC", "CD8A", "GZMB", "CD2", "CD27", "CD5", "CD27"],
     "Helper T": ["CCR4", "CD4", "IL13", "CD28", "CD3G", "IL2", "CCR6"],
