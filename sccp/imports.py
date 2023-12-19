@@ -17,7 +17,7 @@ def prepare_dataset(X: anndata.AnnData, condition_name: str) -> anndata.AnnData:
 
     # Filter out genes with too few reads
     readmean, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
-    X = X[:, readmean > 0.002]
+    X = X[:, readmean > 0.1]
 
     # Normalize read depth
     sc.pp.normalize_total(X, exclude_highly_expressed=False, inplace=True)
@@ -100,11 +100,13 @@ def import_lupus() -> anndata.AnnData:
 
     """
     X = anndata.read_h5ad("/opt/andrew/lupus/lupus.h5ad")
-    X = anndata.AnnData(X.raw.X, X.obs, X.raw.var, X.uns, X.obsm, X.raw.varm)
+    X = anndata.AnnData(X.raw.X, X.obs, X.raw.var, X.uns)
 
     # Remove non-coding genes (these seem to have a very large batch effect)
-    filter_genes = X.var_names.str.match(r"RP([1-9]|1[0-5])-\d")
-    X = X[:, ~filter_genes]
+    RP_genes = X.var_names.str.match(r"RP([1-9]|1[0-5])-\d")
+    LINC_genes = X.var_names.str.startswith("LINC")
+    CTD_genes = X.var_names.str.startswith("CTD-")
+    X = X[:, ~(RP_genes | LINC_genes | CTD_genes)]
 
     # rename columns to make more sense
     X.obs = X.obs.rename(
