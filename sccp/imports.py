@@ -126,7 +126,7 @@ def import_lupus() -> anndata.AnnData:
     # get rid of IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831 (only 3 cells)
     X = X[X.obs["Condition"] != "IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831"]
 
-    return prepare_dataset(X)
+    return prepare_dataset(X, "Condition")
 
 
 def import_citeseq() -> anndata.AnnData:

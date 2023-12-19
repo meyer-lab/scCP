@@ -23,7 +23,7 @@ def plotConditionsFactors(
     yt = pd.Series(np.unique(data.obs["Condition"]))
     X = np.array(data.uns["Pf2_A"])
 
-    # X = np.log10(X)
+    X = np.log10(X)
     if ThomsonNorm is True:
         controls = yt.str.contains("CTRL")
         XX = X[controls]
