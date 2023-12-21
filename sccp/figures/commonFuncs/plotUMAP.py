@@ -120,7 +120,7 @@ def plotLabelsUMAP(
     labels = X.obs[labelType]
 
     if condition is not None:
-        labels = pd.Series([c if c in condition else "Z Other" for c in labels])
+        labels = pd.Series([c if c in condition else "Zz Other" for c in labels])
 
     indices = np.argsort(labels)
     points = X.obsm["embedding"][indices, :]

@@ -22,6 +22,7 @@ def makeFigure():
 
     X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
 
+    print(X)
     lupusStatus = getSamplesObs(X.obs)["SLE_status"]
 
     plotConditionsFactors(X, ax[0], lupusStatus)
