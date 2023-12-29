@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 import anndata
 import scanpy as sc
-from scipy.sparse import spmatrix
-from sklearn.utils.sparsefuncs import inplace_column_scale, mean_variance_axis
+from scipy.sparse import csc_matrix, csr_matrix
+from sklearn.utils.sparsefuncs import inplace_column_scale
 from .factorization import pf2
 from .gating import gateThomsonCells
 
@@ -14,7 +14,7 @@ from .gating import gateThomsonCells
 def prepare_dataset(
     X: anndata.AnnData, condition_name: str, geneThreshold: float
 ) -> anndata.AnnData:
-    assert isinstance(X.X, spmatrix)
+    assert isinstance(X.X, csc_matrix | csr_matrix)
     assert np.amin(X.X.data) >= 0.0  # type: ignore
 
     # Get the indices for subsetting the data
@@ -22,18 +22,20 @@ def prepare_dataset(
     X.obs["condition_unique_idxs"] = sgIndex
 
     # Filter out genes with too few reads
-    sc.pp.filter_genes(X, min_counts=int(geneThreshold * X.shape[0]), inplace=True)
+    X = X[:, X.X.mean(axis=0) > geneThreshold]
 
     # Normalize read depth
     sc.pp.normalize_total(X, exclude_highly_expressed=False, inplace=True)
 
-    # Transform values
-    sc.pp.log1p(X, copy=False)
+    # Scale genes by sum
+    readsum = np.array(X.X.sum(axis=0)).T # type: ignore
+    inplace_column_scale(X.X, 1.0 / readsum) # type: ignore
 
-    # Scale genes by variance, store means
-    mean, var = mean_variance_axis(X.X, axis=0)  # type: ignore
-    inplace_column_scale(X.X, 1.0 / var)
-    X.var["means"] = mean / var
+    # Transform values
+    X.X.data = np.log10((1000.0 * X.X.data) + 1.0)  # type: ignore
+
+    # Pre-calculate gene means
+    X.var["means"] = np.array(X.X.mean(axis=0)).T # type: ignore
 
     return X
 
