@@ -17,28 +17,23 @@ def prepare_dataset(
     assert isinstance(X.X, spmatrix)
     assert np.amin(X.X.data) >= 0.0  # type: ignore
 
-    # Filter out genes with too few reads
-    readmean, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
-    X = X[:, readmean > geneThreshold]
-
-    # Normalize read depth
-    sc.pp.normalize_total(X, exclude_highly_expressed=False, inplace=True)
-
-    # Scale genes by sum
-    readmean, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
-    readsum = X.shape[0] * readmean
-    inplace_column_scale(X.X, 1.0 / readsum)
-
-    # Transform values
-    X.X.data = np.log10((1000.0 * X.X.data) + 1.0)  # type: ignore
-
     # Get the indices for subsetting the data
     _, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
     X.obs["condition_unique_idxs"] = sgIndex
 
-    # Pre-calculate gene means
-    means, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
-    X.var["means"] = means
+    # Filter out genes with too few reads
+    sc.pp.filter_genes(X, min_counts=int(geneThreshold * X.shape[0]), inplace=True)
+
+    # Normalize read depth
+    sc.pp.normalize_total(X, exclude_highly_expressed=False, inplace=True)
+
+    # Transform values
+    sc.pp.log1p(X, copy=False)
+
+    # Scale genes by variance, store means
+    mean, var = mean_variance_axis(X.X, axis=0)  # type: ignore
+    inplace_column_scale(X.X, 1.0 / var)
+    X.var["means"] = mean / var
 
     return X
 
@@ -103,12 +98,6 @@ def import_lupus() -> anndata.AnnData:
     """
     X = anndata.read_h5ad("/opt/andrew/lupus/lupus.h5ad")
     X = anndata.AnnData(X.raw.X, X.obs, X.raw.var, X.uns)
-
-    # Remove non-coding genes (these seem to have a very large batch effect)
-    RP_genes = X.var_names.str.match(r"RP([1-9]|1[0-5])-\d")
-    LINC_genes = X.var_names.str.startswith("LINC")
-    CTD_genes = X.var_names.str.startswith("CTD-")
-    X = X[:, ~(RP_genes | LINC_genes | CTD_genes)]
 
     # rename columns to make more sense
     X.obs = X.obs.rename(
