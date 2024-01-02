@@ -28,14 +28,14 @@ def prepare_dataset(
     sc.pp.normalize_total(X, exclude_highly_expressed=False, inplace=True)
 
     # Scale genes by sum
-    readsum = np.array(X.X.sum(axis=0)).T # type: ignore
-    inplace_column_scale(X.X, 1.0 / readsum) # type: ignore
+    readsum = np.array(X.X.sum(axis=0)).T  # type: ignore
+    inplace_column_scale(X.X, 1.0 / readsum)  # type: ignore
 
     # Transform values
     X.X.data = np.log10((1000.0 * X.X.data) + 1.0)  # type: ignore
 
     # Pre-calculate gene means
-    X.var["means"] = np.array(X.X.mean(axis=0)).T # type: ignore
+    X.var["means"] = np.array(X.X.mean(axis=0)).T  # type: ignore
 
     return X
 
