@@ -99,36 +99,37 @@ def plotCellTypePerExpPerc(dataDF, condition, ax: Axes):
     ax.set(title=condition)
 
 
-def plotGenePerCellType(genes, adata, ax):
+def plotGenePerCellType(genes, adata, ax, cellType="Cell Type"):
     """Plots average gene expression across cell types for all conditions"""
     genesV = adata[:, genes]
     dataDF = genesV.to_df()
     dataDF = dataDF.subtract(genesV.var["means"].values)
     dataDF["Condition"] = genesV.obs["Condition"].values
-    dataDF["Cell Type"] = genesV.obs["Cell Type"].values
+    dataDF["Cell Type"] = genesV.obs[cellType].values
     data = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=genes).rename(
         columns={"variable": "Gene", "value": "Value"}
     )
     df = data.groupby(["Condition", "Cell Type", "Gene"], observed=False).mean()
     df = df.rename(columns={"Value": "Average Gene Expression For Drugs"})
-    sns.stripplot(
+    sns.boxplot(
         data=df,
         x="Gene",
         y="Average Gene Expression For Drugs",
         hue="Cell Type",
-        dodge=True,
-        jitter=False,
         ax=ax,
+        fliersize=0,
     )
 
 
-def plotGenePerCategCond(conds, categoryCond, gene, adata, ax, mean=True):
+def plotGenePerCategCond(
+    conds, categoryCond, gene, adata, ax, mean=True, cellType="Cell Type"
+):
     """Plots average gene expression across cell types for a category of drugs"""
     genesV = adata[:, gene]
     dataDF = genesV.to_df()
     dataDF = dataDF.subtract(genesV.var["means"].values)
     dataDF["Condition"] = genesV.obs["Condition"].values
-    dataDF["Cell Type"] = genesV.obs["Cell Type"].values
+    dataDF["Cell Type"] = genesV.obs[cellType].values
 
     df = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=gene).rename(
         columns={"variable": "Gene", "value": "Value"}
@@ -142,15 +143,16 @@ def plotGenePerCategCond(conds, categoryCond, gene, adata, ax, mean=True):
     for i in conds:
         df = df.replace({"Condition": {i: categoryCond}})
 
-
     sns.boxplot(
         data=df.loc[df["Gene"] == gene],
         x="Cell Type",
         y="Average Gene Expression For Drugs",
         hue="Condition",
         ax=ax,
+        showfliers=False,
     )
     ax.set(title=gene)
+    ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=45)
 
 
 def plotGeneFactors(
@@ -174,6 +176,34 @@ def plotGeneFactors(
         sns.barplot(data=df.iloc[:geneAmount, :], x="Gene", y=cmpName, color="k", ax=ax)
 
     ax.tick_params(axis="x", rotation=90)
+
+
+def heatmapGeneFactors(
+    cmps: list, dataIn: anndata.AnnData, ax: Axes, geneAmount: int = 20
+):
+    """Plotting weights for gene factors for both most negatively/positively weighted terms"""
+    cmap = sns.diverging_palette(240, 10, as_cmap=True)
+    df = pd.DataFrame(
+        data=dataIn.varm["Pf2_C"],
+        index=dataIn.var_names,
+        columns=range(1, dataIn.varm["Pf2_C"].shape[1] + 1),
+    )
+    df = df.reset_index(names="Gene")
+
+    genes = np.array([])
+    for cmp in cmps:
+        sortDF = df.sort_values(by=cmp)
+        top = sortDF.iloc[-geneAmount:, :].Gene.values
+        bottom = sortDF.iloc[:geneAmount:, :].Gene.values
+        genes = np.concatenate((genes, np.flip(top)))
+        genes = np.concatenate((genes, bottom))
+
+    heatmapDF = df.loc[df.Gene.isin(genes)][cmps + ["Gene"]].set_index("Gene")
+    vmax = np.abs(heatmapDF.values).max()
+
+    sns.heatmap(
+        data=heatmapDF.transpose()[genes], ax=ax, cmap=cmap, vmin=-vmax, vmax=vmax
+    )
 
 
 def population_bar_chart(
@@ -208,15 +238,22 @@ def cell_comp_hist(X, category: str, comp: int, unique, ax: Axes):
 
 
 def gene_plot_cells(
-    X: anndata.AnnData, hue: str, ax: Axes, unique=None, average=False, kde=False
+    X: anndata.AnnData,
+    hue: str,
+    ax: Axes,
+    unique=None,
+    average=False,
+    kde=False,
+    cellType="Cell Type",
 ):
     """Plots two genes on either a per cell or per cell type basis"""
     assert X.shape[1] == 2
     genes = X.var_names
-    sc.pp.subsample(X, fraction=1, random_state=0)
     dataDF = X.to_df()
+    dataDF = dataDF.subtract(X.var["means"].values)
     dataDF[hue] = X.obs[hue].values
-    alpha = 0.3
+    dataDF["Cell Type"] = X.obs[cellType].values
+    alpha = 1
 
     if average:
         dataDF = dataDF.groupby([hue], observed=True).mean().reset_index()
@@ -224,11 +261,9 @@ def gene_plot_cells(
 
     if unique is not None:
         dataDF[hue] = dataDF[hue].astype(str)
-        dataDF.loc[dataDF[hue] != unique, hue] = "Other"
+        dataDF.loc[~dataDF[hue].isin(unique), hue] = "Other"
 
-    sns.scatterplot(
-        data=dataDF, x=genes[0], y=genes[1], hue=hue, ax=ax, size=-0.1, alpha=alpha
-    )
+    sns.scatterplot(data=dataDF, x=genes[0], y=genes[1], hue=hue, ax=ax, alpha=alpha)
     if kde:
         sns.kdeplot(
             data=dataDF,
@@ -261,13 +296,9 @@ def gene_plot_conditions(X, condition: str, genes, ax: Axes, hue=None, unique=No
         dataDF[condition] = dataDF[condition].astype(str)
         dataDF.loc[dataDF[condition] != unique, condition] = "Other"
     if hue is not None:
-        sns.scatterplot(
-            data=dataDF, x=genes[0], y=genes[1], hue=hue, ax=ax, size=-0.1, alpha=5
-        )
+        sns.scatterplot(data=dataDF, x=genes[0], y=genes[1], hue=hue, ax=ax, alpha=5)
     else:
-        sns.scatterplot(
-            data=dataDF, x=genes[0], y=genes[1], ax=ax, size=-0.1, alpha=0.2
-        )
+        sns.scatterplot(data=dataDF, x=genes[0], y=genes[1], ax=ax, alpha=0.2)
 
 
 def geneSig_plot_cells(
@@ -296,7 +327,6 @@ def geneSig_plot_cells(
         y=str(comps[1]),
         hue=hue,
         ax=ax,
-        size=-0.1,
         alpha=alpha,
     )
     if kde:
@@ -314,4 +344,59 @@ def geneSig_plot_cells(
     ax.set(
         xlabel="Comp. " + str(comps[0]) + " Signature",
         ylabel="Comp. " + str(comps[1]) + " Signature",
+    )
+
+
+def plot_cell_gene_corr(
+    X: anndata.AnnData,
+    hue: str,
+    cells: list,
+    ax: Axes,
+    unique=None,
+    cellType="Cell Type",
+):
+    """Plots two genes on either a per cell or per cell type basis"""
+    assert X.shape[1] == 2
+    genes = X.var_names
+    dataDF = X.to_df()
+    dataDF = dataDF.subtract(X.var["means"].values)
+    dataDF[hue] = X.obs[hue].values
+    dataDF["Cell Type"] = X.obs[cellType].values
+    alpha = 0.3
+
+    dataDF = dataDF.groupby([hue, "Cell Type"], observed=True).mean().reset_index()
+    alpha = 1
+
+    corrDF = pd.DataFrame()
+    for cond in dataDF[hue].unique():
+        cell_gene1 = dataDF.loc[
+            (dataDF[hue] == cond) & (dataDF["Cell Type"] == cells[0])
+        ][genes[0]].values
+        cell_gene2 = dataDF.loc[
+            (dataDF[hue] == cond) & (dataDF["Cell Type"] == cells[1])
+        ][genes[1]].values
+        corrDF = pd.concat(
+            [
+                corrDF,
+                pd.DataFrame(
+                    {
+                        hue: cond,
+                        cells[0] + " " + genes[0]: cell_gene1,
+                        cells[1] + " " + genes[1]: cell_gene2,
+                    }
+                ),
+            ]
+        )
+
+    if unique is not None:
+        corrDF[hue] = corrDF[hue].astype(str)
+        corrDF.loc[~corrDF[hue].isin(unique), hue] = "Other"
+
+    sns.scatterplot(
+        data=corrDF,
+        x=cells[0] + " " + genes[0],
+        y=cells[1] + " " + genes[1],
+        hue=hue,
+        ax=ax,
+        alpha=alpha,
     )

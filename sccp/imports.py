@@ -1,3 +1,4 @@
+from pathlib import Path
 import sys
 from concurrent.futures import ProcessPoolExecutor
 import numpy as np
@@ -10,13 +11,15 @@ from .factorization import pf2
 from .gating import gateThomsonCells
 
 
-def prepare_dataset(X: anndata.AnnData, condition_name: str, batch=False) -> anndata.AnnData:
+def prepare_dataset(
+    X: anndata.AnnData, condition_name: str, geneThreshold: float
+) -> anndata.AnnData:
     assert isinstance(X.X, spmatrix)
     assert np.amin(X.X.data) >= 0.0  # type: ignore
 
     # Filter out genes with too few reads
     readmean, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
-    X = X[:, readmean > 0.002]
+    X = X[:, readmean > geneThreshold]
 
     # Normalize read depth
     sc.pp.normalize_total(X, exclude_highly_expressed=False, inplace=True)
@@ -24,17 +27,6 @@ def prepare_dataset(X: anndata.AnnData, condition_name: str, batch=False) -> ann
     # Get the indices for subsetting the data
     _, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
     X.obs["condition_unique_idxs"] = sgIndex
-
-    if batch:
-        for ii in range(np.amax(sgIndex) + 1):
-            xx = csr_matrix(X[X.obs["condition_unique_idxs"] == ii].X, copy=True)
-
-            # Scale genes by sum
-            readmean = mean_variance_axis(xx, axis=0)[0]
-            readsum = xx.shape[0] * readmean
-            inplace_column_scale(xx, 1.0 / readsum)
-
-            X[X.obs["condition_unique_idxs"] == ii] = xx
 
     # Scale genes by sum
     readmean, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
@@ -75,18 +67,19 @@ def import_thomson() -> anndata.AnnData:
             "Condition": pd.Categorical(metafile["sample_id"]),
         }
     )
-    gateThomsonCells(X)
-    
+
     doubletDF = pd.read_csv("sccp/data/Thomson/ThomsonDoublets.csv", index_col=0)
     doubletDF.index.name = "cell_barcode"
     X.obs = X.obs.join(doubletDF, on="cell_barcode", how="inner")
 
     singlet_indices = X.obs.loc[X.obs["doublet"] == 0].index.values
-    X.obs = X.obs.reset_index()
+    X.obs = X.obs.reset_index(drop=True)
     X = X[singlet_indices, :]
+
     X.obs = X.obs.set_index("cell_barcode")
-    
-    return prepare_dataset(X, "Condition")
+    gateThomsonCells(X)
+
+    return prepare_dataset(X, "Condition", geneThreshold=0.01)
 
 
 def import_lupus() -> anndata.AnnData:
@@ -99,7 +92,7 @@ def import_lupus() -> anndata.AnnData:
     'louvain': louvain cluster group assignment,
     'cg_cov': broad cell type,
     'ct_cov': lymphocyte-specific cell type,
-    'L3': not super clear,
+    'L3': marks a balanced subset of batch 4 used for model training,
     'ind_cov_batch_cov': combination of patient and pool, proxy for sample ID,
     'Age':	age of patient,
     'Sex': sex of patient,
@@ -109,6 +102,13 @@ def import_lupus() -> anndata.AnnData:
 
     """
     X = anndata.read_h5ad("/opt/andrew/lupus/lupus.h5ad")
+    X = anndata.AnnData(X.raw.X, X.obs, X.raw.var, X.uns)
+
+    # Remove non-coding genes (these seem to have a very large batch effect)
+    RP_genes = X.var_names.str.match(r"RP([1-9]|1[0-5])-\d")
+    LINC_genes = X.var_names.str.startswith("LINC")
+    CTD_genes = X.var_names.str.startswith("CTD-")
+    X = X[:, ~(RP_genes | LINC_genes | CTD_genes)]
 
     # rename columns to make more sense
     X.obs = X.obs.rename(
@@ -128,14 +128,7 @@ def import_lupus() -> anndata.AnnData:
     # get rid of IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831 (only 3 cells)
     X = X[X.obs["Condition"] != "IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831"]
 
-    # Get the indices for subsetting the data
-    _, sgIndex = np.unique(X.obs_vector("Condition"), return_inverse=True)
-    X.obs["condition_unique_idxs"] = sgIndex
-
-    # Pre-calculate gene means
-    X.var["means"] = np.mean(X.X, axis=0)  # type: ignore
-
-    return X
+    return prepare_dataset(X, "Condition", geneThreshold=0.1)
 
 
 def import_citeseq() -> anndata.AnnData:
@@ -157,17 +150,21 @@ def import_citeseq() -> anndata.AnnData:
 
     X = anndata.concat(data, merge="same", label="Condition")
 
-    return prepare_dataset(X, "Condition", batch=True)
+    return prepare_dataset(X, "Condition", geneThreshold=0.1)
 
 
 def factorSave():
     if sys.argv[1] == "CITEseq":
         X = import_citeseq()
         pf2(X, int(sys.argv[2]))
-        X.write("factor_cache/CITEseq.h5ad")
+        X.write(Path("factor_cache/CITEseq.h5ad"))
     elif sys.argv[1] == "Thomson":
         X = import_thomson()
         pf2(X, int(sys.argv[2]))
-        X.write("factor_cache/Thomson.h5ad")
+        X.write(Path("factor_cache/Thomson.h5ad"))
+    elif sys.argv[1] == "Lupus":
+        X = import_lupus()
+        pf2(X, int(sys.argv[2]))
+        X.write(Path("factor_cache/Lupus.h5ad"))
     else:
         raise RuntimeError("Dataset not recognized.")
