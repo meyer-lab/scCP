@@ -22,9 +22,8 @@ def makeFigure():
     subplotLabel(ax)
 
     # figures for all dataset
-    dataX = pf2(X, rank, random_state=1)
+    dataX = pf2(X, rank, random_state=1, doEmbedding=False)
 
-    factors = [dataX.uns["Pf2_A"], dataX.uns["Pf2_B"], dataX.varm["Pf2_C"]]
     plotConditionsFactors(
         dataX, ax[0], groupDrugs(dataX.obs["Condition"]), ThomsonNorm=True
     )
@@ -33,31 +32,40 @@ def makeFigure():
     dataXcp = CPTensor(
         (
             dataX.uns["Pf2_weights"],
-            factors,
+            [dataX.uns["Pf2_A"], dataX.uns["Pf2_B"], dataX.varm["Pf2_C"]],
         )
     )
 
-    sampled_data = sc.pp.subsample(X, fraction=0.99, random_state=0, copy=True)
-    sampledX = pf2(sampled_data, rank, random_state=3)  # type: ignore
-    sampled_factors = [
-        sampledX.uns["Pf2_A"],
-        sampledX.uns["Pf2_B"],
-        sampledX.varm["Pf2_C"],
-    ]
+    sampled_X = sc.pp.subsample(X, fraction=0.99, random_state=0, copy=True)
+    sampledX = pf2(sampled_X, rank, random_state=3, doEmbedding=False)
+
+    samp_cp = CPTensor(
+        (
+            sampledX.uns["Pf2_weights"],
+            [sampledX.uns["Pf2_A"], sampledX.uns["Pf2_B"], sampledX.varm["Pf2_C"]],
+        )
+    )
+
+    # factor score match
+    fmsScore, perm = fms(
+        dataXcp,
+        samp_cp,
+        consider_weights=True,
+        skip_mode=1,
+        return_permutation=True,
+    )
+    print(fmsScore)
+
+    # Permute the components so we can see how they are matched up
+    sampledX.uns["Pf2_weights"] = sampledX.uns["Pf2_weights"][perm]
+    sampledX.uns["Pf2_A"] = sampledX.uns["Pf2_A"][:, perm]
+    sampledX.uns["Pf2_B"] = sampledX.uns["Pf2_B"][:, perm]
+    sampledX.varm["Pf2_C"] = sampledX.varm["Pf2_C"][:, perm]  # type: ignore
+
     plotConditionsFactors(
         sampledX, ax[3], groupDrugs(dataX.obs["Condition"]), ThomsonNorm=True
     )
     plotCellState(sampledX, ax[4])
     plotGeneFactors(sampledX, ax[5])
-    sampledXcp = CPTensor(
-        (
-            sampledX.uns["Pf2_weights"],
-            sampled_factors,
-        )
-    )
-
-    # factor score match
-    fmsScore = fms(dataXcp, sampledXcp, consider_weights=True, skip_mode=None)
-    print(fmsScore)
 
     return f
