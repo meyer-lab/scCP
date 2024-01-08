@@ -53,11 +53,11 @@ def plotR2X_pf2(data, rank, ax: Axes):
     )
 
     ax.set(
-        ylabel="Factor Match Score",
+        ylabel="Variance Explained (R2X)",
         xlabel="Number of Components",
         xticks=np.linspace(0, rank, num=8, dtype=int),
         yticks=np.linspace(
-            0, np.max(np.append(r2xError[0], r2xError[1])) + 0.01, num=5
+            0, np.max(np.append(r2xError[0], r2xError[-1])) + 0.01, num=5
         ),
     )
 

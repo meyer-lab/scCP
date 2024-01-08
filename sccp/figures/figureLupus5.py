@@ -13,7 +13,7 @@ from .commonFuncs.plotLupus import getSamplesObs
 def getCompContribs(X: np.ndarray, y: pd.Series) -> pd.DataFrame:
     """Fit logistic regression model, return coefficients of that model"""
     lr = LogisticRegressionCV(
-        random_state=0, max_iter=100000, penalty="l1", solver="saga"
+        random_state=0, max_iter=100000, penalty="l1", solver="saga", Cs=[0.1, 1, 10]
     ).fit(X, y)
 
     cmp_col = [f"Cmp. {i}" for i in range(1, X.shape[1] + 1)]

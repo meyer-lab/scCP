@@ -67,6 +67,7 @@ def testPf2Ranks(
 
         # save best results into results list
         results.append(initial_results)
+        print(results)
 
     # concatenate all the results into one frame for viewing:
     return pd.concat(results, ignore_index=True)

@@ -9,7 +9,7 @@ from .commonFuncs.plotLupus import investigate_comp
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8, 8), (1, 2))
+    ax, f = getSetup((8, 4), (1, 2))
 
     # Add subplot labels
     subplotLabel(ax)

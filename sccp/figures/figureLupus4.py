@@ -23,7 +23,7 @@ def makeFigure():
 
     condStatus = getSamplesObs(X.obs)
 
-    rank = list(range(1, 3))
+    rank = list(range(30, 40))
     results = testPf2Ranks(
         X,
         condStatus,
