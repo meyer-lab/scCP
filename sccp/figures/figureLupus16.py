@@ -28,7 +28,11 @@ def makeFigure():
     X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
 
     genes = ["PLBD1"]
-    X = X.obs["Cell Type"] == ("B" or "NK")
+    X = X.to_memory()
+    ind = X.obs["Cell Type"] == ("B" or "NK")
+    X = X[ind, :]
+    ind
+   
     # X = sc.pp.subsample(X, fraction=0.01, random_state=0, copy=True)
     for i, gene in enumerate(genes):
         plotGenePerCategStatus(["SLE"], "lupus", gene, X, ax[i], obs = "SLE_status", mean=True, cellType="louvain")
