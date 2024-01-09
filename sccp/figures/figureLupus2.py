@@ -9,13 +9,14 @@ from .commonFuncs.plotUMAP import plotLabelsUMAP
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((15, 13), (2, 2))
+    ax, f = getSetup((15, 13), (2, 1))
 
     # Add subplot labels
     subplotLabel(ax)
 
     X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
 
-    plotLabelsUMAP(X, "Cell Type", ax[0])
+    plotLabelsUMAP(X, "louvain", ax[0])
+    plotLabelsUMAP(X, "Cell Type", ax[1])
 
     return f

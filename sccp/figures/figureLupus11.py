@@ -19,7 +19,7 @@ def makeFigure():
 
     X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
 
-    df = geneOntology(X, 32)
+    df = geneOntology(X, 43)
 
     print(df)
 

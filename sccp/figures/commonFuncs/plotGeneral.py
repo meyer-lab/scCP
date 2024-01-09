@@ -400,3 +400,37 @@ def plot_cell_gene_corr(
         ax=ax,
         alpha=alpha,
     )
+
+
+def plotGenePerCategStatus(conds, categoryCond, gene, adata, ax, obs, mean=True, cellType="Cell Type"):
+    """Plots average gene expression across cell types for a category of drugs"""
+    adata = adata.to_memory()
+    genesV = adata[:, gene]
+    dataDF = genesV.to_df()
+    dataDF = dataDF.subtract(genesV.var["means"].values)
+    dataDF[obs] = genesV.obs[obs].values
+    dataDF["Condition"] = genesV.obs["Condition"].values
+    dataDF["Cell Type"] = genesV.obs[cellType].values
+
+    df = pd.melt(dataDF, id_vars=[obs, "Cell Type", "Condition"], value_vars=gene).rename(
+        columns={"variable": "Gene", "value": "Value"}
+    )
+    if mean is True:
+        df = df.groupby([obs, "Cell Type", "Gene", "Condition"], observed=False).mean()
+
+    df = df.rename(columns={"Value": "Average Gene Expression"}).reset_index()
+
+    df[obs] = np.where(df[obs].isin(conds), df[obs], "Other")
+    for i in conds:
+        df = df.replace({obs: {i: categoryCond}})
+
+    sns.boxplot(
+        data=df.loc[df["Gene"] == gene],
+        x="Cell Type",
+        y="Average Gene Expression",
+        hue=obs,
+        ax=ax,
+        showfliers=False,
+    )
+    ax.set(title=gene)
+    ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=45)

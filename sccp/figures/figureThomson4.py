@@ -20,13 +20,13 @@ def makeFigure():
     X = anndata.read_h5ad("factor_cache/Thomson.h5ad", backed="r")
 
     genes = ["GNLY", "NKG7"]
-    for i, gene in enumerate(genes):
-        plotGeneUMAP(gene, "Pf2", X, ax[i])
+    # for i, gene in enumerate(genes):
+    #     plotGeneUMAP(gene, "Pf2", X, ax[i])
 
-    drugs = ["Triamcinolone Acetonide", "Alprostadil"]
-    for i, drug in enumerate(drugs):
-        plotLabelsUMAP(X, "Condition", ax[i + 2], drug, cmap="Set1")
-        ax[i + 2].set(title=f"Pf2-Based Decomposition")
+    drugs = ["Triamcinolone Acetonide", "Budesonide"]
+    # for i, drug in enumerate(drugs):
+    #     plotLabelsUMAP(X, "Condition", ax[i + 2], drug, cmap="Set1")
+    #     ax[i + 2].set(title=f"Pf2-Based Decomposition")
 
     # PCA dimension reduction
     pc = PCA(n_components=30)
