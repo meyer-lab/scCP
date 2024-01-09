@@ -40,21 +40,23 @@ def makeFigure():
     
     
     
-    cmp = 39
+    cmp = 48
     ind = X.obsm["weighted_projections"] > .1
     X = X[ind[:, cmp-1], :]
    
-   
-    genes = ["IL8", "APOBEC3A"] 
-    plot2GenePerCategStatus(["SLE"], "lupus", genes[0],genes[1], X, ax[0], obs = "SLE_status", mean=True, cellType="Cell Type")
+ 
 
 
     # ind = X.obsm["Cell"] < -.1
     # X = X[ind[:, cmp-1], :]
    
-    # # X = sc.pp.subsample(X, fraction=0.01, random_state=0, copy=True)
-    # for i, gene in enumerate(genes):
-    #     plotGenePerCategStatus(["SLE"], "lupus", gene, X, ax[i], obs = "SLE_status", mean=True, cellType="Cell Type")
+    # # X = sc.pp.subsample(X, fraction=0.01, random_state=0, copy=True)  
+    genes = ["IFI27", "RETN"] 
+    plot2GenePerCategStatus(["SLE"], "lupus", genes[0],genes[1], X, ax[0], obs = "SLE_status", mean=True, cellType="Cell Type")
+
+    for i, gene in enumerate(genes):
+        plotGenePerCategStatus(["SLE"], "lupus", gene, X, ax[i+1], obs = "SLE_status", mean=True, cellType="Cell Type")
+        
 
 
 

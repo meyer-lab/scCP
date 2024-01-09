@@ -424,13 +424,20 @@ def plotGenePerCategStatus(conds, categoryCond, gene, adata, ax, obs, mean=True,
     for i in conds:
         df = df.replace({obs: {i: categoryCond}})
 
-    sns.boxplot(
+    print(df)
+    d= df.loc[df["SLE_status"] == "lupus"]
+    print(len(np.unique(d["Condition"])))
+    d= df.loc[df["SLE_status"] == "Other"]
+    print(len(np.unique(d["Condition"])))
+    
+    
+    sns.stripplot(
         data=df.loc[df["Gene"] == gene],
         x="Cell Type",
         y="Average Gene Expression",
         hue=obs,
         ax=ax,
-        showfliers=False,
+        dodge=True
     )
     ax.set(title=gene)
     # ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=45)
