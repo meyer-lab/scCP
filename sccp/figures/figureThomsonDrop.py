@@ -15,7 +15,7 @@ def makeFigure():
     data = import_thomson()
 
     sampled_data = data[
-        (data.obs["Cell Type"] != "T Cells") | (data.obs["Condition"] != "CTRL4")
+        (data.obs["Cell Type"] != "B Cells") | (data.obs["Condition"] != "CTRL4")
     ]
 
     ax, f = getSetup((12, 12), (2, 3))
