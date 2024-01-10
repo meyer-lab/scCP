@@ -11,13 +11,15 @@ from .factorization import pf2
 from .gating import gateThomsonCells
 
 
-def prepare_dataset(X: anndata.AnnData, condition_name: str) -> anndata.AnnData:
+def prepare_dataset(
+    X: anndata.AnnData, condition_name: str, geneThreshold: float
+) -> anndata.AnnData:
     assert isinstance(X.X, spmatrix)
     assert np.amin(X.X.data) >= 0.0  # type: ignore
 
     # Filter out genes with too few reads
     readmean, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
-    X = X[:, readmean > 0.002]
+    X = X[:, readmean > geneThreshold]
 
     # Normalize read depth
     sc.pp.normalize_total(X, exclude_highly_expressed=False, inplace=True)
@@ -77,7 +79,7 @@ def import_thomson() -> anndata.AnnData:
     X.obs = X.obs.set_index("cell_barcode")
     gateThomsonCells(X)
 
-    return prepare_dataset(X, "Condition")
+    return prepare_dataset(X, "Condition", geneThreshold=0.01)
 
 
 def import_lupus() -> anndata.AnnData:
@@ -100,6 +102,10 @@ def import_lupus() -> anndata.AnnData:
 
     """
     X = anndata.read_h5ad("/opt/andrew/lupus/lupus.h5ad")
+    X = anndata.AnnData(X.raw.X, X.obs, X.raw.var, X.uns, X.obsm)
+
+    protein = anndata.read_h5ad("/opt/andrew/lupus/Lupus_study_protein_adjusted.h5ad")
+    protein_df = protein.to_df()
 
     # rename columns to make more sense
     X.obs = X.obs.rename(
@@ -116,17 +122,12 @@ def import_lupus() -> anndata.AnnData:
         axis=1,
     )
 
+    X.obs = X.obs.merge(protein_df, how="left", left_index=True, right_index=True)
+
     # get rid of IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831 (only 3 cells)
     X = X[X.obs["Condition"] != "IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831"]
 
-    # Get the indices for subsetting the data
-    _, sgIndex = np.unique(X.obs_vector("Condition"), return_inverse=True)
-    X.obs["condition_unique_idxs"] = sgIndex
-
-    # Pre-calculate gene means
-    X.var["means"] = np.mean(X.X, axis=0)  # type: ignore
-
-    return X
+    return prepare_dataset(X, "Condition", geneThreshold=0.1)
 
 
 def import_citeseq() -> anndata.AnnData:
@@ -148,7 +149,7 @@ def import_citeseq() -> anndata.AnnData:
 
     X = anndata.concat(data, merge="same", label="Condition")
 
-    return prepare_dataset(X, "Condition")
+    return prepare_dataset(X, "Condition", geneThreshold=0.1)
 
 
 def factorSave():

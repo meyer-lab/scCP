@@ -13,11 +13,12 @@ from .commonFuncs.plotLupus import getSamplesObs
 def getCompContribs(X: np.ndarray, y: pd.Series) -> pd.DataFrame:
     """Fit logistic regression model, return coefficients of that model"""
     lr = LogisticRegressionCV(
-        random_state=0, max_iter=5000, penalty="l1", solver="saga"
+        random_state=0, max_iter=100000, penalty="l1", solver="saga"
     ).fit(X, y)
 
     cmp_col = [f"Cmp. {i}" for i in range(1, X.shape[1] + 1)]
     coefs = pd.DataFrame({"Component": cmp_col, "Weight": lr.coef_.flatten()})
+    print(coefs)
     print(f"Fitting accuracy: {lr.score(X, y)}")
 
     return coefs
@@ -26,7 +27,7 @@ def getCompContribs(X: np.ndarray, y: pd.Series) -> pd.DataFrame:
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((5, 8), (2, 1))  #
+    ax, f = getSetup((5, 8), (2, 1))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -46,7 +47,7 @@ def makeFigure():
         ax=ax[0],
     )
     ax[0].tick_params(axis="x", rotation=90)
-    ax[0].set_title("Weight of Pf2 Cmps in Logsitic Regression: Predicting SLE status")
+    ax[0].set_title("Weight of Pf2 Cmps in Logsitic Regression: Predicting: SLE")
 
     df_y["ancestry"] = df_y["ancestry"] == "European"
     contribsAnc = getCompContribs(X, df_y["ancestry"])
