@@ -26,15 +26,15 @@ from pacmap import PaCMAP
 import scanpy as sc
 from ..imports import import_lupus
 
-def makeFigure():
-    """Get a list of the axis objects and create a figure."""
-    # Get list of axis objects
-    ax, f = getSetup((15, 8), (2, 5))
+# def makeFigure():
+#     """Get a list of the axis objects and create a figure."""
+#     # Get list of axis objects
+#     ax, f = getSetup((15, 8), (2, 5))
 
-    # Add subplot labels
-    subplotLabel(ax)
+#     # Add subplot labels
+#     subplotLabel(ax)
     
-    X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
+#     X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
 
     # genes = ["APOBEC3A", "ISG15", "MX1", "IFI44", "MX2", "MGST1", "CAT", "LTA4H", "TGFBI", "IL8"] # 21 .06
     # genes = ["IFI27", "IFI6", "IFITM3", "ISG15", "IFI44L", "RETN", "CD8A", "RGCC", "PTGER4", "ANXA2R"] # 28 .06 interferon/
@@ -51,16 +51,16 @@ def makeFigure():
     # genes = ["RGS1", "PTGER4", "PMAIP1", "NR4A2", "CD83", "CLDND1", "AC092580.4", "BANK1", "PTGER2", "ESF1"] #30
     # genes = ["IL8", "MGST1", "IRS2", "NR4A2", "S100A12", "CDA", "APOBEC3A", "ISG15", "IFITM3", "MX1"] #39
     # genes = ["IFI27", "IFITM3", "IFI6", "ISG15", "APOBEC3A", "RETN", "CD8A", "PTGER4", "ESF1", "ANXA2R"] # 48
-    X = X.to_memory()
+    # X = X.to_memory()
     # ind = X.obs["Cell Type"] == ("cM" or "ncM")
     # X = X[ind, :]
     # ind
 
 
 
-    cmp = 4
-    ind = X.obsm["weighted_projections"] > .06
-    X = X[ind[:, cmp-1], :]
+    # cmp = 4
+    # ind = X.obsm["weighted_projections"] > .06
+    # X = X[ind[:, cmp-1], :]
 
 
 
@@ -71,8 +71,8 @@ def makeFigure():
     # X = X[ind[:, cmp-1], :]
 
     # # X = sc.pp.subsample(X, fraction=0.01, random_state=0, copy=True)   
-    genes = ["IFI27", "IFI6"]
-    plot2GenePerCategStatus(["SLE"], "lupus", genes[0],genes[1], X, ax[0], obs = "SLE_status", mean=True, cellType="Cell Type")
+    # genes = ["IFI27", "IFI6"]
+    # plot2GenePerCategStatus(["SLE"], "lupus", genes[0],genes[1], X, ax[0], obs = "SLE_status", mean=True, cellType="Cell Type")
     # a
     # for i, gene in enumerate(genes):
     #     plotGenePerCategStatus(["SLE"], "lupus", gene, X, ax[i], obs = "SLE_status", mean=True, cellType="louvain")
@@ -81,35 +81,36 @@ def makeFigure():
 
 
 
+    # return f
+
+def makeFigure():
+    """Get a list of the axis objects and create a figure."""
+    # Get list of axis objects
+    ax, f = getSetup((15, 18), (4, 3))
+
+    # Add subplot labels
+    subplotLabel(ax)
+
+    XX = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
+    plotLabelsUMAP(XX, "Cell Type", ax[0])
+
+    cmp = 4
+    ind = XX.obsm["weighted_projections"] > .06
+    XXX = XX[ind[:, cmp-1], :]
+    XXX = XXX.to_memory()
+    from pacmap import PaCMAP
+    XXX.obsm["X_pf2_PaCMAP2"] = PaCMAP(random_state=1).fit_transform(XXX.obsm["projections"])  # type: ignore
+    plotPartialCmpUMAP(XXX, 4, ax=ax[1])
+
+
+    plotPartialLabelUMAP(XXX, ax[2], obslabel="Cell Type")
+    plotPartialLabelUMAP(XXX, ax[3], obslabel="louvain")
+    plotPartialLabelUMAP(XXX, ax[4], obslabel="SLE_status")
+
+
+
+
     return f
-
-# def makeFigure():
-#     """Get a list of the axis objects and create a figure."""
-#     # Get list of axis objects
-#     ax, f = getSetup((15, 18), (4, 3))
-
-#     # Add subplot labels
-#     subplotLabel(ax)
-
-#     XX = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
-#     plotLabelsUMAP(XX, "Cell Type", ax[0])
-
-#     cmp = 21
-#     ind = XX.obsm["weighted_projections"] > .06
-#     XXX = XX[ind[:, cmp-1], :]
-#     plotPartialCmpUMAP(XXX, 21, ax=ax[1])
-
-
-
-
-#     plotPartialLabelUMAP(XXX, ax[2], obslabel="Cell Type")
-#     plotPartialLabelUMAP(XXX, ax[3], obslabel="louvain")
-#     plotPartialLabelUMAP(XXX, ax[4], obslabel="SLE_status")
-
-
-
-
-#     return f
 
 
 def plotPartialCmpUMAP(X, cmp: int, ax):
@@ -123,24 +124,24 @@ def plotPartialCmpUMAP(X, cmp: int, ax):
     cmap = sns.diverging_palette(240, 10, as_cmap=True, s=100)
 
     ax.scatter(
-            X.obsm["X_pf2_PaCMAP"][:, 0],
-            X.obsm["X_pf2_PaCMAP"][:, 1],
+            X.obsm["X_pf2_PaCMAP2"][:, 0],
+            X.obsm["X_pf2_PaCMAP2"][:, 1],
             c=weightedProjs,
             cmap=cmap,
             s=0.5,
         )
     psm = plt.pcolormesh([[-1, 1], [-1, 1]], cmap=cmap)
     ax.set(ylabel="UMAP2", xlabel="UMAP1", title="Cmp. " + str(cmp),
-        xticks=np.linspace(np.min(X.obsm["X_pf2_PaCMAP"][:, 0]), np.max(X.obsm["X_pf2_PaCMAP"][:, 0]), num=5),
-        yticks=np.linspace(np.min(X.obsm["X_pf2_PaCMAP"][:, 1]), np.max(X.obsm["X_pf2_PaCMAP"][:, 1]), num=5))
+        xticks=np.linspace(np.min(X.obsm["X_pf2_PaCMAP2"][:, 0]), np.max(X.obsm["X_pf2_PaCMAP2"][:, 0]), num=5),
+        yticks=np.linspace(np.min(X.obsm["X_pf2_PaCMAP2"][:, 1]), np.max(X.obsm["X_pf2_PaCMAP2"][:, 1]), num=5))
     plt.colorbar(psm, ax=ax, label="Cell Specific Weight")
     ax.axes.xaxis.set_ticklabels([])
     ax.axes.yaxis.set_ticklabels([])
 
 def plotPartialLabelUMAP(X, ax: Axes, obslabel:str):
-    sns.scatterplot(x=X.obsm["X_pf2_PaCMAP"][:, 0], y=X.obsm["X_pf2_PaCMAP"][:, 1], hue=X.obs[obslabel], s=5, palette="muted", ax=ax)
+    sns.scatterplot(x=X.obsm["X_pf2_PaCMAP2"][:, 0], y=X.obsm["X_pf2_PaCMAP2"][:, 1], hue=X.obs[obslabel], s=5, palette="muted", ax=ax)
     ax.set(ylabel="UMAP2", xlabel="UMAP1", 
-        xticks=np.linspace(np.min(X.obsm["X_pf2_PaCMAP"][:, 0]), np.max(X.obsm["X_pf2_PaCMAP"][:, 0]), num=5),
-        yticks=np.linspace(np.min(X.obsm["X_pf2_PaCMAP"][:, 1]), np.max(X.obsm["X_pf2_PaCMAP"][:, 1]), num=5))
+        xticks=np.linspace(np.min(X.obsm["X_pf2_PaCMAP2"][:, 0]), np.max(X.obsm["X_pf2_PaCMAP2"][:, 0]), num=5),
+        yticks=np.linspace(np.min(X.obsm["X_pf2_PaCMAP2"][:, 1]), np.max(X.obsm["X_pf2_PaCMAP2"][:, 1]), num=5))
     ax.axes.xaxis.set_ticklabels([])
     ax.axes.yaxis.set_ticklabels([])
