@@ -21,11 +21,13 @@ def geneOntology(X: AnnData, cmpNumb: int) -> pd.DataFrame:
         geneRank,
         gene_sets=geneSets,
         organism="Human",
-        no_plot=True,
         verbose=True,
         threads=30,
     ).res2d
 
     df = df.loc[df["FWER p-val"] < 0.05]
+    
+    print(df.index)
+    print(df.columns)
 
     return df

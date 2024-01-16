@@ -24,6 +24,7 @@ def makeFigure():
 
     lupusStatus = getSamplesObs(X.obs)["SLE_status"]
 
+
     plotConditionsFactors(X, ax[0], lupusStatus)
     ax[0].set(yticks=[])
     plotCellState(X, ax[1])

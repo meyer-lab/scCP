@@ -17,5 +17,7 @@ def makeFigure():
     X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
 
     plotLabelsUMAP(X, "Cell Type", ax[0])
+    plotLabelsUMAP(X, "louvain", ax[1])
+    plotLabelsUMAP(X, "SLE_status", ax[2])
 
     return f

@@ -9,11 +9,12 @@ from .commonFuncs.plotUMAP import plotCmpPerCellType
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((14, 28), (8, 5))
+    ax, f = getSetup((6, 8), (3, 2))
 
     X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
 
-    for i in range(3):
-        plotCmpPerCellType(X, i + 1, ax[i], outliers=False)
+    cmp = [28, 21, 10, 4, 2, 1]
+    for i, comp in enumerate(cmp):
+        plotCmpPerCellType(X, comp, ax[i], outliers=False, cellType="louvain")
 
     return f
