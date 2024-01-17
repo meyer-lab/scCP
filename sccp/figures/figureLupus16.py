@@ -26,20 +26,20 @@ from pacmap import PaCMAP
 import scanpy as sc
 from ..imports import import_lupus
 
-# def makeFigure():
-#     """Get a list of the axis objects and create a figure."""
-#     # Get list of axis objects
-#     ax, f = getSetup((15, 8), (2, 5))
+def makeFigure():
+    """Get a list of the axis objects and create a figure."""
+    # Get list of axis objects
+    ax, f = getSetup((15, 8), (2, 5))
 
-#     # Add subplot labels
-#     subplotLabel(ax)
+    # Add subplot labels
+    subplotLabel(ax)
     
-#     X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
+    X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
 
     # genes = ["APOBEC3A", "ISG15", "MX1", "IFI44", "MX2", "MGST1", "CAT", "LTA4H", "TGFBI", "IL8"] # 21 .06
     # genes = ["IFI27", "IFI6", "IFITM3", "ISG15", "IFI44L", "RETN", "CD8A", "RGCC", "PTGER4", "ANXA2R"] # 28 .06 interferon/
     # genes = ["IER3", "CLEC4E", "ALDH2", "PLBD1", "RGS18", "SGK1", "MAFB", "DUSP6", "RGCC", "CD83"] # 10 -.05
-    # genes = ["IER3", "MGST1", "CLEC4E", "PLBD1", "LPAR6", "G0S2", "CDKN1A", "APOBEC3A", "IL1B", "CD83"] # 4 .06
+    genes = ["IER3", "MGST1", "CLEC4E", "PLBD1", "LPAR6", "G0S2", "CDKN1A", "APOBEC3A", "IL1B", "CD83"] # 4 .06
     
     
     
@@ -51,66 +51,63 @@ from ..imports import import_lupus
     # genes = ["RGS1", "PTGER4", "PMAIP1", "NR4A2", "CD83", "CLDND1", "AC092580.4", "BANK1", "PTGER2", "ESF1"] #30
     # genes = ["IL8", "MGST1", "IRS2", "NR4A2", "S100A12", "CDA", "APOBEC3A", "ISG15", "IFITM3", "MX1"] #39
     # genes = ["IFI27", "IFITM3", "IFI6", "ISG15", "APOBEC3A", "RETN", "CD8A", "PTGER4", "ESF1", "ANXA2R"] # 48
-    # X = X.to_memory()
+    X = X.to_memory()
     # ind = X.obs["Cell Type"] == ("cM" or "ncM")
     # X = X[ind, :]
     # ind
 
 
 
-    # cmp = 4
-    # ind = X.obsm["weighted_projections"] > .06
-    # X = X[ind[:, cmp-1], :]
-
-
-
+    cmp = 4
+    ind = X.obsm["weighted_projections"] < .08
+    X = X[ind[:, cmp-1], :]
 
 
 
     # ind = X.obsm["Cell"] < -.1
     # X = X[ind[:, cmp-1], :]
 
-    # # X = sc.pp.subsample(X, fraction=0.01, random_state=0, copy=True)   
+    # X = sc.pp.subsample(X, fraction=0.01, random_state=0, copy=True)   
     # genes = ["IFI27", "IFI6"]
     # plot2GenePerCategStatus(["SLE"], "lupus", genes[0],genes[1], X, ax[0], obs = "SLE_status", mean=True, cellType="Cell Type")
     # a
-    # for i, gene in enumerate(genes):
-    #     plotGenePerCategStatus(["SLE"], "lupus", gene, X, ax[i], obs = "SLE_status", mean=True, cellType="louvain")
+    for i, gene in enumerate(genes):
+        plotGenePerCategStatus(["SLE"], "lupus", gene, X, ax[i], obs = "SLE_status", mean=True, cellType="Cell Type")
 
-
-
-
-
-    # return f
-
-def makeFigure():
-    """Get a list of the axis objects and create a figure."""
-    # Get list of axis objects
-    ax, f = getSetup((15, 18), (4, 3))
-
-    # Add subplot labels
-    subplotLabel(ax)
-
-    XX = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
-    plotLabelsUMAP(XX, "Cell Type", ax[0])
-
-    cmp = 4
-    ind = XX.obsm["weighted_projections"] > .06
-    XXX = XX[ind[:, cmp-1], :]
-    XXX = XXX.to_memory()
-    from pacmap import PaCMAP
-    XXX.obsm["X_pf2_PaCMAP2"] = PaCMAP(random_state=1).fit_transform(XXX.obsm["projections"])  # type: ignore
-    plotPartialCmpUMAP(XXX, 4, ax=ax[1])
-
-
-    plotPartialLabelUMAP(XXX, ax[2], obslabel="Cell Type")
-    plotPartialLabelUMAP(XXX, ax[3], obslabel="louvain")
-    plotPartialLabelUMAP(XXX, ax[4], obslabel="SLE_status")
 
 
 
 
     return f
+
+# def makeFigure():
+#     """Get a list of the axis objects and create a figure."""
+#     # Get list of axis objects
+#     ax, f = getSetup((15, 18), (4, 3))
+
+#     # Add subplot labels
+#     subplotLabel(ax)
+
+#     XX = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
+#     plotLabelsUMAP(XX, "Cell Type", ax[0])
+
+#     cmp = 4
+#     ind = XX.obsm["weighted_projections"] > .06
+#     XXX = XX[ind[:, cmp-1], :]
+#     XXX = XXX.to_memory()
+#     from pacmap import PaCMAP
+#     XXX.obsm["X_pf2_PaCMAP2"] = PaCMAP(random_state=1).fit_transform(XXX.obsm["projections"])  # type: ignore
+#     plotPartialCmpUMAP(XXX, 4, ax=ax[1])
+
+
+#     plotPartialLabelUMAP(XXX, ax[2], obslabel="Cell Type")
+#     plotPartialLabelUMAP(XXX, ax[3], obslabel="louvain")
+#     plotPartialLabelUMAP(XXX, ax[4], obslabel="SLE_status")
+
+
+
+
+    # return f
 
 
 def plotPartialCmpUMAP(X, cmp: int, ax):
