@@ -16,7 +16,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
+    X = read_h5ad("/opt/andrew/lupus/lupus_fitted.h5ad", backed="r")
 
     predict = "SLE_status"
     condStatus = getSamplesObs(X.obs)

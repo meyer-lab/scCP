@@ -12,7 +12,7 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((24, 24), (10, 8))
 
-    X = read_h5ad("factor_cache/Lupus.h5ad", backed="r")
+    X = read_h5ad("/opt/andrew/lupus/lupus_fitted.h5ad", backed="r")
 
     for i in np.arange(0, 3):
         plotGeneFactors(i + 1, X, ax[2 * i], geneAmount=10, top=True)
