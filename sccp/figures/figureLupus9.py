@@ -29,7 +29,7 @@ def makeFigure():
     )
     df = df.merge(condStatus, left_index=True, right_index=True)
 
-    twoCmp = [[13, 26], [32, 26]]
+    twoCmp = [[13, 26], [4, 26]]
 
     for i, pair in enumerate(twoCmp):
         plot2DSeparationByComp(df, pair, predict, ax[i])
