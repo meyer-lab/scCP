@@ -11,7 +11,7 @@ import pandas as pd
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((6, 8), (1, 2))
+    ax, f = getSetup((6, 3), (1, 2))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -29,8 +29,8 @@ def makeFigure():
     )
     df = df.merge(condStatus, left_index=True, right_index=True)
 
-    twoCmp = [[13, 26], [4, 26]]
-
+    twoCmp = [[10, 22], [10, 8]]
+    
     for i, pair in enumerate(twoCmp):
         plot2DSeparationByComp(df, pair, predict, ax[i])
 

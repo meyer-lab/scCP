@@ -18,8 +18,12 @@ def makeFigure():
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted.h5ad", backed="r")
+    print(X)
+    
 
-    df = geneOntology(X, 4)
+
+    df = geneOntology(X, 22)
+    
 
     print(df)
 

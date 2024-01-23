@@ -14,8 +14,10 @@ def geneOntology(X: AnnData, cmpNumb: int) -> pd.DataFrame:
         "GO_Cellular_Component_2021",
         "GO_Molecular_Function_2021",
     ]
-
-    geneRank = pd.Series(X.varm["Pf2_C"][:, cmpNumb - 1], index=X.var_names)
+    geneAmount = 100
+    geneRank = pd.Series(X.varm["Pf2_C"][:, cmpNumb - 1], index=X.var_names).sort_values()
+    # geneRank = pd.concat([geneRank[:geneAmount], geneRank[-geneAmount:]])
+    # print(geneRank)
 
     df = gp.prerank(
         geneRank,
