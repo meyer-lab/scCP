@@ -445,10 +445,13 @@ def plot2GenePerCategStatus(conds, categoryCond, gene1, gene2, adata, ax, obs, m
     gene = [gene1, gene2]
 
     for i in range(2):
-        genesV = adata[:, gene[i]]
+        genesV = adata[:, gene[i]].X.todense()
+        print(genesV)
         dataDF = genesV.to_df()
+        print(dataDF)
         dataDF = dataDF.subtract(genesV.var["means"].values)
         dataDF[obs] = genesV.obs[obs].values
+        print(dataDF)
         dataDF["Condition"] = genesV.obs["Condition"].values
         dataDF["Cell Type"] = genesV.obs[cellType].values
 
@@ -489,26 +492,60 @@ def plot2GenePerCategStatusCellType(conds, categoryCond, gene1, gene2, adata, ax
     """Plots average gene expression across cell types for a category of drugs"""
     adata = adata.to_memory()
     gene = [gene1, gene2]
+
+
+    for i in range(2):
+        genesV = adata[:, gene[i]]
+        dataDF = pd.DataFrame(columns=gene[i], data=genesV.X.data)
+        print(dataDF)
+        a
+        dataDF = genesV.to_df()
+        dataDF = dataDF.subtract(genesV.var["means"].values)
+        dataDF[obs] = genesV.obs[obs].values
+        dataDF["Condition"] = genesV.obs["Condition"].values
+        dataDF["Cell Type"] = genesV.obs[cellType].values
+        df = pd.melt(dataDF, id_vars=["SLE_status", "Cell Type", "Condition"], value_vars=gene[i]).rename(
+            columns={"variable": "Gene", "value": "Value"}
+        )
+        if mean is True:
+            df = df.groupby(by=["SLE_status", "Cell Type", "Gene", "Condition"]).mean()
     
-    # adata = adata.to_memory()
-    # genesV = adata[:, gene]
-    # dataDF = genesV.to_df()
-    # dataDF = dataDF.subtract(genesV.var["means"].values)
-    # dataDF[obs] = genesV.obs[obs].values
-    # dataDF["Condition"] = genesV.obs["Condition"].values
-    # dataDF["Cell Type"] = genesV.obs[cellType].values
 
-    # df = pd.melt(dataDF, id_vars=[obs, "Cell Type", "Condition"], value_vars=gene).rename(
-    #     columns={"variable": "Gene", "value": "Value"}
-    # )
-    # if mean is True:
-    #     df = df.groupby([obs, "Cell Type", "Gene", "Condition"], observed=False).mean()
+        df = df.rename(columns={"Value": "Average Gene Expression"}).reset_index()
 
-    # df = df.rename(columns={"Value": "Average Gene Expression"}).reset_index()
+        df[obs] = np.where(df[obs].isin(conds), df[obs], "Other")
+  
+        for j in conds:
+            df = df.replace({obs: {j: categoryCond}})
+        if i == 0:
+            dfA = df.copy()
 
-    # df[obs] = np.where(df[obs].isin(conds), df[obs], "Other")
-    # for i in conds:
-    #     df = df.replace({obs: {i: categoryCond}})
+        else: 
+            DF = pd.concat([dfA, df]).reset_index()
+
+    
+    df = DF.pivot(index=["SLE_status", "Cell Type", "Condition"], columns="Gene", values="Average Gene Expression").reset_index()
+    
+    
+    print(df)
+    df = df.loc[df["Cell Type"] == celltype].reset_index()
+    
+    df = df[df.isna().any(axis=1)]
+    
+
+    sns.scatterplot(
+        data=df,
+        x=gene[0],
+        y=gene[1],
+        hue="SLE_status",
+        ax=ax,
+    )
+    
+def plot2GenePerCategStatus2CellType(conds, categoryCond, gene1, gene2, adata, ax, obs, celltype1, celltype2, mean=True, cellType="Cell Type"):
+    """Plots average gene expression across cell types for a category of drugs"""
+    adata = adata.to_memory()
+    gene = [gene1, gene2]
+
 
     for i in range(2):
         genesV = adata[:, gene[i]]
@@ -539,10 +576,13 @@ def plot2GenePerCategStatusCellType(conds, categoryCond, gene1, gene2, adata, ax
     df = DF.pivot(index=["SLE_status", "Cell Type", "Condition"], columns="Gene", values="Average Gene Expression").reset_index()
     
   
-    df = df.loc[df["Cell Type"] == celltype]
+    df1 = df.loc[df["Cell Type"] == celltype1]
     
+    
+    df2 = df.loc[df["Cell Type"] == celltype2]
+
+    df = pd.concat([df1,df2])
     print(df)
-    
 
     sns.scatterplot(
         data=df,
