@@ -18,7 +18,7 @@ def getCompContribs(X: np.ndarray, y: pd.Series) -> pd.DataFrame:
 
     cmp_col = [f"Cmp. {i}" for i in range(1, X.shape[1] + 1)]
     coefs = pd.DataFrame({"Component": cmp_col, "Weight": lr.coef_.flatten()})
-    print(coefs)
+    print(coefs.sort_values("Weight"))
     print(f"Fitting accuracy: {lr.score(X, y)}")
 
     return coefs
@@ -46,6 +46,7 @@ def makeFigure():
         errorbar=None,
         ax=ax[0],
     )
+    
     ax[0].tick_params(axis="x", rotation=90)
     ax[0].set_title("Weight of Pf2 Cmps in Logsitic Regression: Predicting: SLE")
 
