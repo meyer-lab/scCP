@@ -58,11 +58,14 @@ def makeFigure():
             
             
             
-    # for i in range(len(genes)):
-    #     plot2GenePerCategStatus2CellType(["SLE"], "lupus", genes[i][0],genes[i][1], X, ax[i], obs = "SLE_status", celltype1="ncM", celltype2="cM", mean=True, cellType="Cell Type")
-    #     ax[i].set_title("Average Expression Per Patient")
-    #     ax[i].set_xlabel("ncM:"+genes[i][0])
-    #     ax[i].set_ylabel("cM:"+genes[i][1])
+    for i in range(len(genes)):
+        plot2GenePerCategStatus2CellType(["SLE"], "lupus", genes[i][0],genes[i][1], X, ax[i], obs = "SLE_status", celltype1="ncM", celltype2="cM", mean=True, cellType="Cell Type")
+        ax[i].set_title("Average Expression Per Patient")
+        ax[i].set_xlabel("ncM:"+genes[i][0])
+        ax[i].set_ylabel("cM:"+genes[i][1])
+        
+        
+        
         
     
     
@@ -76,11 +79,11 @@ def makeFigure():
      
         
         
-    for i in range(len(genes)):
-        plot2GenePerCategStatusCellType(["SLE"], "lupus", genes[i][0],genes[i][1], X, ax[i+12], obs = "SLE_status", celltype="NK", mean=True, cellType="Cell Type")
-        ax[i+12].set_title("NK Average Expression Per Patient")
+    # for i in range(len(genes)):
+    #     plot2GenePerCategStatusCellType(["SLE"], "lupus", genes[i][0],genes[i][1], X, ax[i+12], obs = "SLE_status", celltype="NK", mean=True, cellType="Cell Type")
+    #     ax[i+12].set_title("NK Average Expression Per Patient")
         
-    a
+
         
     # genes = [["RHOB", "LRRK2"], ["ASGR1", "C9orf72"], ["IL1B", "IER3"], ["IL8", "MIR24-2"]] # cmp 24
     # for i in range(len(genes)):

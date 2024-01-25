@@ -570,10 +570,11 @@ def plot2GenePerCategStatus2CellType(conds, categoryCond, gene1, gene2, adata, a
             dfA = df.copy()
 
         else: 
-            DF = pd.concat([dfA, df]).reset_index()
+            df = pd.concat([dfA, df]).reset_index()
 
     
-    df = DF.pivot(index=["SLE_status", "Cell Type", "Condition"], columns="Gene", values="Average Gene Expression").reset_index()
+    print(df)
+    df = df.pivot(index=["SLE_status", "Cell Type", "Condition"], columns="Gene", values="Average Gene Expression").reset_index()
     
   
     df1 = df.loc[df["Cell Type"] == celltype1]
@@ -583,6 +584,8 @@ def plot2GenePerCategStatus2CellType(conds, categoryCond, gene1, gene2, adata, a
 
     df = pd.concat([df1,df2])
     print(df)
+    
+    print(df.loc[df["Condition"] == "1004_1004:dmx_YE_7-13"])
 
     sns.scatterplot(
         data=df,
@@ -591,3 +594,4 @@ def plot2GenePerCategStatus2CellType(conds, categoryCond, gene1, gene2, adata, a
         hue="SLE_status",
         ax=ax,
     )
+    
