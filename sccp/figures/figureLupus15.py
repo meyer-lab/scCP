@@ -13,7 +13,7 @@ def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
     # ax, f = getSetup((10, 10), (5, 3))
-    ax, f = getSetup((5, 5), (1, 1))
+    ax, f = getSetup((15, 15), (3, 4))
 
 
     # Add subplot labels
@@ -34,8 +34,9 @@ def makeFigure():
     
     condFactors = np.array(X.uns["Pf2_A"])
     
-    ax[0].scatter(x=condFactors[:, 0], y=dfCond["Cell Number"])
-    ax[0].set(xlabel="Condition Factors Weight", ylabel="Cell Number per Experiment")
+    for i in range(12):
+        ax[i].scatter(x=condFactors[:, i], y=dfCond["Cell Number"])
+        ax[i].set(xlabel=f"Condition Factors Weight for Cmp. {i+1}", ylabel="Cell Number per Experiment")
     
     
     
