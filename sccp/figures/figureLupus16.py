@@ -22,23 +22,28 @@ def makeFigure():
     
     # Cmp.4 Most weighted pos/neg genes
     genes = [["GZMK", "DUSP2"], ["CMC1", "LYAR"], ["AC092580.4", "CD8B"], ["FAM173A", "CLDND1"], ["PIK3R1", "CD8A"], ["SPON2", "FGFBP2"], ["GZMB", "PRF1"], ["GZMH", "CLIC3"], ["NKG7", "GNLY"], ["CCL4", "CD247"]] 
-             
+    genes = [["GZMK", "DUSP2"]]
     for i, gene in enumerate(np.ravel(genes)):
         plotGenePerStatus(X, gene, ax[i])
+        plotGenePerStatus(X, gene, ax[i+2], weightedCmp=4)
         
-    for i, gene in enumerate(genes):   
-        plot2GenePerCellTypeStatus(X, gene[0], gene[1], "NK", "NK", ax[i+20])
+    # for i, gene in enumerate(genes):   
+    #     plot2GenePerCellTypeStatus(X, gene[0], gene[1], "NK", "NK", ax[i+20])
         
     
     return f
 
 
-def plotGenePerStatus(X, gene, ax, cellType="Cell Type"):
+def plotGenePerStatus(X, gene, ax, cellType="Cell Type", weightedCmp=None):
     """Plots average gene expression across cell types for a category of drugs"""
     adata = X.to_memory()
     genesV = adata[:, gene]
     dataDF = genesV.to_df()
     dataDF = dataDF.subtract(genesV.var["means"].values)
+    if weightedCmp is not None:
+        dataDF[gene] = dataDF[gene].values @ X.obsm["weighted_projections"][:, weightedCmp - 1]
+        
+    print(dataDF)
     dataDF["Status"] = genesV.obs["SLE_status"].values
     dataDF["Condition"] = genesV.obs["Condition"].values
     dataDF["Cell Type"] = genesV.obs[cellType].values
