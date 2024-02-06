@@ -4,17 +4,23 @@ Lupus: Plot AUC ROC curve for logistic regression for each batch
 from anndata import read_h5ad
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotLupus import plotROCAcrossGroups, getSamplesObs
-
+import numpy as np
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((6, 6), (1, 1))  # fig size  # grid size
+    ax, f = getSetup((3, 3), (1, 1))  # fig size  # grid size
 
     # Add subplot labels
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted.h5ad", backed="r")
+    _, count = np.unique(X.obs["Condition"], return_counts=True)
+    Amatrix= X.uns["Pf2_A"]
+    for i in range(Amatrix.shape[1]):
+        Amatrix[:, i] /= count
+        
+    X.uns["Pf2_A"]= Amatrix
 
     plotROCAcrossGroups(
         X.uns["Pf2_A"],
