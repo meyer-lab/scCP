@@ -15,66 +15,47 @@ from sklearn.metrics import r2_score
 import numpy as np
 
 def makeFigure():
-    rank = 20
     X = import_thomson()
 
-    # ax, f = getSetup((20,50), (12, 4))
-    ax, f = getSetup((20,15), (3, 4))
+    ax, f = getSetup((10,5), (1, 2))
 
     subplotLabel(ax)
 
-    dataX = pf2(X, rank, random_state=1)
+    ranks = [5,10,15,20,25,30,35,40,45,50]
+    fmsList = []
 
-    factors = [dataX.uns["Pf2_A"], dataX.uns["Pf2_B"], dataX.varm["Pf2_C"]]
-
-    sampled_data = sc.pp.subsample(X, fraction=0.99, random_state=0, copy=True)
-
-    # factor score match
-    dataXcp = CPTensor(
+# testing different ranks
+    for i in ranks:
+        dataX = pf2(X, i, random_state=1)
+        factors = [dataX.uns["Pf2_A"], dataX.uns["Pf2_B"], dataX.varm["Pf2_C"]]
+        dataXcp = CPTensor(
         (
             dataX.uns["Pf2_weights"],
             factors,
         )
-    )
+        )
+        
+        sampled_data = sc.pp.subsample(X, fraction=0.99, random_state=1, copy=True)
+        sampledX = pf2(sampled_data, i, random_state=2)  # type: ignore
+        sampled_factors = [
+            sampledX.uns["Pf2_A"],
+            sampledX.uns["Pf2_B"],
+            sampledX.varm["Pf2_C"],
+        ]
+        sampledXcp = CPTensor(
+        (
+            sampledX.uns["Pf2_weights"],
+            sampled_factors,
+        )
+        )
+        
+        fmsScore = fms(dataXcp, sampledXcp, consider_weights=True, skip_mode=1)
+        fmsList.append(fmsScore)
 
-    percent = list(range(0,11,1))
-    fmsScores1 = [1]
-    fmsScores2 = [1]
-    fmsScores3 = [1]
-
-    for j in range(1,4,1):
-        for i in range(1,11,1):
-            sampled_data = sc.pp.subsample(X, fraction=1-(i/100), random_state=j, copy=True)
-            sampledX = pf2(sampled_data, rank, random_state=3)  # type: ignore
-            sampled_factors = [
-                sampledX.uns["Pf2_A"],
-                sampledX.uns["Pf2_B"],
-                sampledX.varm["Pf2_C"],
-            ]
-
-            sampledXcp = CPTensor(
-            (
-                sampledX.uns["Pf2_weights"],
-                sampled_factors,
-            )
-            )
-
-            if j == 1:
-                fmsScore = fms(dataXcp, sampledXcp, consider_weights=True, skip_mode=None)
-                fmsScores1.append(fmsScore)
-            if j == 2:
-                fmsScore = fms(dataXcp, sampledXcp, consider_weights=True, skip_mode=None)
-                fmsScores2.append(fmsScore)
-            if j == 3:
-                fmsScore = fms(dataXcp, sampledXcp, consider_weights=True, skip_mode=None)
-                fmsScores3.append(fmsScore)
-
-    #percent dropped vs fms graph
-    ax[0].plot(percent, fmsScores1, color='pink', label='run 1')
-    ax[0].plot(percent, fmsScores2, color='green', label='run 2')
-    ax[0].plot(percent, fmsScores3, color='red', label='run 3')
-    ax[0].set_xlabel("Percentage of data dropped")
+    #rank vs fms graph
+    ax[0].plot(ranks, fmsList, color='pink')
+    
+    ax[0].set_xlabel("Rank")
     ax[0].set_ylabel("FMS")
-    ax[0].legend()
 
     return f
