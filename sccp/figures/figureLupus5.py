@@ -6,9 +6,16 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from sklearn.linear_model import LogisticRegressionCV
+from sklearn.cross_decomposition import PLSRegression 
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+from sklearn.naive_bayes import CategoricalNB
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotLupus import getSamplesObs
 from ..factorization import correct_conditions
+from sklearn import svm
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+
 
 
 def getCompContribs(X: np.ndarray, y: pd.Series) -> pd.DataFrame:
@@ -17,9 +24,9 @@ def getCompContribs(X: np.ndarray, y: pd.Series) -> pd.DataFrame:
         random_state=0, max_iter=100000, penalty="l1", solver="saga"
     ).fit(X, y)
 
-    cmp_col = [f"Cmp. {i}" for i in range(1, X.shape[1] + 1)]
+    cmp_col = [i for i in range(1, X.shape[1] + 1)]
     coefs = pd.DataFrame({"Component": cmp_col, "Weight": lr.coef_.flatten()})
-    print(f"Fitting accuracy: {lr.score(X, y)}")
+    print(f"LogRig Score: {lr.score(X, y)}")
 
     return coefs
 
@@ -27,7 +34,7 @@ def getCompContribs(X: np.ndarray, y: pd.Series) -> pd.DataFrame:
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((5, 8), (2, 1))
+    ax, f = getSetup((5, 8), (4, 1))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -36,10 +43,12 @@ def makeFigure():
 
     data.uns["Pf2_A"] = correct_conditions(data)
 
-    df_y = getSamplesObs(data.obs)
+    y = getSamplesObs(data.obs)
+    y = y["SLE_status"]
+    y = y.to_numpy()
     X = np.array(data.uns["Pf2_A"])
 
-    contribsStatus = getCompContribs(X, df_y["SLE_status"])
+    contribsStatus = getCompContribs(X, y)
     sns.barplot(
         data=contribsStatus,
         x="Component",
@@ -48,25 +57,61 @@ def makeFigure():
         errorbar=None,
         ax=ax[0],
     )
-    ax[0].tick_params(axis="x", rotation=90)
-    ax[0].set_title("Weight of Pf2 Cmps in Logsitic Regression: Predicting: SLE")
+    # ax[0].tick_params(axis="x", rotation=90)
+    ax[0].set_title("LogReg")
 
-    df_y["ancestry"] = df_y["ancestry"] == "European"
-    contribsAnc = getCompContribs(X, df_y["ancestry"])
+    
+    naivebayes = CategoricalNB()
+    naivebayes.fit(X, y)
+    print("Categorical Native Bayes Score:", naivebayes.score(X, y))
+      
+    lda = LDA(n_components=1)
+    lda.fit(X, y)
+    print("LDA Score:", lda.score(X, y))
+    
+    cmp_col = [i for i in range(1, X.shape[1] + 1)]
+    coefs = pd.DataFrame({"Component": cmp_col, "Weight": lda.coef_.flatten()})
+    newX = lda.fit_transform(X, y)
 
-    contribsStatus["Predicting"] = "SLE Status"
-    contribsAnc["Predicting"] = "Euro-Ancestry"
-    contribs = pd.concat([contribsStatus, contribsAnc])
-
+    
     sns.barplot(
-        data=contribs,
+        data=coefs,
         x="Component",
         y="Weight",
-        hue="Predicting",
+        color="k",
         errorbar=None,
         ax=ax[1],
     )
-    ax[1].tick_params(axis="x", rotation=90)
-    ax[1].set_title("Weight of Pf2 Cmps in Logsitic Regression")
+    ax[1].set_title("LDA")
+    
+    sns.histplot(x=newX.flatten(), element="step", hue=y, ax=ax[2])
+    ax[2].set(xlabel="LDA 1")
+    ax[2].set_title("LDA")
+    
+    
+    sm = svm.SVC(kernel="linear")
+    fittedsvm = sm.fit(X,y)
+    print("SVM Score:", sm.score(X,y))
+    
+    coefs = pd.DataFrame({"Component": cmp_col, "Weight": fittedsvm.coef_.flatten()})
+    sns.barplot(
+        data=coefs,
+        x="Component",
+        y="Weight",
+        color="k",
+        errorbar=None,
+        ax=ax[3],
+    )
+    ax[3].set_title("SVM")
+ 
+    
+    plsr = PLSRegression(n_components=2, scale=False)
+    y[y == "Healthy"] = 0
+    y[y == "SLE"] = 1
+    plsr.fit(X, y)
+    print("PLS-DA Score:", plsr.score(X, y))
+    
+  
+    
 
     return f
