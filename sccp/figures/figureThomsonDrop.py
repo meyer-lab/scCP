@@ -180,8 +180,8 @@ def plotGeneFactorsIsolated(data: AnnData, ax: Axes, geneset: list[str], trim: b
     ind = reorder_table(X)
     ind = [ii for ii in ind if yt[ii] in geneset]
     yt = [yt[ii] for ii in ind]
-    X = X[ind]
     X = X / np.max(np.abs(X))
+    X = X[ind]
     xticks = [f"Cmp. {i}" for i in np.arange(1, rank)]
 
     sns.heatmap(
