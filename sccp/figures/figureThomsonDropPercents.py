@@ -6,7 +6,8 @@ from .commonFuncs.plotFactors import reorder_table
 import pandas as pd
 import numpy as np
 import seaborn as sns
-from ..gating import marker_genes_1, marker_genes_2
+import scanpy as sc
+import anndata as ad
 
 cmap = sns.diverging_palette(240, 10, as_cmap=True)
 
@@ -17,7 +18,7 @@ def makeFigure():
 
     print(data.obs["Cell Type2"].unique())
 
-    ax, f = getSetup((20, 10 * 9), (1 * 9, 4))
+    ax, f = getSetup((20, 10 * 7), (7 * 1, 4))
     bCellGeneSet = [
         "PXK",
         "MS4A1",
@@ -30,48 +31,15 @@ def makeFigure():
         "CR2",
         "VPREB3",
     ]
-    NaiveBCellGeneSet = marker_genes_2["B Naive"]
-    NKCellGeneSet = np.unique(marker_genes_1["Natural Killers"] + marker_genes_2["NK"])
-    DCCellGeneSet = marker_genes_1["Dendritic cells"]
-    pDCGeneSet = marker_genes_2["pDCs"]
-    TCellGeneSet = np.unique(marker_genes_1["T cells"] + marker_genes_2["T Cells"])
-    CytoTCellGeneSet = marker_genes_2["Cytotoxic T"]
-    memorytcellgeneset = marker_genes_2["Memory T"]
-    cDCgeneset = marker_genes_2["cDCs"]
 
     plotDifferentialExpression(data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[0:4])
-    plotDifferentialExpression(
-        data,
-        "CTRL4",
-        "Naive B Cells",
-        NaiveBCellGeneSet,
-        rank,
-        *ax[4:8],
-        ct2=True,
-    )
-    plotDifferentialExpression(
-        data, "CTRL4", "NK Cells", NKCellGeneSet, rank, *ax[8:12]
-    )
-    plotDifferentialExpression(data, "CTRL4", "DCs", DCCellGeneSet, rank, *ax[12:16])
-    plotDifferentialExpression(
-        data,
-        "CTRL4",
-        "pDCs",
-        pDCGeneSet,
-        rank,
-        *ax[16:20],
-        ct2=True,
-    )
-    plotDifferentialExpression(data, "CTRL4", "T Cells", TCellGeneSet, rank, *ax[20:24])
-    plotDifferentialExpression(
-        data, "CTRL4", "Cytotoxic T Cells", CytoTCellGeneSet, rank, *ax[24:28], ct2=True
-    )
-    plotDifferentialExpression(
-        data, "CTRL4", "Memory T Cells", memorytcellgeneset, rank, *ax[28:32], ct2=True
-    )
-    plotDifferentialExpression(
-        data, "CTRL4", "cDCs", cDCgeneset, rank, *ax[32:36], ct2=True
-    )
+    plotDifferentialExpression(data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[4:8], percent=0.95)
+    plotDifferentialExpression(data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[8:12], percent=0.9)
+    plotDifferentialExpression(data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[12:16], percent=0.8)
+    plotDifferentialExpression(data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[16:20], percent=0.7)
+    plotDifferentialExpression(data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[20:24], percent=0.6)
+    plotDifferentialExpression(data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[24:28], percent=0.5)
+
     return f
 
 
@@ -84,16 +52,12 @@ def plotDifferentialExpression(
     *args,
     ct2=False,
     override=None,
-    percent=1,
+    percent=1
 ):
     sampled_data = None
     idx = (data.obs["Cell Type"] != cell_type) | (data.obs["Condition"] != condition)
     false_idx = idx.index[idx == False]
-    idx[
-        np.random.choice(
-            false_idx, size=int(len(false_idx) * (1 - percent)), replace=False
-        )
-    ] = True
+    idx[np.random.choice(false_idx, size=int(len(false_idx) * (1-percent)), replace=False)] = True
     if not ct2:
         sampled_data = data[idx]
     else:
@@ -133,30 +97,41 @@ def plotDifferentialExpression(
     yt2 = pd.Series(np.unique(sampledX.obs["Condition"]))
 
     assert yt.equals(yt2)
-    ctarg = "Cell Type"
-    if ct2:
-        ctarg = "Cell Type2"
-      
-    print(f"Number of {cell_type}: {len(data[data.obs[ctarg] == cell_type])}")
-    print(
-        f"Number of {cell_type} in {condition}: {len(data[(data.obs['Condition'] == condition) & (data.obs[ctarg] == cell_type)])}"
-    )
+    if not ct2:
+        print(f"Number of {cell_type}: {len(data[data.obs['Cell Type'] == cell_type])}")
+        print(f"Number of {cell_type} in {condition}: {len(data[(data.obs['Condition'] == condition) & (data.obs['Cell Type'] == cell_type)])}")
+    else:
+        print(f"Number of {cell_type}: {len(data[data.obs['Cell Type2'] == cell_type])}")
+        print(f"Number of {cell_type} in {condition}: {len(data[(data.obs['Condition'] == condition) & (data.obs['Cell Type2'] == cell_type)])}")
 
     args[2].scatter(X, Y, s=1)
     numberOfCellType = []
     for i, txt in enumerate(yt):
-        numberOfCellType.append(
-            len(
-                data[
-                    (data.obs["Condition"] == txt)
-                    & (data.obs[ctarg] == cell_type)
-                ]
+        if not ct2:
+            numberOfCellType.append(
+                len(
+                    data[
+                        (data.obs["Condition"] == txt)
+                        & (data.obs["Cell Type"] == cell_type)
+                    ]
+                )
             )
-        )
+        else:
+            numberOfCellType.append(
+                len(
+                    data[
+                        (data.obs["Condition"] == txt)
+                        & (data.obs["Cell Type2"] == cell_type)
+                    ]
+                )
+            )
         args[2].annotate(txt, (X[i], Y[i]), fontsize=8)
 
     args[2].set_xlabel("Original Full Data")
-    args[2].set_ylabel(f"Sampled Data With {cell_type} Removed From {condition}")
+    if percent < 1:
+        args[2].set_ylabel(f"Sampled Data With {1-percent} Percent Of {cell_type} Removed From {condition}")
+    else:
+        args[2].set_ylabel(f"Sampled Data With {cell_type} Removed From {condition}")
     args[2].set_ylim(bottom=0)
     args[2].set_xlim(left=0)
 
@@ -180,7 +155,7 @@ def plotGeneFactorsIsolated(data, ax, geneset, trim=True):
         yt = yt[kept_idxs]
 
     ind = reorder_table(X)
-    n_ind = [ii for ii in ind if yt[ii] in geneset]
+    n_ind = []
     for ii in ind:
         if yt[ii] in geneset:
             n_ind.append(ii)
