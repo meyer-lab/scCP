@@ -1,32 +1,138 @@
 import scanpy as sc
+import anndata
 from .common import subplotLabel, getSetup
 from ..factorization import pf2
-from .commonFuncs.plotFactors import (
-    plotConditionsFactors,
-    plotCellState,
-    plotGeneFactors,
-    plotWeight,
-)
 from ..imports import import_thomson
-
+from matplotlib.axes import Axes
 from tlviz.factor_tools import factor_match_score as fms
 from tensorly.cp_tensor import CPTensor
-from sklearn.metrics import r2_score
-import numpy as np
+import seaborn as sns
 
-def makeFigure():
-    X = import_thomson()
 
-    ax, f = getSetup((10,5), (1, 2))
+def plotFMSpercentDrop(
+    X: anndata.AnnData,
+    ax: Axes,
+    percentDropped: int,
+    runs: int,
+    step: int,
+    rank = 20,
+):
+    #pf2 on original dataset
+    dataX = pf2(X, rank, random_state=1)
+    factors = [dataX.uns["Pf2_A"], dataX.uns["Pf2_B"], dataX.varm["Pf2_C"]]
 
-    subplotLabel(ax)
+    dataXcp = CPTensor(
+        (
+            dataX.uns["Pf2_weights"],
+            factors,
+        )
+    )
 
-    ranks = [5,10,15,20,25,30,35,40,45,50]
+    percentList = range(0, percentDropped + 1, step)
+    fmsLists = [] 
+    
+    #loop to do multiple runs
+    for j in range(0,runs,1):
+        scores = [1]
+
+        #loop to compare sampled dataset to original
+        for i in percentList[1:]:
+            sampled_data = sc.pp.subsample(X, fraction=1-(i/100), random_state=j+1, copy=True)
+            sampledX = pf2(sampled_data, rank, random_state=j+1)  # type: ignore
+            sampled_factors = [
+                sampledX.uns["Pf2_A"],
+                sampledX.uns["Pf2_B"],
+                sampledX.varm["Pf2_C"],
+            ]
+            sampledXcp = CPTensor(
+            (
+                sampledX.uns["Pf2_weights"],
+                sampled_factors,
+            )
+            )
+            fmsScore = fms(dataXcp, sampledXcp, consider_weights=True, skip_mode=1)
+            scores.append(fmsScore)
+        fmsLists.append(scores)
+
+    random_colors = sns.color_palette("husl", len(fmsLists))
+    for n in range(0,runs,1):
+        ax.plot(percentList, fmsLists[n], label= f'Run {n+1}', color = random_colors[n])
+
+    #percent dropped vs fms graph
+    ax.set_xlabel("Percentage of Data Dropped")
+    ax.set_ylabel("FMS")
+    ax.set_title("Percent of Data Dropped vs FMS")
+    ax.legend()
+
+
+def plotToleranceTest(
+    X: anndata.AnnData,
+    ax: Axes,
+    percentDropped: int,
+    runs: int,
+    step: int,
+    startTolerance = 1e-10,
+    rank = 20,
+
+):
+    percentList = range(0,percentDropped+1,step)
+    fmsLists = []
+
+    #loop that increases tolerance by a multiplicative factor of 10
+    for j in range(0,runs,1):
+        tol = startTolerance*(10**j)
+        dataX = pf2(X, rank, random_state=1, tolerance = tol)
+        factors = [dataX.uns["Pf2_A"], dataX.uns["Pf2_B"], dataX.varm["Pf2_C"]]
+        dataXcp = CPTensor(
+        (
+            dataX.uns["Pf2_weights"],
+            factors,
+        )
+        )
+        scores = [1]
+
+        #loop that tests these different tolerance values
+        for i in percentList[1:]:
+            sampled_data = sc.pp.subsample(X, fraction=1-(i/100), random_state=j+1, copy=True)
+            sampledX = pf2(sampled_data, rank, random_state=j+1, tolerance = tol)  # type: ignore
+            sampled_factors = [
+                sampledX.uns["Pf2_A"],
+                sampledX.uns["Pf2_B"],
+                sampledX.varm["Pf2_C"],
+            ]
+            sampledXcp = CPTensor(
+            (
+                sampledX.uns["Pf2_weights"],
+                sampled_factors,
+            )
+            )
+            fmsScore = fms(dataXcp, sampledXcp, consider_weights=True, skip_mode=1)
+            scores.append(fmsScore)
+        fmsLists.append(scores)
+    
+    random_colors = sns.color_palette("husl", len(fmsLists))
+    for n in range(0,runs,1):
+        ax.plot(percentList, fmsLists[n], label= f'tol = {startTolerance*(10**n)}', color = random_colors[n])
+
+    #graphs all the fms values recorded for each tolerance value
+    ax.set_xlabel("Percentage of Data Dropped")
+    ax.set_ylabel("FMS")
+    ax.set_title("Testing Pf2 Tolerance")
+    ax.legend()
+    
+
+def plotRankTest(
+    X: anndata.AnnData,
+    ax: Axes,
+    percentDrop: float,
+    ranksList: list[int],
+):
+
     fmsList = []
 
-# testing different ranks
-    for i in ranks:
-        dataX = pf2(X, i, random_state=1)
+    # testing different ranks input into function with one percent valued dropped
+    for i in ranksList:
+        dataX = pf2(X, rank=i, random_state=i)
         factors = [dataX.uns["Pf2_A"], dataX.uns["Pf2_B"], dataX.varm["Pf2_C"]]
         dataXcp = CPTensor(
         (
@@ -35,8 +141,8 @@ def makeFigure():
         )
         )
         
-        sampled_data = sc.pp.subsample(X, fraction=0.99, random_state=1, copy=True)
-        sampledX = pf2(sampled_data, i, random_state=2)  # type: ignore
+        sampled_data = sc.pp.subsample(X, fraction=percentDrop, random_state=i, copy=True)
+        sampledX = pf2(sampled_data, rank=i, random_state=i)  # type: ignore
         sampled_factors = [
             sampledX.uns["Pf2_A"],
             sampledX.uns["Pf2_B"],
@@ -53,9 +159,24 @@ def makeFigure():
         fmsList.append(fmsScore)
 
     #rank vs fms graph
-    ax[0].plot(ranks, fmsList, color='pink')
+    ax.plot(ranksList, fmsList, color='pink')
+    ax.set_xlabel("Rank")
+    ax.set_ylabel("FMS")
+    ax.set_title("Rank vs FMS")
+
+#testing functions
+def makeFigure():
+    X = import_thomson()
+
+    ax, f = getSetup((15,5), (1, 3))
+
+    subplotLabel(ax)
+
+    plotFMSpercentDrop(X,ax[0], percentDropped = 10, runs=3, step=1)
+    plotToleranceTest(X, ax[1], percentDropped = 10, runs=3, step=1)
+
+    ranks = range(5,51,5)
+    plotRankTest(X,ax[2], percentDrop = 0.99, ranksList=ranks)
     
-    ax[0].set_xlabel("Rank")
-    ax[0].set_ylabel("FMS")
 
     return f
