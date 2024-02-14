@@ -19,7 +19,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = read_h5ad("/opt/andrew/lupus/lupus_fitted.h5ad", backed="r")
+    X = read_h5ad("/opt/andrew/lupus/lupus_fitted.h5ad")
 
     # Cmp.4 Most weighted pos/neg genes
     genes = [
@@ -46,8 +46,7 @@ def makeFigure():
 
 def plotGenePerStatus(X, gene, ax, cellType="Cell Type"):
     """Plots average gene expression across cell types for a category of drugs"""
-    adata = X.to_memory()
-    genesV = adata[:, gene]
+    genesV = X[:, gene]
     dataDF = genesV.to_df()
     dataDF = dataDF.subtract(genesV.var["means"].values)
     dataDF["Status"] = genesV.obs["SLE_status"].values
@@ -76,11 +75,10 @@ def plot2GenePerCellTypeStatus(
     X, gene1, gene2, celltype1, celltype2, ax, cellType="Cell Type"
 ):
     """Plots average gene expression across cell types for a category of drugs"""
-    adata = X.to_memory()
     gene = [gene1, gene2]
 
     for i in range(2):
-        genesV = adata[:, gene[i]]
+        genesV = X[:, gene[i]]
         dataDF = genesV.to_df()
         dataDF = dataDF.subtract(genesV.var["means"].values)
         dataDF["Status"] = genesV.obs["SLE_status"].values
