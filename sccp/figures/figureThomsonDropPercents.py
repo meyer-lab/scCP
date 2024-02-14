@@ -129,7 +129,7 @@ def plotDifferentialExpression(
 
     args[2].set_xlabel("Original Full Data")
     if percent < 1:
-        args[2].set_ylabel(f"Sampled Data With {1-percent} Percent Of {cell_type} Removed From {condition}")
+        args[2].set_ylabel(f"Sampled Data With {percent} Percent Of {cell_type} Removed From {condition}")
     else:
         args[2].set_ylabel(f"Sampled Data With {cell_type} Removed From {condition}")
     args[2].set_ylim(bottom=0)

@@ -273,3 +273,20 @@ Number of B Cells: 570
 Number of B Cells in CTRL4: 7
 Figure ThomsonDropPercents is done after 390.6210527420044 seconds.
 
+poetry run fbuild ThomsonDropPercents
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/anndata/_core/anndata.py:850: UserWarning: 
+AnnData expects .obs.index to contain strings, but got values like:
+    [0, 1, 2, 3, 4]
+
+    Inferred to be: integer
+
+  value_idx = self._prep_dim_index(value.index, attr)
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/anndata/_core/anndata.py:183: ImplicitModificationWarning: Transforming to str index.
+  warnings.warn("Transforming to str index.", ImplicitModificationWarning)
+/home/nthomas/.cache/pypoetry/virtualenvs/sccp-uWtWZ1fM-py3.11/lib/python3.11/site-packages/scanpy/preprocessing/_normalization.py:169: UserWarning: Received a view of an AnnData. Making a copy.
+  view_to_actual(adata)
+['Myeloid Suppressors' 'Classical Monocytes' 'Activated Monocytes'
+ 'Memory T Cells' 'Macrophages' 'Naive B Cells' 'Myeloid DCs'
+ 'Memory B Cells' 'Intermediate Monocytes' 'NK Cells' 'cDCs' 'pDCs'
+ 'Cytotoxic T Cells']
+  0%|          | 0/200 [00:00<?, ?it/s]  0%|          | 1/200 [00:01<04:18,  1.30s/it]  1%|          | 2/200 [00:02<03:39,  1.11s/it]  2%|▏         | 3/200 [00:03<03:21,  1.02s/it, R2X=0.0212, Δ=0.000212]  2%|▏         | 4/200 [00:04<03:08,  1.04it/s, R2X=0.0213, Δ=0.000114]  2%|▎         | 5/200 [00:04<03:00,  1.08it/s, R2X=0.0213, Δ=4.64e-5]   3%|▎         | 6/200 [00:05<02:52,  1.13it/s, R2X=0.0213, Δ=2.45e-5]  4%|▎         | 7/200 [00:06<02:50,  1.13it/s, R2X=0.0214, Δ=1.07e-5]  4%|▍         | 8/200 [00:07<02:49,  1.13it/s, R2X=0.0214, Δ=1.36e-5]  4%|▍         | 9/200 [00:08<02:39,  1.20it/s, R2X=0.0214, Δ=3.89e-6]  5%|▌         | 10/200 [00:08<02:29,  1.27it/s, R2X=0.0214, Δ=5.66e-6]  6%|▌         | 11/200 [00:09<02:27,  1.28it/s, R2X=0.0214, Δ=1.13e-6]  6%|▌         | 12/200 [00:10<02:28,  1.27it/s, R2X=0.0214, Δ=4.19e-6]  6%|▋         | 13/200 [00:11<02:46,  1.12it/s, R2X=0.0214, Δ=1.88e-6]  7%|▋         | 14/200 [00:12<02:41,  1.15it/s, R2X=0.0214, Δ=1.61e-6]  8%|▊         | 15/200 [00:13<03:07,  1.01s/it, R2X=0.0214, Δ=1.42e-6]  8%|▊         | 16/200 [00:14<03:03,  1.00it/s, R2X=0.0214, Δ=1.27e-6]  8%|▊         | 17/200 [00:16<03:38,  1.20s/it, R2X=0.0214, Δ=1.15e-6]  9%|▉         | 18/200 [00:17<03:24,  1.13s/it, R2X=0.0214, Δ=1.04e-6]  9%|▉         | 18/200 [00:18<03:09,  1.04s/it, R2X=0.0214, Δ=9.45e-7]
