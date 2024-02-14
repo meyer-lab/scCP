@@ -1,3 +1,9 @@
+"""
+Describes the model's reaction to the removal of specific pieces of the
+dataset. It can clearly be observed for all cell types that had an identifying component that the
+corresponding weight for the condition removed significantly dropped.
+"""
+
 from .common import getSetup
 from ..imports import import_thomson
 from ..factorization import pf2
@@ -7,16 +13,14 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 from ..gating import marker_genes_1, marker_genes_2
-
-cmap = sns.diverging_palette(240, 10, as_cmap=True)
+from anndata import AnnData
+from matplotlib.axes import Axes
 
 
 def makeFigure():
     rank = 20
     data = import_thomson()
-
-    print(data.obs["Cell Type2"].unique())
-
+    
     ax, f = getSetup((20, 10 * 9), (1 * 9, 4))
     bCellGeneSet = [
         "PXK",
@@ -38,7 +42,7 @@ def makeFigure():
     CytoTCellGeneSet = marker_genes_2["Cytotoxic T"]
     memorytcellgeneset = marker_genes_2["Memory T"]
     cDCgeneset = marker_genes_2["cDCs"]
-
+   
     plotDifferentialExpression(data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[0:4])
     plotDifferentialExpression(
         data,
@@ -76,28 +80,28 @@ def makeFigure():
 
 
 def plotDifferentialExpression(
-    data,
-    condition,
-    cell_type,
-    geneset,
-    rank,
-    *args,
-    ct2=False,
-    override=None,
-    percent=1,
+    data: AnnData,
+    condition: str,
+    cell_type: str,
+    geneset: list[str],
+    rank: int,
+    *args: list[Axes],
+    ct2:bool = False,
+    override: tuple[int, int] = None,
+    percent: int = 1,
 ):
     sampled_data = None
-    idx = (data.obs["Cell Type"] != cell_type) | (data.obs["Condition"] != condition)
+    ctarg = "Cell Type"
+    if ct2:
+        ctarg = "Cell Type2"
+    idx = (data.obs[ctarg] != cell_type) | (data.obs["Condition"] != condition)
     false_idx = idx.index[idx == False]
     idx[
         np.random.choice(
             false_idx, size=int(len(false_idx) * (1 - percent)), replace=False
         )
     ] = True
-    if not ct2:
-        sampled_data = data[idx]
-    else:
-        sampled_data = data[idx]
+    sampled_data = data[idx]
 
     origX = pf2(data, rank, doEmbedding=False)
 
@@ -110,20 +114,13 @@ def plotDifferentialExpression(
     most_exp_cmp2 = -1
     most_exp2 = -1
 
-    if override is None:
-        for i in range(isolated_orig_vals.shape[1]):
-            exp_sum = np.sum(np.abs(isolated_orig_vals[:, i]))
-            if exp_sum > most_exp:
-                most_exp = exp_sum
-                most_exp_cmp = i
-        for i in range(isolated_vals.shape[1]):
-            exp_sum = np.sum(np.abs(isolated_vals[:, i]))
-            if exp_sum > most_exp2:
-                most_exp2 = exp_sum
-                most_exp_cmp2 = i
+    if not override: # Sum over the values of each component with the isolated gene factors and find the most expressed one
+        most_exp_cmp = np.argmax(np.sum(np.abs(isolated_orig_vals), axis=0))
+        most_exp_cmp2 = np.argmax(np.sum(np.abs(isolated_vals), axis=0))
     else:
         most_exp_cmp = override[0]
         most_exp_cmp2 = override[1]
+
     X = np.array(origX.uns["Pf2_A"])
     X = X[:, most_exp_cmp]
     Y = np.array(sampledX.uns["Pf2_A"])
@@ -133,9 +130,6 @@ def plotDifferentialExpression(
     yt2 = pd.Series(np.unique(sampledX.obs["Condition"]))
 
     assert yt.equals(yt2)
-    ctarg = "Cell Type"
-    if ct2:
-        ctarg = "Cell Type2"
       
     print(f"Number of {cell_type}: {len(data[data.obs[ctarg] == cell_type])}")
     print(
@@ -156,7 +150,10 @@ def plotDifferentialExpression(
         args[2].annotate(txt, (X[i], Y[i]), fontsize=8)
 
     args[2].set_xlabel("Original Full Data")
-    args[2].set_ylabel(f"Sampled Data With {cell_type} Removed From {condition}")
+    if percent < 1:
+        args[2].set_ylabel(f"Sampled Data With {percent*100} Percent Of {cell_type} Removed From {condition}")
+    else:
+        args[2].set_ylabel(f"Sampled Data With {cell_type} Removed From {condition}")
     args[2].set_ylim(bottom=0)
     args[2].set_xlim(left=0)
 
@@ -167,9 +164,10 @@ def plotDifferentialExpression(
     args[3].set_xlim(left=0)
 
 
-def plotGeneFactorsIsolated(data, ax, geneset, trim=True):
-    """Plots Pf2 gene factors"""
+def plotGeneFactorsIsolated(data: AnnData, ax: Axes, geneset: list[str], trim: bool = True):
+    """Plots the geneset isolated from the Pf2 gene factors"""
     rank = data.varm["Pf2_C"].shape[1]
+    cmap = sns.diverging_palette(240, 10, as_cmap=True)
     X = np.array(data.varm["Pf2_C"])
     yt = data.var.index.values
 
@@ -180,11 +178,7 @@ def plotGeneFactorsIsolated(data, ax, geneset, trim=True):
         yt = yt[kept_idxs]
 
     ind = reorder_table(X)
-    n_ind = [ii for ii in ind if yt[ii] in geneset]
-    for ii in ind:
-        if yt[ii] in geneset:
-            n_ind.append(ii)
-    ind = n_ind
+    ind = [ii for ii in ind if yt[ii] in geneset]
     yt = [yt[ii] for ii in ind]
     X = X[ind]
     X = X / np.max(np.abs(X))
