@@ -1,7 +1,7 @@
 """
 Thomson: Compares PCA and Pf2 UMAP labeled by genes and drugs
 """
-import anndata
+from anndata import read_h5ad
 from sklearn.decomposition import PCA
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotUMAP import plotGeneUMAP, plotLabelsUMAP
@@ -17,7 +17,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = anndata.read_h5ad("factor_cache/Thomson.h5ad", backed="r")
+    X = read_h5ad("/opt/pf2/thomson_fitted.h5ad", backed="r")
 
     genes = ["GNLY", "NKG7"]
     for i, gene in enumerate(genes):
@@ -31,7 +31,7 @@ def makeFigure():
     # PCA dimension reduction
     pc = PCA(n_components=30)
     pcaPoints = pc.fit_transform(np.asarray(X.X.to_memory() - X.var["means"].values))
-    X.obsm["embedding"] = pacmap.PaCMAP().fit_transform(pcaPoints)
+    X.obsm["X_pf2_PaCMAP"] = pacmap.PaCMAP().fit_transform(pcaPoints)
 
     for i, gene in enumerate(genes):
         plotGeneUMAP(gene, "PCA", X, ax[i + 4])
