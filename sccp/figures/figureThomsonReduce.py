@@ -33,15 +33,13 @@ def calculateFMS(A: anndata.AnnData, B: anndata.AnnData) -> float:
 def plotFMSpercentDrop(
     X: anndata.AnnData,
     ax: Axes,
-    percentDropped: int,
+    percentList: np.ndarray,
     runs: int,
-    step: int,
     rank=20,
 ):
     # pf2 on original dataset
     dataX = pf2(X, rank, doEmbedding=False)
 
-    percentList = range(0, percentDropped + 1, step)
     fmsLists = []
 
     # loop to do multiple runs
@@ -50,8 +48,8 @@ def plotFMSpercentDrop(
 
         # loop to compare sampled dataset to original
         for i in percentList[1:]:
-            sampled_data = sc.pp.subsample(X, fraction=1 - (i / 100), copy=True)
-            sampledX = pf2(sampled_data, rank, doEmbedding=False)  # type: ignore
+            sampled_data: anndata.AnnData = sc.pp.subsample(X, fraction=1 - (i / 100), copy=True)  # type: ignore
+            sampledX = pf2(sampled_data, rank, doEmbedding=False)
 
             fmsScore = calculateFMS(dataX, sampledX)
             scores.append(fmsScore)
@@ -86,10 +84,7 @@ def plotRankTest(
     for i in ranksList:
         dataX = pf2(X, rank=i, doEmbedding=False)
 
-        # sampled_data = sc.pp.subsample(
-        #     X, fraction=percentDrop, random_state=i, copy=True
-        # )
-        sampledX = pf2(resample(X), rank=i, doEmbedding=False)  # type: ignore
+        sampledX = pf2(resample(X), rank=i, doEmbedding=False)
 
         fmsScore = calculateFMS(dataX, sampledX)
         fmsList.append(fmsScore)
@@ -109,7 +104,8 @@ def makeFigure():
 
     subplotLabel(ax)
 
-    plotFMSpercentDrop(X, ax[0], percentDropped=10, runs=3, step=1)
+    percentList = np.arange(0.0, 11.0, 2.0)
+    plotFMSpercentDrop(X, ax[0], percentList=percentList, runs=3)
 
     ranks = list(range(1, 25, 2))
     plotRankTest(X, ax[2], ranksList=ranks)

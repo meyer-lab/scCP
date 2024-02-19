@@ -4,7 +4,6 @@ Lupus: Plots all top and bottom genes Pf2 weights
 from anndata import read_h5ad
 from .common import getSetup
 from .commonFuncs.plotGeneral import plotGeneFactors
-import numpy as np
 
 
 def makeFigure():
@@ -14,7 +13,6 @@ def makeFigure():
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted.h5ad", backed="r")
 
-    
     comps = [4, 7, 8, 10, 22, 24]
     for i, cmp in enumerate(comps):
         plotGeneFactors(cmp, X, ax[2 * i], geneAmount=10, top=True)
