@@ -1,3 +1,4 @@
+import numpy as np
 import scanpy as sc
 import anndata
 from .common import subplotLabel, getSetup
@@ -9,6 +10,26 @@ from tensorly.cp_tensor import CPTensor
 import seaborn as sns
 
 
+def calculateFMS(A: anndata.AnnData, B: anndata.AnnData) -> float:
+    factors = [A.uns["Pf2_A"], A.uns["Pf2_B"], A.varm["Pf2_C"]]
+    A_CP = CPTensor(
+        (
+            A.uns["Pf2_weights"],
+            factors,
+        )
+    )
+
+    factors = [B.uns["Pf2_A"], B.uns["Pf2_B"], B.varm["Pf2_C"]]
+    B_CP = CPTensor(
+        (
+            B.uns["Pf2_weights"],
+            factors,
+        )
+    )
+
+    return fms(A_CP, B_CP, consider_weights=False, skip_mode=1)  # type: ignore
+
+
 def plotFMSpercentDrop(
     X: anndata.AnnData,
     ax: Axes,
@@ -18,42 +39,23 @@ def plotFMSpercentDrop(
     rank=20,
 ):
     # pf2 on original dataset
-    dataX = pf2(X, rank, random_state=1)
-    factors = [dataX.uns["Pf2_A"], dataX.uns["Pf2_B"], dataX.varm["Pf2_C"]]
-
-    dataXcp = CPTensor(
-        (
-            dataX.uns["Pf2_weights"],
-            factors,
-        )
-    )
+    dataX = pf2(X, rank, doEmbedding=False)
 
     percentList = range(0, percentDropped + 1, step)
     fmsLists = []
 
     # loop to do multiple runs
     for j in range(0, runs, 1):
-        scores = [1]
+        scores = [1.0]
 
         # loop to compare sampled dataset to original
         for i in percentList[1:]:
-            sampled_data = sc.pp.subsample(
-                X, fraction=1 - (i / 100), random_state=j + 1, copy=True
-            )
-            sampledX = pf2(sampled_data, rank, random_state=j + 1)  # type: ignore
-            sampled_factors = [
-                sampledX.uns["Pf2_A"],
-                sampledX.uns["Pf2_B"],
-                sampledX.varm["Pf2_C"],
-            ]
-            sampledXcp = CPTensor(
-                (
-                    sampledX.uns["Pf2_weights"],
-                    sampled_factors,
-                )
-            )
-            fmsScore = fms(dataXcp, sampledXcp, consider_weights=True, skip_mode=1)
+            sampled_data = sc.pp.subsample(X, fraction=1 - (i / 100), copy=True)
+            sampledX = pf2(sampled_data, rank, doEmbedding=False)  # type: ignore
+
+            fmsScore = calculateFMS(dataX, sampledX)
             scores.append(fmsScore)
+
         fmsLists.append(scores)
 
     random_colors = sns.color_palette("husl", len(fmsLists))
@@ -67,42 +69,29 @@ def plotFMSpercentDrop(
     ax.legend()
 
 
+def resample(data: anndata.AnnData) -> anndata.AnnData:
+    indices = np.random.randint(0, data.shape[0], size=(data.shape[0],))
+    data = data[indices].copy()
+    return data
+
+
 def plotRankTest(
     X: anndata.AnnData,
     ax: Axes,
-    percentDrop: float,
     ranksList: list[int],
 ):
     fmsList = []
 
     # testing different ranks input into function with one percent valued dropped
     for i in ranksList:
-        dataX = pf2(X, rank=i, random_state=i)
-        factors = [dataX.uns["Pf2_A"], dataX.uns["Pf2_B"], dataX.varm["Pf2_C"]]
-        dataXcp = CPTensor(
-            (
-                dataX.uns["Pf2_weights"],
-                factors,
-            )
-        )
+        dataX = pf2(X, rank=i, doEmbedding=False)
 
-        sampled_data = sc.pp.subsample(
-            X, fraction=percentDrop, random_state=i, copy=True
-        )
-        sampledX = pf2(sampled_data, rank=i, random_state=i)  # type: ignore
-        sampled_factors = [
-            sampledX.uns["Pf2_A"],
-            sampledX.uns["Pf2_B"],
-            sampledX.varm["Pf2_C"],
-        ]
-        sampledXcp = CPTensor(
-            (
-                sampledX.uns["Pf2_weights"],
-                sampled_factors,
-            )
-        )
+        # sampled_data = sc.pp.subsample(
+        #     X, fraction=percentDrop, random_state=i, copy=True
+        # )
+        sampledX = pf2(resample(X), rank=i, doEmbedding=False)  # type: ignore
 
-        fmsScore = fms(dataXcp, sampledXcp, consider_weights=True, skip_mode=1)
+        fmsScore = calculateFMS(dataX, sampledX)
         fmsList.append(fmsScore)
 
     # rank vs fms graph
@@ -122,7 +111,7 @@ def makeFigure():
 
     plotFMSpercentDrop(X, ax[0], percentDropped=10, runs=3, step=1)
 
-    ranks = range(5, 51, 5)
-    plotRankTest(X, ax[2], percentDrop=0.99, ranksList=ranks)
+    ranks = list(range(1, 25, 2))
+    plotRankTest(X, ax[2], ranksList=ranks)
 
     return f
