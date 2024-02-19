@@ -3,7 +3,8 @@ Lupus: Plot 2 Pf2 factors for conditions
 """
 from anndata import read_h5ad
 from .common import subplotLabel, getSetup
-from .commonFuncs.plotLupus import plot2DSeparationByComp, getSamplesObs
+from .commonFuncs.plotLupus import getSamplesObs
+import seaborn as sns
 import numpy as np
 import pandas as pd
 
@@ -16,7 +17,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = read_h5ad("/opt/andrew/lupus/lupus_fitted.h5ad", backed="r")
+    X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad", backed="r")
 
     predict = "SLE_status"
     condStatus = getSamplesObs(X.obs)
@@ -32,6 +33,8 @@ def makeFigure():
     twoCmp = [[13, 26], [4, 26]]
 
     for i, pair in enumerate(twoCmp):
-        plot2DSeparationByComp(df, pair, predict, ax[i])
+        sns.scatterplot(
+            data=df, x=f"Cmp. {pair[0]}", y=f"Cmp. {pair[1]}", hue=predict, ax=ax[i]
+        )
 
     return f
