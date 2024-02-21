@@ -90,6 +90,21 @@ def plotDifferentialExpression(
     override: tuple[int, int] = None,
     percent: int = 1,
 ):
+    """
+    Plots the differences in model weights of a gene set in the original data and the data with a certain percentage of the cell type removed. The determining component is currently calculated by the highest absolute value weight across all marker genes.
+    Args:
+        data: The AnnData object to be used
+        condition: The condition to drop the cell type from
+        cell_type: The cell type to be drop
+        geneset: The marker genes
+        rank: The rank to be used
+        *args: The axes to be used
+        ct2: Whether to use the second cell type
+        override: The component to be used if not using the highest absolute value weight
+        percent: The percentage of the cell type to be removed
+    Returns:
+        None
+    """
     sampled_data = None
     ctarg = "Cell Type"
     if ct2:
@@ -165,7 +180,16 @@ def plotDifferentialExpression(
 
 
 def plotGeneFactorsIsolated(data: AnnData, ax: Axes, geneset: list[str], trim: bool = True):
-    """Plots the geneset isolated from the Pf2 gene factors"""
+    """
+    Plots the geneset isolated from the Pf2 gene factors
+    Args:
+        data: The AnnData object to be used
+        ax: The axes to plot to
+        geneset: The marker genes
+        trim: Whether to trim the data
+    Returns:
+        np.array: The isolated gene factors
+    """
     rank = data.varm["Pf2_C"].shape[1]
     cmap = sns.diverging_palette(240, 10, as_cmap=True)
     X = np.array(data.varm["Pf2_C"])
