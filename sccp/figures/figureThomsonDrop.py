@@ -15,6 +15,7 @@ import seaborn as sns
 from ..gating import marker_genes_1, marker_genes_2
 from anndata import AnnData
 from matplotlib.axes import Axes
+from scipy.stats import linregress
 
 
 def makeFigure():
@@ -122,16 +123,33 @@ def plotDifferentialExpression(
 
     sampledX = pf2(sampled_data, rank, doEmbedding=False)
 
-    isolated_orig_vals = plotGeneFactorsIsolated(origX, args[0], geneset)
-    isolated_vals = plotGeneFactorsIsolated(sampledX, args[1], geneset)
+    plotGeneFactorsIsolated(origX, args[0], geneset)
+    plotGeneFactorsIsolated(sampledX, args[1], geneset)
     most_exp_cmp = -1
-    most_exp = -1
     most_exp_cmp2 = -1
-    most_exp2 = -1
+    yt = pd.Series(np.unique(origX.obs["Condition"]))
+    yt2 = pd.Series(np.unique(sampledX.obs["Condition"]))
+
+    numberOfCellType = []
+    for txt in yt:
+        numberOfCellType.append(
+            len(data[(data.obs["Condition"] == txt) & (data.obs[ctarg] == cell_type)])
+        )
 
     if not override: # Sum over the values of each component with the isolated gene factors and find the most expressed one
-        most_exp_cmp = np.argmax(np.sum(np.abs(isolated_orig_vals), axis=0))
-        most_exp_cmp2 = np.argmax(np.sum(np.abs(isolated_vals), axis=0))
+        # most_exp_cmp = np.argmax(np.sum(np.abs(isolated_orig_vals), axis=0))
+        # most_exp_cmp2 = np.argmax(np.sum(np.abs(isolated_vals), axis=0))
+        X = np.array(origX.uns["Pf2_A"])
+        X2 = np.array(sampledX.uns["Pf2_A"])
+        all_r2 = []
+        all_r2_2 = []
+        for i in range(X.shape[1]):
+            _, _, r_value, _, _ = linregress(X[:, i], numberOfCellType)
+            _, _, r_value2, _, _ = linregress(X2[:, i], numberOfCellType)
+            all_r2.append(r_value ** 2)
+            all_r2_2.append(r_value2 ** 2)
+        most_exp_cmp = np.argmax(all_r2)
+        most_exp_cmp2 = np.argmax(all_r2_2)
     else:
         most_exp_cmp = override[0]
         most_exp_cmp2 = override[1]
@@ -141,27 +159,15 @@ def plotDifferentialExpression(
     Y = np.array(sampledX.uns["Pf2_A"])
     Y = Y[:, most_exp_cmp2]
 
-    yt = pd.Series(np.unique(origX.obs["Condition"]))
-    yt2 = pd.Series(np.unique(sampledX.obs["Condition"]))
-
     assert yt.equals(yt2)
-      
+
     print(f"Number of {cell_type}: {len(data[data.obs[ctarg] == cell_type])}")
     print(
         f"Number of {cell_type} in {condition}: {len(data[(data.obs['Condition'] == condition) & (data.obs[ctarg] == cell_type)])}"
     )
 
     args[2].scatter(X, Y, s=1)
-    numberOfCellType = []
     for i, txt in enumerate(yt):
-        numberOfCellType.append(
-            len(
-                data[
-                    (data.obs["Condition"] == txt)
-                    & (data.obs[ctarg] == cell_type)
-                ]
-            )
-        )
         args[2].annotate(txt, (X[i], Y[i]), fontsize=8)
 
     args[2].set_xlabel("Original Full Data")

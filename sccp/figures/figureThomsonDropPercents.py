@@ -1,13 +1,20 @@
+"""
+Plots the differences in the identifying component weight with different percentages of a cell type removed from the data. The determining component is currently calculated by the highest absolute value weight across all marker genes.
+"""
 from .common import getSetup
 from ..imports import import_thomson
 from ..imports import import_thomson
 import seaborn as sns
 from .figureThomsonDrop import plotDifferentialExpression
+import numpy as np
+from .commonFuncs.plotFactors import reorder_table
+from ..factorization import pf2
+import pandas as pd
 
 def makeFigure():
     rank = 20
     data = import_thomson()
-    ax, f = getSetup((20, 10 * 7), (7 * 1, 4))
+    ax, f = getSetup((20, 10), (1 , 1))
     bCellGeneSet = [
         "PXK",
         "MS4A1",
@@ -21,24 +28,43 @@ def makeFigure():
         "VPREB3",
     ]
 
-    plotDifferentialExpression(data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[0:4])
-    plotDifferentialExpression(
-        data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[4:8], percent=0.95
-    )
-    plotDifferentialExpression(
-        data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[8:12], percent=0.9
-    )
-    plotDifferentialExpression(
-        data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[12:16], percent=0.8
-    )
-    plotDifferentialExpression(
-        data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[16:20], percent=0.7
-    )
-    plotDifferentialExpression(
-        data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[20:24], percent=0.6
-    )
-    plotDifferentialExpression(
-        data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[24:28], percent=0.5
-    )
+    plot_weights_across_percents(data, "B Cells", "CTRL4", 0, 1, 0.1, rank, bCellGeneSet, ax[0])
 
     return f
+
+def plot_weights_across_percents(data, cell_type, condition, percent_min, percent_max, percent_step, rank, geneset, ax):
+    """
+    Plots the raw weight of the identifying component across the percentages dropped
+    """
+    vals = {}
+    for percent in np.arange(percent_min, percent_max, percent_step):
+        idx = (data.obs["Cell Type"] != cell_type) | (data.obs["Condition"] != condition)
+        false_idx = idx.index[idx == False]
+        idx[
+            np.random.choice(
+                false_idx, size=int(len(false_idx) * (1 - percent)), replace=False
+            )
+        ] = True
+        sampled_data = data[idx]
+
+        sampledX = pf2(sampled_data, rank, doEmbedding=False)
+        gene_values = np.array(sampled_data.varm["Pf2_C"])
+        yt = data.var.index.values
+        ind = reorder_table(gene_values)
+        ind = [ii for ii in ind if yt[ii] in geneset]
+        most_exp_cmp = np.argmax(np.sum(np.abs(gene_values), axis=0))
+        Y = np.array(sampledX.uns["Pf2_A"])
+        Y = Y[:, most_exp_cmp]
+        labels = pd.Series(np.unique(sampledX.obs["Condition"]))
+        for i, txt in enumerate(labels):
+            if txt == condition:
+                vals[percent] = Y[i]
+
+    ax.xlabel(f"Percent of {cell_type} Removed")
+    ax.ylabel("Weight of Identifying Component")
+
+    percents = list(vals.keys())
+    weights = list(vals.values())
+    ax.bar(percents, weights, color ='maroon')
+
+
