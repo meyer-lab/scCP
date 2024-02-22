@@ -22,8 +22,8 @@ def makeFigure():
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
     
-    plotCmpGeneWeightedUMAP(X, 3, ax[0], cbarMax=.4)
-    plotCmpGeneWeightedPerCellType(X, 3, ax[1], cellType="Cell Type")
+    # plotCmpGeneWeightedUMAP(X, 3, ax[0], cbarMax=.4)
+    # plotCmpGeneWeightedPerCellType(X, 3, ax[1], cellType="Cell Type")
 
 
     # # Cmp.4 Most weighted pos/neg genes
@@ -39,8 +39,8 @@ def makeFigure():
     #     ["NKG7", "GNLY"],
     #     ["CCL4", "CD247"],
     # ]
-    # comps = [8, 9, 10, 13, 22, 28]
-    # genes = top_bot_genes(X, cmp=comps[0], geneAmount=4)
+    comps = [8, 9, 10, 13, 22, 28]
+    genes = top_bot_genes(X, cmp=comps[0], geneAmount=2)
 
     # for i, gene in enumerate(np.ravel(genes)):
     #     plotGenePerStatus(X, gene, ax[i], cellType="Cell Type2")
@@ -52,7 +52,7 @@ def makeFigure():
     #     plot2GenePerCellTypeStatus(X, genes[i], genes[-(1+i)], "CM", "CM", ax[i], cellType="Cell Type2")
     
   
-    # plot2GenePerCellTypeStatus(X, "APOBEC3A", "BANK1", "CM", "B Naive", ax[0], cellType="Cell Type2")
+    plot2GenePerCellTypeStatus(X, "APOBEC3A", "BANK1", "CM", "B Naive", ax[0], cellType="Cell Type2")
 
 
     return f
@@ -74,6 +74,8 @@ def plotGenePerStatus(X, gene, ax, cellType="Cell Type"):
 
     df = df.groupby(["Status", "Cell Type", "Gene", "Condition"], observed=False).mean()
     df = df.rename(columns={"Value": "Average Gene Expression"}).reset_index()
+    
+    
 
     sns.boxplot(
         data=df.loc[df["Gene"] == gene],
@@ -122,6 +124,8 @@ def plot2GenePerCellTypeStatus(
     df1 = df.loc[df["Cell Type"] == celltype1]
     df2 = df.loc[df["Cell Type"] == celltype2]
     df = pd.concat([df1, df2]).reset_index()
+    
+    df = df.dropna(subset=gene[0])
 
     sns.scatterplot(
         data=df,
