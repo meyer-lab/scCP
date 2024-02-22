@@ -49,6 +49,7 @@ def makeFigure():
     )
     ax[0].tick_params(axis="x", rotation=90)
     ax[0].set_title("Weight of Pf2 Cmps in Logsitic Regression: Predicting: SLE")
+    ax[0].set(ylim=[-8.5, 8.5])
 
     df_y["ancestry"] = df_y["ancestry"] == "European"
     contribsAnc = getCompContribs(X, df_y["ancestry"])

@@ -16,8 +16,9 @@ def makeFigure():
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad", backed="r")
 
-    comps = [4, 7, 8, 10, 22, 24]
+    comps = [8, 9, 10, 13, 22, 28]
     for i, cmp in enumerate(comps):
-        plotCmpPerCellType(X, cmp, ax[(2 * i)])
+        plotCmpPerCellType(X, cmp, ax[(2 * i)], cellType="Cell Type2")
         plotCmpUMAP(X, cmp, ax[(2 * i) + 1], cbarMax=0.3)
+        
     return f
