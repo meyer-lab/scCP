@@ -176,3 +176,58 @@ def plotCmpPerCellType(
 def assignAxes(ax):
     ax.set(xlabel="PaCMAP1", ylabel="PaCMAP2", xticks=[], yticks=[])
     return ax
+
+
+def plotCmpGeneWeightedUMAP(X: anndata.AnnData, cmp: int, ax: Axes, cbarMax: float = 1.0):
+    """Scatterplot of UMAP visualization weighted by
+    projections for a component and cell state"""
+    values = X.X @ np.array(X.varm["Pf2_C"][:, cmp-1])
+    points = X.obsm["X_pf2_PaCMAP"]
+
+    cmap = sns.diverging_palette(250, 30, l=65, center="dark", as_cmap=True)
+    canvas = _get_canvas(points)
+    data = pd.DataFrame(points, columns=("x", "y"))
+
+    # Color by values
+    values /= np.max(np.abs(values))
+
+    data["val_cat"] = values
+    result = tf.shade(
+        agg=canvas.points(data, "x", "y", agg=ds.mean("val_cat")),
+        cmap=cmap,
+        span=(-cbarMax, cbarMax),
+        how="linear",
+        alpha=255,
+        min_alpha=255,
+    )
+
+    ds_show(result, ax)
+
+    psm = plt.pcolormesh([[-cbarMax, cbarMax], [-cbarMax, cbarMax]], cmap=cmap)
+    plt.colorbar(psm, ax=ax)
+    ax.set(title="Gene Weighted for Cmp. " + str(cmp))
+    ax = assignAxes(ax)
+
+
+def plotCmpGeneWeightedPerCellType(
+    X: anndata.AnnData, cmp: int, ax: Axes, outliers: bool = False, cellType="Cell Type"
+):
+    """Boxplot of weighted projections for one component across cell types"""
+    XX = X.X @ np.array(X.varm["Pf2_C"][:, cmp-1])
+    cmpName = f"Cmp. {cmp}"
+
+    df = pd.DataFrame({cmpName: XX, "Cell Type": X.obs[cellType].to_numpy()})
+
+    sns.boxplot(
+        data=df,
+        x=cmpName,
+        y="Cell Type",
+        showfliers=outliers,
+        ax=ax,
+    )
+    maxvalue = np.max(np.abs(ax.get_xticks()))
+    ax.set(
+        xticks=np.linspace(-maxvalue, maxvalue, num=5), xlabel="Cell Specific Weight"
+    )
+    ax.set_title("Gene Weighted for " + cmpName)
+

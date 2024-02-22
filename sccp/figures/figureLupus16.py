@@ -10,6 +10,7 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 from .figureCITEseq5 import top_bot_genes
+from .commonFuncs.plotUMAP import plotCmpGeneWeightedUMAP, plotCmpGeneWeightedPerCellType
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
@@ -20,6 +21,10 @@ def makeFigure():
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
+    
+    plotCmpGeneWeightedUMAP(X, 3, ax[0], cbarMax=.4)
+    plotCmpGeneWeightedPerCellType(X, 3, ax[1], cellType="Cell Type")
+
 
     # # Cmp.4 Most weighted pos/neg genes
     # genes = [
@@ -34,8 +39,8 @@ def makeFigure():
     #     ["NKG7", "GNLY"],
     #     ["CCL4", "CD247"],
     # ]
-    comps = [8, 9, 10, 13, 22, 28]
-    genes = top_bot_genes(X, cmp=comps[0], geneAmount=4)
+    # comps = [8, 9, 10, 13, 22, 28]
+    # genes = top_bot_genes(X, cmp=comps[0], geneAmount=4)
 
     # for i, gene in enumerate(np.ravel(genes)):
     #     plotGenePerStatus(X, gene, ax[i], cellType="Cell Type2")
@@ -46,12 +51,12 @@ def makeFigure():
     # for i, gene in enumerate(genes):
     #     plot2GenePerCellTypeStatus(X, genes[i], genes[-(1+i)], "CM", "CM", ax[i], cellType="Cell Type2")
     
-    
   
-    plot2GenePerCellTypeStatus(X, "APOBEC3A", "BANK1", "CM", "B Naive", ax[0], cellType="Cell Type2")
+    # plot2GenePerCellTypeStatus(X, "APOBEC3A", "BANK1", "CM", "B Naive", ax[0], cellType="Cell Type2")
 
 
     return f
+
 
 
 def plotGenePerStatus(X, gene, ax, cellType="Cell Type"):
