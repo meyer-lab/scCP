@@ -40,25 +40,20 @@ def plotR2X(data, rank, ax: Axes):
     ax.legend()
 
 
-def plotR2X_pf2(data, rank, ax: Axes):
+def plotR2X_pf2(data, ranks, ax: Axes):
     """Creates R2X plot for parafac2 tensor decomposition"""
-    r2xError = pf2_r2x(data, rank)
+    r2xError = pf2_r2x(data, ranks)
 
-    rank_vec = np.arange(1, rank + 1)
     ax.scatter(
-        rank_vec,
+        ranks,
         r2xError,
         c="k",
         s=30.0,
     )
 
     ax.set(
-        ylabel="Factor Match Score",
+        ylabel="R2X",
         xlabel="Number of Components",
-        xticks=np.linspace(0, rank, num=8, dtype=int),
-        yticks=np.linspace(
-            0, np.max(np.append(r2xError[0], r2xError[1])) + 0.01, num=5
-        ),
     )
 
 
