@@ -6,7 +6,6 @@ import anndata
 from matplotlib.axes import Axes
 
 from ...factorization import pf2_r2x
-from ...factorization import pf2_fms
 
 
 def plotR2X(data, rank, ax: Axes):
