@@ -21,16 +21,17 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
-    lupusStatus = getSamplesObs(X.obs)["SLE_status"]
+    # X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
-    X.uns["Pf2_A"] = correct_conditions(X)
+    # lupusStatus = getSamplesObs(X.obs)["SLE_status"]
 
-    plotConditionsFactors(X, ax[0], lupusStatus)
-    ax[0].set(yticks=[])
-    plotCellState(X, ax[1])
-    plotGeneFactors(X, ax[2])
+    # X.uns["Pf2_A"] = correct_conditions(X)
+
+    # plotConditionsFactors(X, ax[0], lupusStatus)
+    # ax[0].set(yticks=[])
+    # plotCellState(X, ax[1])
+    # plotGeneFactors(X, ax[2])
     plotWeight(X, ax[3])
 
     return f

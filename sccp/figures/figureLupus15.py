@@ -12,7 +12,7 @@ from .commonFuncs.plotGeneral import population_bar_chart
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((10, 8), (3, 1))
+    ax, f = getSetup((5, 5), (2, 1))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -31,15 +31,15 @@ def makeFigure():
     # # sns.histplot(data=dfCond, x="Cell Number", bins=15, color="k", ax=ax[0])
     # # ax[0].set(ylabel="# of Experiments")
 
-    # dfCellType = (
-    #     df.groupby(["Cell Type", "Condition", "SLE_status"], observed=True)
-    #     .size()
-    #     .reset_index(name="Count")
-    # )
-    # print(dfCellType)
-    # dfCellType["Count"] = dfCellType["Count"].astype("float")
+    dfCellType = (
+        df.groupby(["Cell Type", "Condition", "SLE_status"], observed=True)
+        .size()
+        .reset_index(name="Count")
+    )
+    print(dfCellType)
+    dfCellType["Count"] = dfCellType["Count"].astype("float")
     
-    # sns.boxplot(data=dfCellType, x="Cell Type", y="Count", hue="SLE_status", ax=ax[0])
+    sns.boxplot(data=dfCellType, x="Cell Type", y="Count", hue="SLE_status", ax=ax[0],showfliers=False)
     
     dfCellType2 = (
         df.groupby(["Cell Type2", "SLE_status", "Condition"], observed=True)
@@ -48,9 +48,10 @@ def makeFigure():
     )
     dfCellType2["Count"] = dfCellType2["Count"].astype("float")
     
-    a = dfCellType2.loc[dfCellType2["Cell Type2"] == "T4 Reg"]
+    sns.boxplot(data=dfCellType2, x="Cell Type2", y="Count", hue="SLE_status", ax=ax[1], showfliers=False)
     
-    sns.boxplot(data=dfCellType2, x="Cell Type2", y="Count", hue="SLE_status", ax=ax[1])
+    ax[0].set_xticklabels(labels=ax[0].get_xticklabels(), rotation=90)
+    ax[1].set_xticklabels(labels=ax[1].get_xticklabels(), rotation=90)
     
     # for i, cond in enumerate(pd.unique(df["Condition"])):
     #     dfCellType.loc[dfCellType["Condition"] == cond, "Count"] = (

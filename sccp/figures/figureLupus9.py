@@ -13,7 +13,7 @@ from ..factorization import correct_conditions
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((6, 8), (1, 2))
+    ax, f = getSetup((12, 10), (4, 4))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -31,7 +31,12 @@ def makeFigure():
     )
     df = df.merge(condStatus, left_index=True, right_index=True)
 
-    twoCmp = [[13, 21], [13, 27]]
+    twoCmp = []
+    for i in range(1,30,2):
+        twoCmp.append([i, i+1])
+        
+    print(twoCmp)
+    
 
     for i, pair in enumerate(twoCmp):
         sns.scatterplot(

@@ -13,7 +13,7 @@ def makeFigure():
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad", backed="r")
 
-    comps = [8, 9, 10, 13, 22, 28]
+    comps = [4, 14, 28]
     for i, cmp in enumerate(comps):
         plotGeneFactors(cmp, X, ax[2 * i], geneAmount=10, top=True)
         plotGeneFactors(cmp, X, ax[2 * i + 1], geneAmount=10, top=False)

@@ -9,16 +9,20 @@ from .commonFuncs.plotUMAP import plotCmpPerCellType, plotCmpUMAP
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((15, 15), (3, 4))
+    ax, f = getSetup((12, 6), (2, 4))
 
     # Add subplot labels
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad", backed="r")
 
-    comps = [8, 9, 10, 13, 22, 28]
+
+    comps = [4,14]
+    # [8, 9, 10, 13]
+    #  [8, 9, 10, 13, 22, 28]
     for i, cmp in enumerate(comps):
         plotCmpPerCellType(X, cmp, ax[(2 * i)], cellType="Cell Type2")
         plotCmpUMAP(X, cmp, ax[(2 * i) + 1], cbarMax=0.3)
+       
         
     return f

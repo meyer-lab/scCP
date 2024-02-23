@@ -124,7 +124,7 @@ def plotLabelsUMAP(
 
     indices = np.argsort(labels)
     points = X.obsm["X_pf2_PaCMAP"][indices, :]
-    labels = labels.iloc[indices]
+    labels = labels.iloc[indices].to_numpy()
 
     canvas = _get_canvas(points)
     data = pd.DataFrame(points, columns=("x", "y"))
@@ -157,12 +157,13 @@ def plotCmpPerCellType(
     XX = X.obsm["weighted_projections"][:, cmp - 1]
     cmpName = f"Cmp. {cmp}"
 
-    df = pd.DataFrame({cmpName: XX, "Cell Type": X.obs[cellType].to_numpy()})
+    df = pd.DataFrame({cmpName: XX,  "Status": X.obs["SLE_status"].to_numpy(), "Cell Type": X.obs[cellType].to_numpy()})
 
     sns.boxplot(
         data=df,
         x=cmpName,
         y="Cell Type",
+        hue="Status",
         showfliers=outliers,
         ax=ax,
     )
@@ -216,12 +217,13 @@ def plotCmpGeneWeightedPerCellType(
     XX = X.X @ np.array(X.varm["Pf2_C"][:, cmp-1])
     cmpName = f"Cmp. {cmp}"
 
-    df = pd.DataFrame({cmpName: XX, "Cell Type": X.obs[cellType].to_numpy()})
+    df = pd.DataFrame({cmpName: XX, "Status": X.obs["SLE_status"].to_numpy(), "Cell Type": X.obs[cellType].to_numpy()})
 
     sns.boxplot(
         data=df,
         x=cmpName,
         y="Cell Type",
+        hue="Status",
         showfliers=outliers,
         ax=ax,
     )

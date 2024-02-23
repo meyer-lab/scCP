@@ -15,6 +15,7 @@ from .commonFuncs.plotUMAP import plotCmpGeneWeightedUMAP, plotCmpGeneWeightedPe
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
+    ax, f = getSetup((20, 18), (6, 4))
     ax, f = getSetup((12, 6), (2, 4))
 
     # Add subplot labels
@@ -22,8 +23,12 @@ def makeFigure():
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
     
-    # plotCmpGeneWeightedUMAP(X, 3, ax[0], cbarMax=.4)
-    # plotCmpGeneWeightedPerCellType(X, 3, ax[1], cellType="Cell Type")
+    # comps = [8, 9, 10, 13, 22, 28, 4, 14]
+    plotCmpGeneWeightedUMAP(X, 4, ax[0], cbarMax=.4)
+    plotCmpGeneWeightedPerCellType(X, 4, ax[1], cellType="Cell Type2")
+    
+    plotCmpGeneWeightedUMAP(X, 14, ax[2], cbarMax=.4)
+    plotCmpGeneWeightedPerCellType(X, 14, ax[3], cellType="Cell Type2")
 
 
     # # Cmp.4 Most weighted pos/neg genes
@@ -39,8 +44,8 @@ def makeFigure():
     #     ["NKG7", "GNLY"],
     #     ["CCL4", "CD247"],
     # ]
-    comps = [8, 9, 10, 13, 22, 28]
-    genes = top_bot_genes(X, cmp=comps[0], geneAmount=2)
+    # comps = [8, 9, 10, 13, 22, 28, 4, 14]
+    # genes = top_bot_genes(X, cmp=4, geneAmount=6)
 
     # for i, gene in enumerate(np.ravel(genes)):
     #     plotGenePerStatus(X, gene, ax[i], cellType="Cell Type2")
@@ -49,10 +54,10 @@ def makeFigure():
     # genes = [["CLEC4E", "RETN"]]
 
     # for i, gene in enumerate(genes):
-    #     plot2GenePerCellTypeStatus(X, genes[i], genes[-(1+i)], "CM", "CM", ax[i], cellType="Cell Type2")
+    #     plot2GenePerCellTypeStatus(X, genes[i], genes[-(1+i)], "NK Dim", "T8 GZMH", ax[i], cellType="Cell Type2")
     
   
-    plot2GenePerCellTypeStatus(X, "APOBEC3A", "BANK1", "CM", "B Naive", ax[0], cellType="Cell Type2")
+    # plot2GenePerCellTypeStatus(X, "APOBEC3A", "BANK1", "CM", "B Naive", ax[0], cellType="Cell Type2")
 
 
     return f
@@ -86,6 +91,7 @@ def plotGenePerStatus(X, gene, ax, cellType="Cell Type"):
         showfliers=False,
     )
     ax.set(title=gene)
+
 
 
 def plot2GenePerCellTypeStatus(
@@ -126,6 +132,7 @@ def plot2GenePerCellTypeStatus(
     df = pd.concat([df1, df2]).reset_index()
     
     df = df.dropna(subset=gene[0])
+
 
     sns.scatterplot(
         data=df,
