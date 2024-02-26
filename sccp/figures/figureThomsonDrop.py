@@ -22,7 +22,7 @@ def makeFigure():
     rank = 20
     data = import_thomson()
     
-    ax, f = getSetup((20, 10 * 9), (1 * 9, 4))
+    ax, f = getSetup((10, 10 * 9), (1 * 9, 2))
     bCellGeneSet = [
         "PXK",
         "MS4A1",
@@ -44,38 +44,38 @@ def makeFigure():
     memorytcellgeneset = marker_genes_2["Memory T"]
     cDCgeneset = marker_genes_2["cDCs"]
    
-    plotDifferentialExpression(data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[0:4])
+    plotDifferentialExpression(data, "CTRL4", "B Cells", bCellGeneSet, rank, *ax[0:2])
     plotDifferentialExpression(
         data,
         "CTRL4",
         "Naive B Cells",
         NaiveBCellGeneSet,
         rank,
-        *ax[4:8],
+        *ax[2:4],
         ct2=True,
     )
     plotDifferentialExpression(
-        data, "CTRL4", "NK Cells", NKCellGeneSet, rank, *ax[8:12]
+        data, "CTRL4", "NK Cells", NKCellGeneSet, rank, *ax[4:6]
     )
-    plotDifferentialExpression(data, "CTRL4", "DCs", DCCellGeneSet, rank, *ax[12:16])
+    plotDifferentialExpression(data, "CTRL4", "DCs", DCCellGeneSet, rank, *ax[6:8])
     plotDifferentialExpression(
         data,
         "CTRL4",
         "pDCs",
         pDCGeneSet,
         rank,
-        *ax[16:20],
+        *ax[8:10],
         ct2=True,
     )
-    plotDifferentialExpression(data, "CTRL4", "T Cells", TCellGeneSet, rank, *ax[20:24])
+    plotDifferentialExpression(data, "CTRL4", "T Cells", TCellGeneSet, rank, *ax[10:12])
     plotDifferentialExpression(
-        data, "CTRL4", "Cytotoxic T Cells", CytoTCellGeneSet, rank, *ax[24:28], ct2=True
+        data, "CTRL4", "Cytotoxic T Cells", CytoTCellGeneSet, rank, *ax[12:14], ct2=True
     )
     plotDifferentialExpression(
-        data, "CTRL4", "Memory T Cells", memorytcellgeneset, rank, *ax[28:32], ct2=True
+        data, "CTRL4", "Memory T Cells", memorytcellgeneset, rank, *ax[14:16], ct2=True
     )
     plotDifferentialExpression(
-        data, "CTRL4", "cDCs", cDCgeneset, rank, *ax[32:36], ct2=True
+        data, "CTRL4", "cDCs", cDCgeneset, rank, *ax[16:18], ct2=True
     )
     return f
 
@@ -92,7 +92,7 @@ def plotDifferentialExpression(
     percent: int = 1,
 ):
     """
-    Plots the differences in model weights of a gene set in the original data and the data with a certain percentage of the cell type removed. The determining component is currently calculated by the highest absolute value weight across all marker genes.
+    Plots the differences in model weights of a gene set in the original data and the data with a certain percentage of the cell type removed. The determining component is the component that has the highest correlation with the number of cells in the cell type selected.
     Args:
         data: The AnnData object to be used
         condition: The condition to drop the cell type from
@@ -122,9 +122,6 @@ def plotDifferentialExpression(
     origX = pf2(data, rank, doEmbedding=False)
 
     sampledX = pf2(sampled_data, rank, doEmbedding=False)
-
-    plotGeneFactorsIsolated(origX, args[0], geneset)
-    plotGeneFactorsIsolated(sampledX, args[1], geneset)
     most_exp_cmp = -1
     most_exp_cmp2 = -1
     yt = pd.Series(np.unique(origX.obs["Condition"]))
@@ -150,6 +147,8 @@ def plotDifferentialExpression(
             all_r2_2.append(r_value2 ** 2)
         most_exp_cmp = np.argmax(all_r2)
         most_exp_cmp2 = np.argmax(all_r2_2)
+        print(f"All r2 original: {all_r2}")
+        print(f"All r2 sampled: {all_r2_2}")
     else:
         most_exp_cmp = override[0]
         most_exp_cmp2 = override[1]
@@ -166,23 +165,24 @@ def plotDifferentialExpression(
         f"Number of {cell_type} in {condition}: {len(data[(data.obs['Condition'] == condition) & (data.obs[ctarg] == cell_type)])}"
     )
 
-    args[2].scatter(X, Y, s=1)
+    args[0].scatter(X, Y)
     for i, txt in enumerate(yt):
-        args[2].annotate(txt, (X[i], Y[i]), fontsize=8)
+        if txt == condition:
+            args[0].annotate(txt, (X[i], Y[i]), fontsize=8)
 
-    args[2].set_xlabel("Original Full Data")
+    args[0].set_xlabel("Original Full Data")
     if percent < 1:
-        args[2].set_ylabel(f"Sampled Data With {percent*100} Percent Of {cell_type} Removed From {condition}")
+        args[0].set_ylabel(f"Sampled Data With {percent*100} Percent Of {cell_type} Removed From {condition}")
     else:
-        args[2].set_ylabel(f"Sampled Data With {cell_type} Removed From {condition}")
-    args[2].set_ylim(bottom=0)
-    args[2].set_xlim(left=0)
+        args[0].set_ylabel(f"Sampled Data With {cell_type} Removed From {condition}")
+    args[0].set_ylim(bottom=0)
+    args[0].set_xlim(left=0)
 
-    args[3].set_xlabel(f"Component {most_exp_cmp + 1} in Original Data Weight")
-    args[3].set_ylabel(f"Number of {cell_type} per condition in Original Data")
-    args[3].scatter(X, numberOfCellType)
-    args[3].set_ylim(bottom=0)
-    args[3].set_xlim(left=0)
+    args[1].set_xlabel(f"Component {most_exp_cmp + 1} in Original Data Weight")
+    args[1].set_ylabel(f"Number of {cell_type} per condition in Original Data")
+    args[1].scatter(X, numberOfCellType)
+    args[1].set_ylim(bottom=0)
+    args[1].set_xlim(left=0)
 
 
 def plotGeneFactorsIsolated(data: AnnData, ax: Axes, geneset: list[str], trim: bool = True):

@@ -82,25 +82,12 @@ def investigate_comp(X, comp: int, obs_column: str, ax: Axes, threshold: float =
     )
 
 
-def plot2DSeparationByComp(df, pair: tuple, predict: str, ax: Axes):
-    """
-    Plots the separation of some observation variable (hue) that is contained in
-    the input merged dataframe across two components, passed as two strings in a tuple (x_y)
-    that denote the names of the columns to be used for the x and y axes.
-    """
-    sns.scatterplot(
-        data=df, x=f"Cmp. {pair[0]}", y=f"Cmp. {pair[1]}", hue=predict, ax=ax
-    )
-
-
 def plotROCAcrossGroups(
     A_matrix,
     group_labs,
     ax: Axes,
     pred_group="SLE_status",
     cv_group="Processing_Cohort",
-    penalty_type="l1",
-    solver="saga",
     penalty=50,
     n_splits=4,
 ):
@@ -114,7 +101,7 @@ def plotROCAcrossGroups(
     group_cond_labels = condition_labels_all[cv_group]
     # set up log reg specs
     log_reg = LogisticRegression(
-        random_state=0, max_iter=5000, penalty=penalty_type, solver=solver, C=penalty
+        random_state=0, max_iter=5000, penalty="l1", solver="saga", C=penalty
     )
 
     tprs = []

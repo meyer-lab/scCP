@@ -1,11 +1,10 @@
 """
-Plots the differences in the identifying component weight with different percentages of a cell type removed from the data. The determining component is currently calculated by the highest absolute value weight across all marker genes.
+Plots the differences in the identifying component weight with different percentages of a cell type removed from the data. The determining component is the component that has the highest correlation with the number of cells in the cell type selected.
 """
+
 from .common import getSetup
 from ..imports import import_thomson
 from ..imports import import_thomson
-import seaborn as sns
-from .figureThomsonDrop import plotDifferentialExpression
 import numpy as np
 from .commonFuncs.plotFactors import reorder_table
 from ..factorization import pf2
@@ -38,6 +37,7 @@ def plot_weights_across_percents(data, cell_type, condition, percent_min, percen
     """
     vals = {}
     for percent in np.arange(percent_min, percent_max, percent_step):
+        print(f"Percent: {percent}")
         idx = (data.obs["Cell Type"] != cell_type) | (data.obs["Condition"] != condition)
         false_idx = idx.index[idx == False]
         idx[
@@ -66,5 +66,3 @@ def plot_weights_across_percents(data, cell_type, condition, percent_min, percen
     percents = list(vals.keys())
     weights = list(vals.values())
     ax.bar(percents, weights, color ='maroon')
-
-
