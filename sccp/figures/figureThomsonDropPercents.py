@@ -27,7 +27,7 @@ def makeFigure():
         "VPREB3",
     ]
 
-    plot_weights_across_percents(data, "B Cells", "CTRL4", 0, 1, 0.1, rank, bCellGeneSet, ax[0])
+    plot_weights_across_percents(data, "B Cells", "CTRL4", .1, 1, 0.6, rank, bCellGeneSet, ax[0])
 
     return f
 
@@ -48,21 +48,29 @@ def plot_weights_across_percents(data, cell_type, condition, percent_min, percen
         sampled_data = data[idx]
 
         sampledX = pf2(sampled_data, rank, doEmbedding=False)
+        print("X", sampledX)
         gene_values = np.array(sampled_data.varm["Pf2_C"])
+        print("gene", gene_values)
         yt = data.var.index.values
-        ind = reorder_table(gene_values)
-        ind = [ii for ii in ind if yt[ii] in geneset]
+        print("yt", yt)
+        # ind = reorder_table(gene_values)
+        # print("Ind:", print(ind))
+        # ind = [ii for ii in ind if yt[ii] in geneset]
+        # print("Ind:", print(ind))
         most_exp_cmp = np.argmax(np.sum(np.abs(gene_values), axis=0))
+        print("mostexpecmp:", print(most_exp_cmp))
         Y = np.array(sampledX.uns["Pf2_A"])
+        print("Y:", print(Y))
         Y = Y[:, most_exp_cmp]
+        print("Y:", print(Y))
         labels = pd.Series(np.unique(sampledX.obs["Condition"]))
+        print("Labels:", print(labels))
         for i, txt in enumerate(labels):
             if txt == condition:
                 vals[percent] = Y[i]
 
-    ax.xlabel(f"Percent of {cell_type} Removed")
-    ax.ylabel("Weight of Identifying Component")
-
     percents = list(vals.keys())
     weights = list(vals.values())
     ax.bar(percents, weights, color ='maroon')
+    # ax.xlabel(f"Percent of {cell_type} Removed")
+    # ax.ylabel("Weight of Identifying Component")
