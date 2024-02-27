@@ -23,12 +23,42 @@ def makeFigure():
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
     
-    # comps = [8, 9, 10, 13, 22, 28, 4, 14]
-    plotCmpGeneWeightedUMAP(X, 4, ax[0], cbarMax=.4)
-    plotCmpGeneWeightedPerCellType(X, 4, ax[1], cellType="Cell Type2")
+    comps = [22, 28]
     
-    plotCmpGeneWeightedUMAP(X, 14, ax[2], cbarMax=.4)
-    plotCmpGeneWeightedPerCellType(X, 14, ax[3], cellType="Cell Type2")
+    total_df = pd.DataFrame([])
+    
+    cmpWeights = np.concatenate(([X.varm["Pf2_C"][:, comps[0]-1]], [X.varm["Pf2_C"][:, comps[1]-1]]))
+
+    df = pd.DataFrame(data=cmpWeights.transpose(), index=X.var_names, columns=["Component 22", "Component 28"])
+
+    sns.scatterplot(data=df, x="Component 22", y="Component 28", ax=ax[0])
+    
+    print(df.sort_values(by=["Component 22"]))
+    print(df.sort_values(by=["Component 28"]))
+    
+    print(df.iloc[0:-2,:])
+    newdf = df.sort_values(by=["Component 28"])
+    sns.scatterplot(data=newdf.iloc[:-1,:], x="Component 22", y="Component 28", ax=ax[1])
+    # ax[0].set(xscale="log", yscale="log")
+    
+
+
+ 
+    
+    
+    
+    # genes1 = top_bot_genes(X, cmp=comps[0], geneAmount=6)
+    # genes1 = top_bot_genes(X, cmp=comps[0], geneAmount=6)
+    
+
+    
+    
+    # # comps = [8, 9, 10, 13, 22, 28, 4, 14]
+    # plotCmpGeneWeightedUMAP(X, 4, ax[0], cbarMax=.4)
+    # plotCmpGeneWeightedPerCellType(X, 4, ax[1], cellType="Cell Type2")
+    
+    # plotCmpGeneWeightedUMAP(X, 14, ax[2], cbarMax=.4)
+    # plotCmpGeneWeightedPerCellType(X, 14, ax[3], cellType="Cell Type2")
 
 
     # # Cmp.4 Most weighted pos/neg genes
