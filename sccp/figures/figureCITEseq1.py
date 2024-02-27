@@ -11,27 +11,30 @@ from .commonFuncs.plotFactors import (
 )
 from .commonFuncs.plotUMAP import plotLabelsUMAP
 import numpy as np
-
+import seaborn as sns
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((30, 8), (2, 4))
+    # ax, f = getSetup((30, 8), (2, 4))
+    ax, f = getSetup((20, 2), (1, 1))
 
     # Add subplot labels
     subplotLabel(ax)
 
     X = read_h5ad("/opt/pf2/CITEseq_fitted_annotated.h5ad", backed="r")
+    
+    plotCellCount(X, ax[0])
 
-    plotConditionsFactors(X, ax[0])
-    plotCellState(X, ax[1])
-    plotGeneFactors(X, ax[2])
-    plotWeight(X, ax[3])
+    # plotConditionsFactors(X, ax[0])
+    # plotCellState(X, ax[1])
+    # plotGeneFactors(X, ax[2])
+    # plotWeight(X, ax[3])
 
-    plotLabelsUMAP(X, "Condition", ax[4])
-    plotLabelsUMAP(X, "leiden", ax[5])
-    plotRatio(X, ax[6], day7=False)
-    plotRatio(X, ax[7], day7=True)
+    # plotLabelsUMAP(X, "Condition", ax[4])
+    # # plotLabelsUMAP(X, "leiden", ax[5])
+    # plotRatio(X, ax[6], day7=False)
+    # plotRatio(X, ax[7], day7=True)
 
     return f
 
@@ -58,3 +61,20 @@ def plotRatio(X, ax, day7=True):
     ax.set(xticks=np.arange(1, np.shape(X)[1] + 1, 2), yticks=yticks)
     ax.set_xlabel("Components")
     ax.set_ylabel(f"IC/SC Ratio Day {day}")
+
+
+def plotCellCount(X, ax, celltype="leiden"):
+    """Plots cell count per cluster per condition and as a percentage"""
+    df = X.obs[[celltype, "Condition"]].reset_index(drop=True)
+    # df[celltype] = df[celltype].astype("float")
+    # print(df)
+    # df = df[df[celltype] > 22.5]  
+    # # df = df.groupby([celltype, "Condition"], observed=True)
+    # # print(df)
+    
+    # # .size().reset_index(name="Count")
+    # # df["Count"] = df["Count"].astype("float")
+
+    # print(df)
+    sns.histplot(data=df, x=celltype, hue="Condition", ax=ax, multiple="dodge", shrink=.7)
+    # ax.set(xticks=np.arange(23, 47, 1))
