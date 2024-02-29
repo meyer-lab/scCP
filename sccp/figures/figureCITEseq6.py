@@ -40,10 +40,7 @@ def plotCellCount(X, ax, celltype="leiden"):
             100
             * dfCellType.loc[dfCellType["Condition"] == cond, "Count"].to_numpy()
             / dfCond.loc[dfCond["Condition"] == cond]["Cell Number"].to_numpy()
-        )
-        
+        )  
     dfCellType.rename(columns={"Count": "Cell Type Percentage"}, inplace=True)
-    
-    print(dfCellType)
-    
-    sns.barplot(data=dfCellType, x=celltype, y="Cell Type Percentage", hue="Condition", ax=ax, errorbar=None)
+    sns.barplot(data=dfCellType, x=celltype, y="Cell Type Percentage", 
+                hue="Condition", ax=ax, errorbar=None)
