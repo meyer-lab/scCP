@@ -23,22 +23,22 @@ def makeFigure():
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
     
-    comps = [22, 28]
+    # comps = [22, 28]
     
-    total_df = pd.DataFrame([])
+    # total_df = pd.DataFrame([])
     
-    cmpWeights = np.concatenate(([X.varm["Pf2_C"][:, comps[0]-1]], [X.varm["Pf2_C"][:, comps[1]-1]]))
+    # cmpWeights = np.concatenate(([X.varm["Pf2_C"][:, comps[0]-1]], [X.varm["Pf2_C"][:, comps[1]-1]]))
 
-    df = pd.DataFrame(data=cmpWeights.transpose(), index=X.var_names, columns=["Component 22", "Component 28"])
+    # df = pd.DataFrame(data=cmpWeights.transpose(), index=X.var_names, columns=["Component 22", "Component 28"])
 
-    sns.scatterplot(data=df, x="Component 22", y="Component 28", ax=ax[0])
+    # sns.scatterplot(data=df, x="Component 22", y="Component 28", ax=ax[0])
     
-    print(df.sort_values(by=["Component 22"]))
-    print(df.sort_values(by=["Component 28"]))
+    # print(df.sort_values(by=["Component 22"]))
+    # print(df.sort_values(by=["Component 28"]))
     
-    print(df.iloc[0:-2,:])
-    newdf = df.sort_values(by=["Component 28"])
-    sns.scatterplot(data=newdf.iloc[:-1,:], x="Component 22", y="Component 28", ax=ax[1])
+    # print(df.iloc[0:-2,:])
+    # newdf = df.sort_values(by=["Component 28"])
+    # sns.scatterplot(data=newdf.iloc[:-1,:], x="Component 22", y="Component 28", ax=ax[1])
     # ax[0].set(xscale="log", yscale="log")
     
 
@@ -47,7 +47,10 @@ def makeFigure():
     
     
     
-    # genes1 = top_bot_genes(X, cmp=comps[0], geneAmount=6)
+    genes1 = top_bot_genes(X, cmp=22, geneAmount=40)
+    
+    for i in range(len(genes1)):
+        print(genes1[i])
     # genes1 = top_bot_genes(X, cmp=comps[0], geneAmount=6)
     
 
