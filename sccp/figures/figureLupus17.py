@@ -20,66 +20,142 @@ def makeFigure():
 
     # Add subplot labels
     subplotLabel(ax)
-
+    
+    
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
-    df = X.obs[["Cell Type", "SLE_status", "Condition", "Cell Type2"]].reset_index(drop=True)
+    # df = X.obs[["Cell Type", "SLE_status", "Condition", "Cell Type2"]].reset_index(drop=True)
 
-    dfCond = (
-        df.groupby(["Condition"], observed=True).size().reset_index(name="Cell Number")
-    )
-    dfCellType = (
-        df.groupby(["Cell Type2", "Condition", "SLE_status"], observed=True)
-        .size()
-        .reset_index(name="Count")
-    )
-    dfCellType["Count"] = dfCellType["Count"].astype("float")
-    dfCellType2 = dfCellType.copy()
+ 
     
-    for i, cond in enumerate(np.unique(df["Condition"])):
-        dfCellType.loc[dfCellType["Condition"] == cond, "Count"] = (
-            100
-            * dfCellType.loc[dfCellType["Condition"] == cond, "Count"].to_numpy()
-            / dfCond.loc[dfCond["Condition"] == cond]["Cell Number"].to_numpy()
-        )
-        
-    dfCellType.rename(columns={"Count": "Cell Type Percentage"}, inplace=True)
-
+    dfGene = dfgenePerStatus(X, "GZMA", cellType="Cell Type2")
     
+    print(dfGene)
+    
+     
     
     yt = np.unique(X.obs["Condition"])
     factorsA = np.array(X.uns["Pf2_A"])
-    factorsA = factorsA[:, 0]
+    factorsA = factorsA[:, 13]
     
-    condNames, idx = np.unique(dfCellType["Condition"], return_index=True)
- 
+    # condNames, idx = np.unique(dfGene["Condition"], return_index=True)
+    
+    
     
     totaldf = pd.DataFrame([])
 
-    # dfCellType["Condition"] = pd.Categorical(dfCellType["Condition"], yt)
+    dfGene["Condition"] = pd.Categorical(dfGene["Condition"], yt)
     
-    for i, celltype in enumerate(np.unique(df["Cell Type2"])):
-        for j, cond in enumerate(np.unique(df["Condition"])):
-            status = np.unique(dfCellType.loc[dfCellType["Condition"] == cond]["SLE_status"])
-            smalldf = dfCellType.loc[(dfCellType["Condition"] == cond) & (dfCellType["Cell Type2"] == celltype)]
+    for i, celltype in enumerate(np.unique(dfGene["Cell Type"])):
+        for j, cond in enumerate(np.unique(dfGene["Condition"])):
+            status = np.unique(dfGene.loc[dfGene["Condition"] == cond]["Status"])
+            smalldf = dfGene.loc[(dfGene["Condition"] == cond) & (dfGene["Cell Type"] == celltype)]
         
-            # Cell Type Percentage
-            print(smalldf.empty)
-            
             if smalldf.empty is False: 
-                # smalldf["Cmp"] = factorsA[j]
                 smalldf = smalldf.assign(Cmp=factorsA[j])
-            else:
-                smalldf = pd.DataFrame({"Condition": cond, "Cell Type2": celltype, "SLE_status": status,
-                                                  "Cell Type Percentage": 0, "Cmp": factorsA[j]})
+            # else:
+            #     smalldf = pd.DataFrame({"Condition": cond, "Cell Type2": celltype, "SLE_status": status,
+            #                                       "Cell Type Percentage": 0, "Cmp": factorsA[j]})
+            
             
             totaldf = pd.concat([totaldf, smalldf])
             
+        # print(totaldf)
+        # a
             
-            print(totaldf)
-        if celltype == "Progen":
-            break
+                
+        sns.scatterplot(data=totaldf.loc[totaldf["Cell Type"] == celltype], x="Cmp", y="Average Gene Expression", hue="Status", ax=ax[i])
+        ax[i].set(title=celltype)
+            
+
+    # dfCellType["Condition"] = pd.Categorical(dfCellType["Condition"], yt)
+    
+  
+    # for i, cond in enumerate(np.unique(df["Condition"])):
+    #     dfCellType.loc[dfCellType["Condition"] == cond, "Count"] = (
+    #         100
+    #         * dfCellType.loc[dfCellType["Condition"] == cond, "Count"].to_numpy()
+    #         / dfCond.loc[dfCond["Condition"] == cond]["Cell Number"].to_numpy()
+    #     )
         
+    # dfCellType.rename(columns={"Count": "Cell Type Percentage"}, inplace=True)
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    # #############
+
+    # X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
+    # df = X.obs[["Cell Type", "SLE_status", "Condition", "Cell Type2"]].reset_index(drop=True)
+
+    # dfCond = (
+    #     df.groupby(["Condition"], observed=True).size().reset_index(name="Cell Number")
+    # )
+    # dfCellType = (
+    #     df.groupby(["Cell Type2", "Condition"], observed=False)
+    #     .size()
+    #     .reset_index(name="Count")
+    # )
+    # dfCellType["Count"] = dfCellType["Count"].astype("float")
+    # print(dfCellType)
+    # a
+    
+    
+    # # dfGene = dfgenePerStatus(X, "MS4A1", cellType="Cell Type2")
+    
+    # # print(dfCellType)
+    # # print(dfGene)
+    # # a
+    # dfCellType2 = dfCellType.copy()
+    
+    # comment out if only want the cell count instead
+    # for i, cond in enumerate(np.unique(df["Condition"])):
+    #     dfCellType.loc[dfCellType["Condition"] == cond, "Count"] = (
+    #         100
+    #         * dfCellType.loc[dfCellType["Condition"] == cond, "Count"].to_numpy()
+    #         / dfCond.loc[dfCond["Condition"] == cond]["Cell Number"].to_numpy()
+    #     )
         
+    # dfCellType.rename(columns={"Count": "Cell Type Percentage"}, inplace=True)
+
+    
+    
+    # yt = np.unique(X.obs["Condition"])
+    # factorsA = np.array(X.uns["Pf2_A"])
+    # factorsA = factorsA[:, 13]
+    
+    # condNames, idx = np.unique(dfCellType["Condition"], return_index=True)
+ 
+    
+    # totaldf = pd.DataFrame([])
+
+    # # dfCellType["Condition"] = pd.Categorical(dfCellType["Condition"], yt)
+    
+    # for i, celltype in enumerate(np.unique(df["Cell Type2"])):
+    #     for j, cond in enumerate(np.unique(df["Condition"])):
+    #         status = np.unique(dfCellType.loc[dfCellType["Condition"] == cond]["SLE_status"])
+    #         smalldf = dfCellType.loc[(dfCellType["Condition"] == cond) & (dfCellType["Cell Type2"] == celltype)]
+        
+    #         if smalldf.empty is False: 
+    #             # smalldf["Cmp"] = factorsA[j]
+    #             smalldf = smalldf.assign(Cmp=factorsA[j])
+    #         else:
+    #             smalldf = pd.DataFrame({"Condition": cond, "Cell Type2": celltype, "SLE_status": status,
+    #                                               "Cell Type Percentage": 0, "Cmp": factorsA[j]})
+            
+    #         totaldf = pd.concat([totaldf, smalldf])
+            
+                
+    #     sns.scatterplot(data=totaldf.loc[totaldf["Cell Type2"] == celltype], x="Cmp", y="Cell Type Percentage", hue="SLE_status", ax=ax[i])
+    #     ax[i].set(title=celltype)
+            
+
             
     
             
@@ -143,10 +219,28 @@ def makeFigure():
             
 
         
-        # sns.scatterplot(data=dfCellTypeSpecific, x="Cmp", y="Cell Type Percentage", hue="SLE_status", ax=ax[i])
-        
 
     
   
 
     return f
+
+
+
+def dfgenePerStatus(X, gene, cellType="Cell Type"):
+    """Plots average gene expression across cell types for a category of drugs"""
+    genesV = X[:, gene]
+    dataDF = genesV.to_df()
+    dataDF = dataDF.subtract(genesV.var["means"].values)
+    dataDF["Status"] = genesV.obs["SLE_status"].values
+    dataDF["Condition"] = genesV.obs["Condition"].values
+    dataDF["Cell Type"] = genesV.obs[cellType].values
+
+    df = pd.melt(
+        dataDF, id_vars=["Status", "Cell Type", "Condition"], value_vars=gene
+    ).rename(columns={"variable": "Gene", "value": "Value"})
+
+    df = df.groupby(["Status", "Cell Type", "Gene", "Condition"], observed=False).mean()
+    df = df.rename(columns={"Value": "Average Gene Expression"}).reset_index()
+
+    return df
