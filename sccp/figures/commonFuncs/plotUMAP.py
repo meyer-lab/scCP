@@ -124,12 +124,15 @@ def plotLabelsUMAP(
 
     indices = np.argsort(labels)
     points = X.obsm["X_pf2_PaCMAP"][indices, :]
+    print(np.shape(points))
     labels = labels.iloc[indices].to_numpy()
+    print(np.shape(labels))
 
     canvas = _get_canvas(points)
     data = pd.DataFrame(points, columns=("x", "y"))
 
     data["label"] = pd.Categorical(labels)
+    print(data)
     aggregation = canvas.points(data, "x", "y", agg=ds.count_cat("label"))
 
     unique_labels = np.unique(labels)
@@ -233,3 +236,73 @@ def plotCmpGeneWeightedPerCellType(
     )
     ax.set_title("Gene Weighted for " + cmpName)
 
+
+
+def plot2CmpUMAP(
+    X: anndata.AnnData, comps, labelType: str, ax: Axes, condition=None, cmap="tab20"
+):
+    """Scatterplot of UMAP visualization weighted by condition or cell type"""
+    labels = X.obs[labelType]
+
+    indices = np.argsort(labels)
+    points = 1000*np.concatenate(([X.obsm["weighted_projections"][:, comps[0]-1]], [X.obsm["weighted_projections"][:, comps[1]-1]])).transpose()
+    print(np.shape(points))
+    points = points[indices, :]
+    labels = labels.iloc[indices].to_numpy()
+
+    canvas = _get_canvas(points)
+    data = pd.DataFrame(points, columns=("x", "y"))
+    print(data)
+    
+    
+    
+    print(np.shape(points))
+    print(np.shape(labels))
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    #  labels = X.obs[labelType]
+
+    # if condition is not None:
+    #     labels = pd.Series([c if c in condition else "Z Other" for c in labels])
+
+    # indices = np.argsort(labels)
+    # points = X.obsm["X_pf2_PaCMAP"][indices, :]
+    # labels = labels.iloc[indices].to_numpy()
+
+    # canvas = _get_canvas(points)
+    # data = pd.DataFrame(points, columns=("x", "y"))
+
+    # data["label"] = pd.Categorical(labels)
+    
+    
+    
+    
+    
+
+    data["label"] = pd.Categorical(labels)
+    print(data)
+    aggregation = canvas.points(data, "x", "y", agg=ds.count_cat("label"))
+
+    unique_labels = np.unique(labels)
+    num_labels = unique_labels.shape[0]
+    color_key = _to_hex(plt.get_cmap(cmap)(np.linspace(0, 1, num_labels)))
+    legend_elements = [
+        Patch(facecolor=color_key[i], label=k) for i, k in enumerate(unique_labels)
+    ]
+    result = tf.shade(
+        aggregation,
+        color_key=color_key,
+        how="eq_hist",
+        min_alpha=255,
+    )
+
+    ds_show(result, ax)
+    ax.legend(handles=legend_elements)
+    ax.set(xlabel= f"Cmp. {comps[0]}", ylabel=f"Cmp. {comps[0]}")

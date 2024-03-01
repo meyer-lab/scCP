@@ -10,18 +10,34 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 from .figureCITEseq5 import top_bot_genes
-from .commonFuncs.plotUMAP import plotCmpGeneWeightedUMAP, plotCmpGeneWeightedPerCellType
+from .commonFuncs.plotUMAP import plotCmpGeneWeightedUMAP, plotCmpGeneWeightedPerCellType, plot2CmpUMAP
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
     ax, f = getSetup((20, 18), (6, 4))
-    ax, f = getSetup((12, 6), (2, 4))
+    # ax, f = getSetup((12, 6), (2, 4))
 
     # Add subplot labels
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
+    
+    
+    # comps = [22, 28]
+    
+    # plot2CmpUMAP(X, comps, "SLE_status", ax[0])
+    
+    # total_df = pd.DataFrame([])
+
+    # cmpWeights = np.concatenate(([X.obsm["weighted_projections"][:, comps[0]-1]], [X.obsm["weighted_projections"][:, comps[1]-1]]))
+
+    # df = pd.DataFrame(data=cmpWeights.transpose(), columns=["Component 22", "Component 28"])
+
+    # sns.scatterplot(data=df, x="Component 22", y="Component 28", ax=ax[0])
+    
+    
+    #####
     
     # comps = [22, 28]
     
@@ -47,10 +63,10 @@ def makeFigure():
     
     
     
-    genes1 = top_bot_genes(X, cmp=22, geneAmount=40)
+    # genes1 = top_bot_genes(X, cmp=22, geneAmount=40)
     
-    for i in range(len(genes1)):
-        print(genes1[i])
+    # for i in range(len(genes1)):
+    #     print(genes1[i])
     # genes1 = top_bot_genes(X, cmp=comps[0], geneAmount=6)
     
 
@@ -84,10 +100,10 @@ def makeFigure():
     #     plotGenePerStatus(X, gene, ax[i], cellType="Cell Type2")
     #     ax[i].set_xticklabels(labels=ax[i].get_xticklabels(), rotation=90)
 
-    # genes = [["CLEC4E", "RETN"]]
+    genes = [["IFI27", "GZMK"]]
 
-    # for i, gene in enumerate(genes):
-    #     plot2GenePerCellTypeStatus(X, genes[i], genes[-(1+i)], "NK Dim", "T8 GZMH", ax[i], cellType="Cell Type2")
+    for i in range(len((genes))):
+        plot2GenePerCellTypeStatus(X, genes[0][0], genes[0][1], "CM", "T8 GZMH", ax[i], cellType="Cell Type2")
     
   
     # plot2GenePerCellTypeStatus(X, "APOBEC3A", "BANK1", "CM", "B Naive", ax[0], cellType="Cell Type2")

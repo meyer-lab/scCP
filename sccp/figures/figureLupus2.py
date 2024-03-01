@@ -20,4 +20,5 @@ def makeFigure():
     plotLabelsUMAP(X, "Cell Type2", ax[1])
 
 
+
     return f
