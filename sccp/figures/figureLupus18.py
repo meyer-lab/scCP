@@ -22,11 +22,12 @@ def makeFigure():
     
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
-    cellPercDF = getCellCountDF(X, celltype="Cell Type2", cellPerc=False)
+    cellPercDF = getCellCountDF(X, celltype="Cell Type2", cellPerc=True)
     
-    cmp=22
+    cmp=28
     idx = len(np.unique(cellPercDF["Cell Type"]))
-    plotCmpPerCellCount(X, cmp, cellPercDF, ax[0:idx], cellPerc=False)
+    plotCmpPerCellCount(X, cmp, cellPercDF, ax[0:idx], cellPerc=True)
+    
     
     return f
 

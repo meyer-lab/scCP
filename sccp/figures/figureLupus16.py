@@ -22,24 +22,28 @@ def makeFigure():
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
     # Cmp.4 Most weighted pos/neg genes
-    genes = [
-        ["GZMK", "DUSP2"],
-        ["CMC1", "LYAR"],
-        ["AC092580.4", "CD8B"],
-        ["FAM173A", "CLDND1"],
-        ["PIK3R1", "CD8A"],
-        ["SPON2", "FGFBP2"],
-        ["GZMB", "PRF1"],
-        ["GZMH", "CLIC3"],
-        ["NKG7", "GNLY"],
-        ["CCL4", "CD247"],
-    ]
+    # genes = [
+    #     ["GZMK", "DUSP2"],
+    #     ["CMC1", "LYAR"],
+    #     ["AC092580.4", "CD8B"],
+    #     ["FAM173A", "CLDND1"],
+    #     ["PIK3R1", "CD8A"],
+    #     ["SPON2", "FGFBP2"],
+    #     ["GZMB", "PRF1"],
+    #     ["GZMH", "CLIC3"],
+    #     ["NKG7", "GNLY"],
+    #     ["CCL4", "CD247"],
+    # ]
+    
+    genes = [["CCR7", "IFI27"]]
 
     for i, gene in enumerate(np.ravel(genes)):
-        plotGenePerStatus(X, gene, ax[i])
+        plotGenePerStatus(X, gene, ax[i], cellType="Cell Type2")
+    
+    genes = [["LEF1", "IFI27"]]
 
     for i, gene in enumerate(genes):
-        plot2GenePerCellTypeStatus(X, gene[0], gene[1], "NK", "NK", ax[i + 20])
+        plot2GenePerCellTypeStatus(X, gene[0], gene[1], "T4 EM", "CM", ax[i + 20], cellType="Cell Type2")
 
     return f
 
@@ -76,6 +80,7 @@ def plot2GenePerCellTypeStatus(
 ):
     """Plots average gene expression across cell types for a category of drugs"""
     gene = [gene1, gene2]
+    print(gene)
 
     for i in range(2):
         genesV = X[:, gene[i]]
@@ -93,6 +98,7 @@ def plot2GenePerCellTypeStatus(
             ["Status", "Cell Type", "Gene", "Condition"], observed=False
         ).mean()
         df = df.rename(columns={"Value": "Average Gene Expression"}).reset_index()
+        print(df["Average Gene Expression"].values)
 
         if i == 0:
             df_ = df.copy()
@@ -108,6 +114,7 @@ def plot2GenePerCellTypeStatus(
     df2 = df.loc[df["Cell Type"] == celltype2]
     df = pd.concat([df1, df2]).reset_index()
 
+    print(df)
     sns.scatterplot(
         data=df,
         x=gene[0],
