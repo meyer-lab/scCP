@@ -7,12 +7,12 @@ import pandas as pd
 import seaborn as sns
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotGeneral import population_bar_chart
-
+from .figureLupus18 import getCellCountDF
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((10, 10), (5, 3))
+    ax, f = getSetup((15, 10), (5, 5))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -26,31 +26,43 @@ def makeFigure():
     )
     sns.histplot(data=dfCond, x="Cell Number", bins=15, color="k", ax=ax[0])
     ax[0].set(ylabel="# of Experiments")
+    
+    
+    dfCellType = getCellCountDF(X, celltype="Cell Type", cellPerc=False)
+    sns.boxplot(data=dfCellType, x="Cell Type", y="Count", hue="SLE_status", ax=ax[1])
+    ax[1].set_xticklabels(labels=ax[1].get_xticklabels(), rotation=90)
+    
 
-    dfCellType = (
-        df.groupby(["Cell Type", "Condition"], observed=True)
-        .size()
-        .reset_index(name="Count")
-    )
-    dfCellType["Count"] = dfCellType["Count"].astype("float")
-    for i, cond in enumerate(pd.unique(df["Condition"])):
-        dfCellType.loc[dfCellType["Condition"] == cond, "Count"] = (
-            100
-            * dfCellType.loc[dfCellType["Condition"] == cond, "Count"].to_numpy()
-            / dfCond.loc[dfCond["Condition"] == cond]["Cell Number"].to_numpy()
-        )
-
-    dfCellType.rename(columns={"Count": "Cell Type Percentage"}, inplace=True)
+    dfCellType = getCellCountDF(X, celltype="Cell Type2", cellPerc=False)
+    sns.boxplot(data=dfCellType, x="Cell Type", y="Count", hue="SLE_status", ax=ax[2])
+    ax[2].set_xticklabels(labels=ax[2].get_xticklabels(), rotation=90)
+    
+            
+    dfCellType = getCellCountDF(X, celltype="Cell Type", cellPerc=True)
+    sns.boxplot(data=dfCellType, x="Cell Type", y="Cell Type Percentage", hue="SLE_status", ax=ax[3])
+    ax[3].set_xticklabels(labels=ax[3].get_xticklabels(), rotation=90)
+    
+    
+    dfCellType = getCellCountDF(X, celltype="Cell Type2", cellPerc=True)
+    sns.boxplot(data=dfCellType, x="Cell Type", y="Cell Type Percentage", hue="SLE_status", ax=ax[4])
+    ax[4].set_xticklabels(labels=ax[4].get_xticklabels(), rotation=90)
+    
+    
+    population_bar_chart(X, "Cell Type", "SLE_status", ax[5])
+    
+    
     for i, celltype in enumerate(np.unique(dfCellType["Cell Type"])):
         sns.histplot(
             data=dfCellType.loc[dfCellType["Cell Type"] == celltype],
             x="Cell Type Percentage",
             bins=15,
             color="k",
-            ax=ax[i + 1],
+            ax=ax[i + 6],
         )
-        ax[i + 1].set(title=celltype, ylabel="# of Experiments")
+        ax[i + 6].set(title=celltype, ylabel="# of Experiments")
 
-    population_bar_chart(X, "Cell Type", "SLE_status", ax[12])
+ 
 
     return f
+
+
