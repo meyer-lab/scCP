@@ -10,6 +10,7 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 from .figureCITEseq5 import top_bot_genes
+from scipy.stats import linregress
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
@@ -22,8 +23,9 @@ def makeFigure():
     
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
     
-    cmp=22
-    genes = top_bot_genes(X, cmp=cmp, geneAmount=1)
+    cmp=28
+    genes = top_bot_genes(X, cmp=cmp, geneAmount=5)
+    print(genes)
 
     geneDF = dfGenePerStatus(X, genes[0], cellType="Cell Type2")
     idx = len(np.unique(geneDF["Cell Type"]))
@@ -47,7 +49,7 @@ def dfGenePerStatus(X, gene, cellType="Cell Type"):
         dataDF, id_vars=["Status", "Cell Type", "Condition"], value_vars=gene
     ).rename(columns={"variable": "Gene", "value": "Value"})
 
-    df = df.groupby(["Status", "Cell Type", "Gene", "Condition"], observed=False).mean()
+    df = df.groupby(["Status", "Cell Type", "Gene", "Condition"], observed=True).mean()
     df = df.rename(columns={"Value": "Average Gene Expression"}).reset_index()
 
     return df
@@ -70,6 +72,8 @@ def plotCmpPerGene(X, cmp, geneDF, ax):
                 smalldf = smalldf.assign(Cmp=factorsA[j])
 
             totaldf = pd.concat([totaldf, smalldf])
-            
-        sns.scatterplot(data=totaldf.loc[totaldf["Cell Type"] == celltype], x="Cmp", y="Average Gene Expression", hue="Status", ax=ax[i])
-        ax[i].set(title=celltype, xlabel=f"Cmp. {cmp}", ylabel=f"Average Gene Expression: {gene}")
+         
+        df = totaldf.loc[totaldf["Cell Type"] == celltype]
+        _, _, r_value, _, _ = linregress(df["Cmp"], df["Average Gene Expression"])
+        sns.scatterplot(data=df, x="Cmp", y="Average Gene Expression", hue="Status", ax=ax[i])
+        ax[i].set(title=f"{celltype}: R2 Value - {np.round(r_value**2, 3)}", xlabel=f"Cmp. {cmp}", ylabel=f"Average Gene Expression: {gene}")
