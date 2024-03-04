@@ -23,22 +23,19 @@ def makeFigure():
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
     
-    # print(X)
-    x = X.obsm["weighted_projections"][:, 0]
+    wProjs = np.concatenate(([X.obsm["weighted_projections"][:, 0]], [X.obsm["weighted_projections"][:, 1]])).transpose()
+    print(np.shape(wProjs))
     
+    threshold = np.percentile(wProjs, 20, axis=0) # calculate the 10th percentile
     
-    idx = X.obs.reset_index(drop=True).index.values
-    s = np.concatenate(([X.obsm["weighted_projections"][:, 0]], [X.obsm["weighted_projections"][:, 1]], [x]))
-    print(np.shape(s))
+    for i in range(len(threshold)):
+        wProjs = wProjs[wProjs[:, i] < threshold[i], :]
+        print(np.shape(wProjs))
+    # newx = s[:, s[0,:] < threshold]
     
-#     pri
-    
-    threshold = np.percentile(s[0,:], 10) # calculate the 10th percentile
-    print(threshold)
-    newx = s[:, s[0,:] < threshold]
-    
-    print(newx)
-    print(np.shape(newx))
+#     print(newx)
+#     print(np.shape(newx))
+
 
 #    X = X[ind[:, cmp-1], :]
    
