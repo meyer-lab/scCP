@@ -22,24 +22,26 @@ def makeFigure():
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
     # Cmp.4 Most weighted pos/neg genes
-    genes = [
-        ["GZMK", "DUSP2"],
-        ["CMC1", "LYAR"],
-        ["AC092580.4", "CD8B"],
-        ["FAM173A", "CLDND1"],
-        ["PIK3R1", "CD8A"],
-        ["SPON2", "FGFBP2"],
-        ["GZMB", "PRF1"],
-        ["GZMH", "CLIC3"],
-        ["NKG7", "GNLY"],
-        ["CCL4", "CD247"],
-    ]
+    # genes = [
+    #     ["GZMK", "DUSP2"],
+    #     ["CMC1", "LYAR"],
+    #     ["AC092580.4", "CD8B"],
+    #     ["FAM173A", "CLDND1"],
+    #     ["PIK3R1", "CD8A"],
+    #     ["SPON2", "FGFBP2"],
+    #     ["GZMB", "PRF1"],
+    #     ["GZMH", "CLIC3"],
+    #     ["NKG7", "GNLY"],
+    #     ["CCL4", "CD247"],
+    # ]
+    
+    genes = [["IFI27", "CCR7"]]
 
     for i, gene in enumerate(np.ravel(genes)):
-        plotGenePerStatus(X, gene, ax[i])
+        plotGenePerStatus(X, gene, ax[i], cellType="Cell Type2")
 
     for i, gene in enumerate(genes):
-        plot2GenePerCellTypeStatus(X, gene[0], gene[1], "NK", "NK", ax[i + 20])
+        plot2GenePerCellTypeStatus(X, gene[0], gene[1], "CM", "T4 Naive", ax[i + 20], cellType="Cell Type2")
 
     return f
 
@@ -69,6 +71,8 @@ def plotGenePerStatus(X, gene, ax, cellType="Cell Type"):
         showfliers=False,
     )
     ax.set(title=gene)
+    
+    return df
 
 
 def plot2GenePerCellTypeStatus(
