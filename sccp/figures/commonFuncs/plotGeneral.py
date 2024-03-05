@@ -39,6 +39,23 @@ def plotR2X(data, rank, ax: Axes):
     ax.legend()
 
 
+def plotR2X_pf2(data, ranks, ax: Axes):
+    """Creates R2X plot for parafac2 tensor decomposition"""
+    r2xError = pf2_r2x(data, ranks)
+
+    ax.scatter(
+        ranks,
+        r2xError,
+        c="k",
+        s=30.0,
+    )
+
+    ax.set(
+        ylabel="R2X",
+        xlabel="Number of Components",
+    )
+
+
 def plotCellTypePerExpCount(dataDF, condition, ax: Axes):
     """Plots historgram of cell counts per experiment"""
     sns.histplot(data=dataDF, x="Cell Type", hue="Cell Type", ax=ax)

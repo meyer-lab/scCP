@@ -1,12 +1,8 @@
 from pacmap import PaCMAP
 import scipy.sparse as sps
-from tensorly.cp_tensor import CPTensor
 from sklearn.linear_model import LinearRegression
 from scipy.stats import gmean
-from tlviz.factor_tools import (
-    factor_match_score as fms,
-    degeneracy_score,
-)
+from tlviz.factor_tools import degeneracy_score
 from parafac2.parafac2 import parafac2_nd
 
 
@@ -77,18 +73,17 @@ def store_pf2(
     return X
 
 
-def pf2_r2x(
-    X: anndata.AnnData,
-    max_rank: int,
-) -> np.ndarray:
+def pf2_r2x(X: anndata.AnnData, ranks: np.ndarray):
+
     X = X.to_memory()
 
-    r2x_vec = np.empty(max_rank)
+    r2x_vec = np.empty(ranks.size)
 
     for i in tqdm(range(len(r2x_vec)), total=len(r2x_vec)):
         _, R2X = parafac2_nd(
             X,
             rank=i + 1,
+            tol=1e-10
         )
 
         r2x_vec[i] = R2X
