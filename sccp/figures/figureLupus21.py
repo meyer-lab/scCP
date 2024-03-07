@@ -14,6 +14,7 @@ from scipy.stats import linregress
 from .figureLupus19 import cmpGatedDF
 from .figureLupus17 import dfGenePerStatus, plotCmpPerGene
 import scanpy as sc
+from .figureLupus17 import dfGenePerStatus, plotCmpPerGene
 
 
 def makeFigure():
@@ -26,11 +27,13 @@ def makeFigure():
     subplotLabel(ax)
     
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
+    print(X.varm["Pf2_C"].shape)
+    print(X)
     df = pd.read_csv("LupusGeneScoresCD8.csv")
     a = df.loc[df["Module"] == "Cytotoxic"]["Gene"].values
-    print(np.shape(a))
 
-    print(sc.tl.score_genes(adata=X, gene_list=df.loc[df["Module"] == "Cytotoxic"]["Gene"].values))
+    X = sc.tl.score_genes(adata=X, gene_list=a, copy=True, use_raw=False)
+    print(X.obs["score"])
     # print(a)
 
 
