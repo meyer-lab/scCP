@@ -9,6 +9,7 @@ from .common import (
 import numpy as np
 import seaborn as sns
 import pandas as pd
+from .figureCITEseq5 import top_bot_genes
 
 
 def makeFigure():
@@ -35,13 +36,16 @@ def makeFigure():
     #     ["CCL4", "CD247"],
     # ]
     
-    genes = [["IFI27", "CCR7"]]
+    # genes = [["IFI27", "CCR7"]]
+    genes1 = top_bot_genes(X, cmp=3, geneAmount=1)
+    genes2 = top_bot_genes(X, cmp=22, geneAmount=1)
 
-    for i, gene in enumerate(np.ravel(genes)):
-        plotGenePerStatus(X, gene, ax[i], cellType="Cell Type2")
+    # for i, gene in enumerate(np.ravel(genes)):
+    #     plotGenePerStatus(X, gene, ax[i], cellType="Cell Type2")
+    #     ax[i].set_xticklabels(labels=ax[i].get_xticklabels(), rotation=90)
 
-    for i, gene in enumerate(genes):
-        plot2GenePerCellTypeStatus(X, gene[0], gene[1], "CM", "T4 Naive", ax[i + 20], cellType="Cell Type2")
+    for i in range(len(genes1)):
+        plot2GenePerCellTypeStatus(X, genes1[i], genes2[i], "pDC", "CM",ax[i], cellType="Cell Type2")
 
     return f
 
@@ -58,6 +62,7 @@ def plotGenePerStatus(X, gene, ax, cellType="Cell Type"):
     df = pd.melt(
         dataDF, id_vars=["Status", "Cell Type", "Condition"], value_vars=gene
     ).rename(columns={"variable": "Gene", "value": "Value"})
+
 
     df = df.groupby(["Status", "Cell Type", "Gene", "Condition"], observed=False).mean()
     df = df.rename(columns={"Value": "Average Gene Expression"}).reset_index()
@@ -80,6 +85,7 @@ def plot2GenePerCellTypeStatus(
 ):
     """Plots average gene expression across cell types for a category of drugs"""
     gene = [gene1, gene2]
+    celltype = [celltype1, celltype2]
 
     for i in range(2):
         genesV = X[:, gene[i]]
@@ -97,29 +103,27 @@ def plot2GenePerCellTypeStatus(
             ["Status", "Cell Type", "Gene", "Condition"], observed=False
         ).mean()
         df = df.rename(columns={"Value": "Average Gene Expression"}).reset_index()
+        
+        df = df.pivot(
+            index=["Status", "Cell Type", "Condition"],
+            columns="Gene",
+            values="Average Gene Expression",
+        ).reset_index().dropna()
 
+        df = df.loc[df["Cell Type"] == celltype[i]].drop(columns=["Cell Type"])
+        
         if i == 0:
             df_ = df.copy()
         else:
-            df = pd.concat([df_, df]).reset_index()
-
-    df = df.pivot(
-        index=["Status", "Cell Type", "Condition"],
-        columns="Gene",
-        values="Average Gene Expression",
-    ).reset_index()
-    df1 = df.loc[df["Cell Type"] == celltype1]
-    df2 = df.loc[df["Cell Type"] == celltype2]
-    df = pd.concat([df1, df2]).reset_index()
+            df = pd.merge(df_, df)
 
     sns.scatterplot(
         data=df,
-        x=gene[0],
-        y=gene[1],
+        x=gene1,
+        y=gene2,
         hue="Status",
         ax=ax,
     )
-
     ax.set_title("Average Gene Expression Per Patient")
     ax.set_xlabel(f"{celltype1}: {gene1}")
     ax.set_ylabel(f"{celltype2}: {gene2}")
