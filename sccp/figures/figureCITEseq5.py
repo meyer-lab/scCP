@@ -38,6 +38,8 @@ def top_bot_genes(X, cmp, geneAmount=5):
     df = df.reset_index(names="Gene")
     df = df.sort_values(by="Component")
     
+    print(df)
+    
     top = df.iloc[-geneAmount:, 0].values
     bot = df.iloc[:geneAmount, 0].values
     all_genes = np.concatenate([bot, top])

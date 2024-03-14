@@ -159,6 +159,8 @@ def plotCmpPerCellType(
     """Boxplot of weighted projections for one component across cell types"""
     XX = X.obsm["weighted_projections"][:, cmp - 1]
     cmpName = f"Cmp. {cmp}"
+    
+    print(X.obs[cellType].to_numpy())
 
     df = pd.DataFrame({cmpName: XX, "Cell Type": X.obs[cellType].to_numpy()})
 
@@ -174,6 +176,34 @@ def plotCmpPerCellType(
         xticks=np.linspace(-maxvalue, maxvalue, num=5), xlabel="Cell Specific Weight"
     )
     ax.set_title(cmpName)
+    
+    
+
+def plotCmpPerCellTypeStatus(
+    X: anndata.AnnData, cmp: int, ax: Axes, outliers: bool = False, cellType="Cell Type"
+):
+    """Boxplot of weighted projections for one component across cell types"""
+    XX = X.obsm["weighted_projections"][:, cmp - 1]
+    cmpName = f"Cmp. {cmp}"
+    
+    print(X.obs[cellType].to_numpy())
+
+    df = pd.DataFrame({cmpName: XX, "Cell Type": X.obs[cellType].to_numpy(), "Status": X.obs["SLE_status"].to_numpy()})
+
+    sns.boxplot(
+        data=df,
+        x=cmpName,
+        y="Cell Type",
+        showfliers=outliers,
+        hue="Status",
+        ax=ax,
+    )
+    maxvalue = np.max(np.abs(ax.get_xticks()))
+    ax.set(
+        xticks=np.linspace(-maxvalue, maxvalue, num=5), xlabel="Cell Specific Weight"
+    )
+    ax.set_title(cmpName)
+
 
 
 def assignAxes(ax):

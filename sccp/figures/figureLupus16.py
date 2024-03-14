@@ -21,31 +21,26 @@ def makeFigure():
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
-
-    # Cmp.4 Most weighted pos/neg genes
-    # genes = [
-    #     ["GZMK", "DUSP2"],
-    #     ["CMC1", "LYAR"],
-    #     ["AC092580.4", "CD8B"],
-    #     ["FAM173A", "CLDND1"],
-    #     ["PIK3R1", "CD8A"],
-    #     ["SPON2", "FGFBP2"],
-    #     ["GZMB", "PRF1"],
-    #     ["GZMH", "CLIC3"],
-    #     ["NKG7", "GNLY"],
-    #     ["CCL4", "CD247"],
-    # ]
+    
+    
     
     # genes = [["IFI27", "CCR7"]]
-    genes1 = top_bot_genes(X, cmp=3, geneAmount=1)
-    genes2 = top_bot_genes(X, cmp=22, geneAmount=1)
+    genes = top_bot_genes(X, cmp=27, geneAmount=25)
+    
+    for i in genes:
+        print(i)
+    print("bot", genes[0:25])
+    print("top", genes[25:])
+    # genes2 = top_bot_genes(X, cmp=14, geneAmount=5)
+
 
     # for i, gene in enumerate(np.ravel(genes)):
     #     plotGenePerStatus(X, gene, ax[i], cellType="Cell Type2")
     #     ax[i].set_xticklabels(labels=ax[i].get_xticklabels(), rotation=90)
 
-    for i in range(len(genes1)):
-        plot2GenePerCellTypeStatus(X, genes1[i], genes2[i], "pDC", "CM",ax[i], cellType="Cell Type2")
+    # for i in range(len(genes1)):
+    #     plot2GenePerCellTypeStatus(X, genes1[i], genes2[-i-1], "T4 Naive", "T4 EM", ax[i], cellType="Cell Type2")
+
 
     return f
 

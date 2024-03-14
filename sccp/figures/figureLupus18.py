@@ -24,7 +24,7 @@ def makeFigure():
 
     cellPercDF = getCellCountDF(X, celltype="Cell Type2", cellPerc=False)
     
-    cmp=22
+    cmp=3
     idx = len(np.unique(cellPercDF["Cell Type"]))
     plotCmpPerCellCount(X, cmp, cellPercDF, ax[0:idx], cellPerc=False)
     

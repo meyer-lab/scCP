@@ -23,11 +23,11 @@ def makeFigure():
     
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
     
-    cmp=28
+    cmp=3
     genes = top_bot_genes(X, cmp=cmp, geneAmount=5)
     print(genes)
 
-    geneDF = dfGenePerStatus(X, genes[0], cellType="Cell Type2")
+    geneDF = dfGenePerStatus(X, genes[-3], cellType="Cell Type2")
     idx = len(np.unique(geneDF["Cell Type"]))
     
     plotCmpPerGene(X, cmp, geneDF, ax[0:idx])

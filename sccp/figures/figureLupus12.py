@@ -10,6 +10,7 @@ from sklearn import preprocessing
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotLupus import getSamplesObs
 from ..factorization import correct_conditions
+from scipy.stats import pearsonr, spearmanr
 
 
 def makeFigure():
@@ -25,6 +26,7 @@ def makeFigure():
     status = getSamplesObs(X.obs)
 
     Lupus_comp_scan_plot(ax[0], correct_conditions(X), status)
+
 
     return f
 
@@ -42,16 +44,23 @@ def Lupus_comp_scan_plot(ax, X, status_DF):
         if comps[0] >= comps[1]:
             compFacs = X[:, [comps[0], comps[1]]]
             LR_CoH = lrmodel.fit(compFacs, y)
-            acc[comps[0], comps[1]] = LR_CoH.score(compFacs, y)
+            # print(np.cov(compFacs, rowvar=False))
+      
+            acc[comps[0], comps[1]] = pearsonr(compFacs[:, 0],compFacs[:, 1])[0]
             acc[comps[1], comps[0]] = acc[comps[0], comps[1]]
 
+    mask = np.triu(np.ones_like(acc, dtype=bool))
+
+    cmap = sns.diverging_palette(240, 10, as_cmap=True)
     sns.heatmap(
         data=acc,
-        vmin=0.5,
         vmax=1,
+        vmin=-1,
+        mask=mask,
         xticklabels=all_comps + 1,
         yticklabels=all_comps + 1,
-        cbar_kws={"label": "Classification Accuracy"},
+        cbar_kws={"label": "Pearson Coefficient"},
+        cmap=cmap,
         ax=ax,
     )
 
