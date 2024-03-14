@@ -67,10 +67,15 @@ def makeFigure():
         ax=ax[10],
     )
 
+
     X.obs['Condition_gluc'] = X.obs['Condition'].cat.add_categories('Other')
+    X.obs['Condition_gluc'] = X.obs['Condition_gluc'].cat.add_categories('Glucocorticoids')
     X.obs.loc[~X.obs["Condition_gluc"].isin(glucs), "Condition_gluc"] = "Other"
-    X.obs['Condition_gluc']= X.obs['Condition_gluc'].cat.remove_unused_categories()
-    plotLabelsUMAP(X, "Condition_gluc", ax[11])
+    X.obs.loc[X.obs["Condition_gluc"].isin(glucs), "Condition_gluc"] = "Glucocorticoids"
+    X.obs['Condition_gluc'] = X.obs['Condition_gluc'].cat.remove_unused_categories()
+    
+    color_key = np.flip(sns.color_palette(n_colors=2).as_hex())
+    plotLabelsUMAP(X, "Condition_gluc", ax[11], color_key=color_key)
 
     plot_cell_perc_comp_corr(X, cellDF, "Classical Monocytes", 20, ax[12], unique=glucs)
     plot_cell_perc_comp_corr(X, cellDF, "Myeloid Suppressors", 20, ax[13], unique=glucs)
@@ -145,5 +150,6 @@ def cell_perc_box(cellDF, unique, uniqueLabel, ax):
     """Plots percentages of cells against each other"""
     cellDF["Category"] = uniqueLabel
     cellDF.loc[~cellDF.Condition.isin(unique), "Category"] = "Other"
-    sns.boxplot(data=cellDF, x="Cell Type", y="Cell Type Percentage", hue="Category", ax=ax)
+    hue_order = ["Other", uniqueLabel]
+    sns.boxplot(data=cellDF, x="Cell Type", y="Cell Type Percentage", hue="Category", showfliers=False, hue_order=hue_order, ax=ax)
     ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=45)
