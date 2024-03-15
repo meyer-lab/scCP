@@ -166,8 +166,8 @@ def diff_abund_test(cellDF):
     cellDF["Y"] = 1
     cellDF.loc[cellDF.Category == "Other", "Y"] = 0
     for cell in cellDF["Cell Type"].unique():
-        X = cellDF.loc[cellDF["Cell Type"] == cell]["Cell Type Percentage"].values
-        Y = cellDF.loc[cellDF["Cell Type"] == cell].Y.values
+        Y = cellDF.loc[cellDF["Cell Type"] == cell]["Cell Type Percentage"].values
+        X = cellDF.loc[cellDF["Cell Type"] == cell].Y.values
         weights = np.power(cellDF.loc[cellDF["Cell Type"] == cell]["Count"].values, 1)
         mod_wls = sm.WLS(Y, sm.tools.tools.add_constant(X), weights=weights)
         res_wls = mod_wls.fit()
