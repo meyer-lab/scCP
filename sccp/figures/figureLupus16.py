@@ -122,3 +122,51 @@ def plot2GenePerCellTypeStatus(
     ax.set_title("Average Gene Expression Per Patient")
     ax.set_xlabel(f"{celltype1}: {gene1}")
     ax.set_ylabel(f"{celltype2}: {gene2}")
+
+
+def plotGeneGated(X1, X2, gene, ax, cellType="Cell Type"):
+    """Plots average gene expression across cell types for a category of drugs"""
+    
+    Xtotal = [X1, X2]
+    for i in range(2):
+        X = Xtotal[i] 
+        genesV = X[:, gene]
+        dataDF = genesV.to_df()
+        dataDF = dataDF.subtract(genesV.var["means"].values)
+        dataDF["Status"] = genesV.obs["SLE_status"].values
+        dataDF["Condition"] = genesV.obs["Condition"].values
+        dataDF["Cell Type"] = genesV.obs[cellType].values
+
+        df = pd.melt(
+            dataDF, id_vars=["Status", "Cell Type", "Condition"], value_vars=gene
+        ).rename(columns={"variable": "Gene", "value": "Value"})
+
+        df = df.groupby(
+            ["Status", "Cell Type", "Gene", "Condition"], observed=False
+        ).mean()
+        df = df.rename(columns={"Value": "Average Gene Expression"}).reset_index()
+        
+        df = df.pivot(
+            index=["Status", "Cell Type", "Condition"],
+            columns="Gene",
+            values="Average Gene Expression",
+        ).reset_index().dropna()
+
+
+        
+        if i == 0:
+            df_ = df.copy()
+            df_.loc[:, "Type"] = np.repeat("Gated", df_.shape[0])
+            print(df_)
+        else:
+            df.loc[:, "Type"] = np.repeat("NonGated", df.shape[0])
+            print(df)
+            df = pd.concat([df_, df])
+            print(df)
+            
+
+   
+    # df["Combined"] = df["Type"] + df["Status"]
+    df['Combined'] = df[["Type", "Status"]].agg(''.join, axis=1)
+    sns.boxplot(data=df, x="Cell Type", y=gene, hue="Combined", ax=ax, showfliers=False)
+ 

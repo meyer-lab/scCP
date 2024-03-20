@@ -10,13 +10,13 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 from .figureCITEseq5 import top_bot_genes
-from .figureLupus16 import plotGenePerStatus
+from .figureLupus16 import plotGenePerStatus, plotGeneGated
 from .figureLupus18 import getCellCountDF
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((20, 18), (6, 4))
+    ax, f = getSetup((20, 18), (6, 2))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -24,27 +24,36 @@ def makeFigure():
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
     
     
-    cmp=28
+    cmp=27
     genes = top_bot_genes(X, cmp=cmp, geneAmount=5)
     
-    gated, nongated = cmpGatedDF(X, cmp, perc=5, positive=True)
+    gated, nongated = cmpGatedDF(X, cmp, perc=5, positive=False)
     
-    gatedCount = getCellCountDF(gated, celltype="Cell Type2", cellPerc=False)
-    sns.boxplot(data=gatedCount, x="Cell Type", y="Count", hue="SLE_status", ax=ax[0])
-    rotateaxis(ax[0])
-    nongatedCount = getCellCountDF(nongated, celltype="Cell Type2", cellPerc=False)
-    sns.boxplot(data=nongatedCount, x="Cell Type", y="Count", hue="SLE_status", ax=ax[1])
-    rotateaxis(ax[1])
+    # gatedCount = getCellCountDF(gated, celltype="Cell Type2", cellPerc=False)
+    # # sns.boxplot(data=gatedCount, x="Cell Type", y="Count", hue="SLE_status", ax=ax[0])
+    # rotateaxis(ax[0])
+    # nongatedCount = getCellCountDF(nongated, celltype="Cell Type2", cellPerc=False)
+    # sns.boxplot(data=nongatedCount, x="Cell Type", y="Count", hue="SLE_status", ax=ax[1])
+    # rotateaxis(ax[1])
    
-    
-    
+
+      
+      
     for i, gene in enumerate(np.ravel(genes)):
-        df = plotGenePerStatus(gated, gene, ax[(2*i)+2], cellType="Cell Type2")
-        ax[(2*i)+2].set(title=f"Gated: {gene}")
-        df2 = plotGenePerStatus(nongated, gene, ax[(2*i)+3], cellType="Cell Type2")
-        ax[(2*i)+3].set(title=f"NonGated: {gene}")
-        rotateaxis(ax[(2*i)+2])
-        rotateaxis(ax[(2*i)+3])
+        plotGeneGated(gated, nongated, genes[i], ax[i], cellType="Cell Type2")
+        # if i == 0:
+        #     break
+
+    
+    
+    
+    # for i, gene in enumerate(np.ravel(genes)):
+    #     df = plotGenePerStatus(gated, gene, ax[(2*i)+2], cellType="Cell Type2")
+    #     ax[(2*i)+2].set(title=f"Gated: {gene}")
+    #     df2 = plotGenePerStatus(nongated, gene, ax[(2*i)+3], cellType="Cell Type2")
+    #     ax[(2*i)+3].set(title=f"NonGated: {gene}")
+    #     rotateaxis(ax[(2*i)+2])
+    #     rotateaxis(ax[(2*i)+3])
 
     return f
 
@@ -59,6 +68,9 @@ def cmpGatedDF(X, cmp, perc=10, positive=True):
         threshold = np.percentile(wProjs, perc) # Bottom Perc#
         idx = np.ravel(np.argwhere(wProjs < threshold))
         nonidx = np.ravel(np.argwhere(wProjs > threshold))
+        
+        
+        
         
     thresholdDF = X[idx, :]
     nonThresholdDF = X[nonidx, :]
