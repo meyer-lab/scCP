@@ -49,8 +49,6 @@ def lupus_comp_scan_plot(X, status_DF, ax):
     
     for i in range(len(mask)):
         mask[i,i] = False
-        
-    # cmap = sns.cubehelix_palette(as_cmap=True, reverse=True)
     
     sns.heatmap(
         data=acc,
