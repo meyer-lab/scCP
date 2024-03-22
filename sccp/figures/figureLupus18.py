@@ -11,11 +11,12 @@ import seaborn as sns
 import pandas as pd
 from scipy.stats import linregress
 import scanpy as sc
+from ..imports import import_lupus
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((5, 7), (3, 1))
+    ax, f = getSetup((8, 7), (3, 2))
 
 
     # Add subplot labels
@@ -32,6 +33,21 @@ def makeFigure():
     X = interferon_score(X, csv=False)
     plotScore(X, ax[2], cellType="Cell Type2")
 
+
+
+    XX = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
+    X = import_lupus()
+    X.obs["Cell Type2"] = XX.obs["Cell Type2"]
+    X = cytotoxic_score(X)
+    plotScore(X, ax[3], cellType="Cell Type2")
+    
+    X = interferon_score(X)
+    plotScore(X, ax[4], cellType="Cell Type2")
+    
+    X = interferon_score(X, csv=False)
+    plotScore(X, ax[5], cellType="Cell Type2")
+    
+    
     return f
 
 
