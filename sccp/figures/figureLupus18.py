@@ -16,7 +16,7 @@ from ..imports import import_lupus
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8, 7), (3, 2))
+    ax, f = getSetup((10, 6), (2, 3))
 
 
     # Add subplot labels
@@ -27,25 +27,25 @@ def makeFigure():
     X = cytotoxic_score(X)
     plotScore(X, ax[0], cellType="Cell Type2")
     
-    X = interferon_score(X)
-    plotScore(X, ax[1], cellType="Cell Type2")
+    # X = interferon_score(X)
+    # plotScore(X, ax[1], cellType="Cell Type2")
     
-    X = interferon_score(X, csv=False)
-    plotScore(X, ax[2], cellType="Cell Type2")
+    # X = interferon_score(X, csv=False)
+    # plotScore(X, ax[2], cellType="Cell Type2")
 
 
 
-    XX = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
-    X = import_lupus()
-    X.obs["Cell Type2"] = XX.obs["Cell Type2"]
-    X = cytotoxic_score(X)
-    plotScore(X, ax[3], cellType="Cell Type2")
+    # XX = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
+    # X = import_lupus(); change gene threshold.001
+    # X.obs["Cell Type2"] = XX.obs["Cell Type2"]
+    # X = cytotoxic_score(X)
+    # plotScore(X, ax[3], cellType="Cell Type2")
     
-    X = interferon_score(X)
-    plotScore(X, ax[4], cellType="Cell Type2")
+    # X = interferon_score(X)
+    # plotScore(X, ax[4], cellType="Cell Type2")
     
-    X = interferon_score(X, csv=False)
-    plotScore(X, ax[5], cellType="Cell Type2")
+    # X = interferon_score(X, csv=False)
+    # plotScore(X, ax[5], cellType="Cell Type2")
     
     
     return f
