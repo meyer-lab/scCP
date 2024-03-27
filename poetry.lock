@@ -469,13 +469,13 @@ test = ["pandas[test]", "pre-commit", "pytest", "pytest-cov", "pytest-rerunfailu
 
 [[package]]
 name = "dask-expr"
-version = "1.0.4"
+version = "1.0.5"
 description = "High Level Expressions for Dask"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "dask-expr-1.0.4.tar.gz", hash = "sha256:58899409fe9c19eedb1eba2477a0308da2cc3b3e1984b913fdbf012481b76326"},
-    {file = "dask_expr-1.0.4-py3-none-any.whl", hash = "sha256:442463458dbd583768d67d4d6a904904e2b3115bb65e6b8215832e760ab86cf1"},
+    {file = "dask-expr-1.0.5.tar.gz", hash = "sha256:341e48cae1675180b6a94d920b9d34d496dfddb09d89d2ecbb21bb6eb40f4908"},
+    {file = "dask_expr-1.0.5-py3-none-any.whl", hash = "sha256:aab56d69421492dc347f1ff6007d2f75e37418c9cb541971373dec5bd5d2f058"},
 ]
 
 [package.dependencies]
@@ -1199,6 +1199,20 @@ files = [
 ]
 
 [[package]]
+name = "legacy-api-wrap"
+version = "1.4"
+description = ""
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "legacy_api_wrap-1.4-py3-none-any.whl", hash = "sha256:bf81b8ee432d80e7203aa079c26fc3a0f228d158db808868f10c2e36a8f64dbd"},
+    {file = "legacy_api_wrap-1.4.tar.gz", hash = "sha256:92dfa274cedb26d6e6f70fac85c856fbdcc05058066656d76a665fb4bf11b785"},
+]
+
+[package.extras]
+test = ["coverage", "coverage-rich", "pytest", "toml"]
+
+[[package]]
 name = "leidenalg"
 version = "0.10.2"
 description = "Leiden is a general algorithm for methods of community detection in large networks."
@@ -1732,13 +1746,13 @@ resolved_reference = "c3aebffc37e42b924a54805946e9233874123fb9"
 
 [[package]]
 name = "param"
-version = "2.0.2"
+version = "2.1.0"
 description = "Make your Python code clearer and more reliable by declaring Parameters."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "param-2.0.2-py3-none-any.whl", hash = "sha256:b269fd7397886ec609e544f81035fa52e1950da0e76d20080bfeca3d7a0317ca"},
-    {file = "param-2.0.2.tar.gz", hash = "sha256:785845a727a588eb94c7666d80551c7e2bb97d4309d3507beab66f95e57f7527"},
+    {file = "param-2.1.0-py3-none-any.whl", hash = "sha256:f31d3745d227347d29b5868c4e4e3077df07463889b91d3bb28e634fde211e1c"},
+    {file = "param-2.1.0.tar.gz", hash = "sha256:a7b30b08b547e2b78b02aeba6ed34e3c6a638f8e4824a76a96ffa2d7cf57e71f"},
 ]
 
 [package.extras]
@@ -1748,7 +1762,7 @@ examples = ["aiohttp", "pandas", "panel"]
 lint = ["flake8", "pre-commit"]
 tests = ["coverage[toml]", "pytest", "pytest-asyncio"]
 tests-deser = ["odfpy", "openpyxl", "pyarrow", "tables", "xlrd"]
-tests-examples = ["nbval", "param[examples]", "pytest", "pytest-asyncio", "pytest-xdist"]
+tests-examples = ["nbval", "param[examples]", "pytest (<8.1)", "pytest-asyncio", "pytest-xdist"]
 tests-full = ["cloudpickle", "gmpy", "ipython", "jsonschema", "nest-asyncio", "numpy", "pandas", "param[tests-deser]", "param[tests-examples]", "param[tests]"]
 
 [[package]]
@@ -2301,52 +2315,55 @@ use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "scanpy"
-version = "1.9.8"
+version = "1.10.0"
 description = "Single-Cell Analysis in Python."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "scanpy-1.9.8-py3-none-any.whl", hash = "sha256:abcca12dfe6975146277b6a76841e2328e07c6a9f518d234ba6a889b26b456dc"},
-    {file = "scanpy-1.9.8.tar.gz", hash = "sha256:2ab1790d2b82eadb0cf8d487f468beac7a8f6a3a8fd7112d1ae989f8c52a4353"},
+    {file = "scanpy-1.10.0-py3-none-any.whl", hash = "sha256:8cd83448837b808ebf4005fcb78a89fc3b7c4d5a97580b6a4254e394ab062911"},
+    {file = "scanpy-1.10.0.tar.gz", hash = "sha256:c8b718a546cf657c248946dac56b153357e1d8cd7772003adc4c7b37eb9e8d69"},
 ]
 
 [package.dependencies]
-anndata = ">=0.7.4"
-h5py = ">=3"
+anndata = ">=0.8"
+h5py = ">=3.1"
 joblib = "*"
+legacy-api-wrap = ">=1.4"
 matplotlib = ">=3.6"
 natsort = "*"
-networkx = ">=2.3"
-numba = ">=0.41.0"
-numpy = ">=1.17.0"
-packaging = "*"
-pandas = ">=1.1.1,<2.1.2 || >2.1.2"
+networkx = ">=2.7"
+numba = ">=0.56"
+numpy = ">=1.23"
+packaging = ">=21.3"
+pandas = ">=1.5"
 patsy = "*"
+pynndescent = ">=0.5"
 scikit-learn = ">=0.24"
-scipy = ">=1.4"
-seaborn = ">=0.13.0"
+scipy = ">=1.8"
+seaborn = ">=0.13"
 session-info = "*"
-statsmodels = ">=0.10.0rc2"
+statsmodels = ">=0.13"
 tqdm = "*"
-umap-learn = ">=0.3.10"
+umap-learn = ">0.5.0"
 
 [package.extras]
 bbknn = ["bbknn"]
-dask = ["dask[array] (!=2.17.0)"]
-dev = ["black (>=20.8b1)", "docutils", "setuptools-scm"]
-doc = ["matplotlib (!=3.6.1)", "myst-parser", "scanpy[paga]", "scanpydoc[typehints] (>=0.7.7,<0.8)", "sphinx (>=4.4)", "sphinx-rtd-theme (>=1.0)"]
+dask = ["dask[array] (>=2022.09.2)"]
+dask-ml = ["dask-ml", "scanpy[dask]"]
+dev = ["pre-commit", "setuptools-scm"]
+doc = ["dask", "ipython (>=7.20)", "matplotlib (!=3.6.1)", "myst-nb (>=1)", "myst-parser (>=2)", "nbsphinx (>=0.9)", "readthedocs-sphinx-search", "sam-algorithm", "scanpy[paga]", "scanpydoc (>=0.13.4)", "setuptools", "sphinx (>=7)", "sphinx-autodoc-typehints (>=1.25.2)", "sphinx-book-theme (>=1.1.0)", "sphinx-copybutton", "sphinx-design", "sphinxcontrib-bibtex", "sphinxext-opengraph"]
 harmony = ["harmonypy"]
-leiden = ["igraph (>=0.10)", "leidenalg (>=0.9)"]
-louvain = ["igraph", "louvain (>=0.6,!=0.6.2)"]
+leiden = ["igraph (>=0.10)", "leidenalg (>=0.9.0)"]
+louvain = ["igraph", "louvain (>=0.6.0,!=0.6.2)"]
 magic = ["magic-impute (>=2.0)"]
 paga = ["igraph"]
 rapids = ["cudf (>=0.9)", "cugraph (>=0.9)", "cuml (>=0.9)"]
 scanorama = ["scanorama"]
-scrublet = ["scrublet"]
+scrublet = ["scikit-image"]
 skmisc = ["scikit-misc (>=0.1.3)"]
-test = ["scanpy[dask]", "scanpy[leiden]", "scanpy[test-min]", "zarr"]
-test-full = ["scanpy[harmony]", "scanpy[leiden]", "scanpy[magic]", "scanpy[scanorama]", "scanpy[scrublet]", "scanpy[skmisc]", "scanpy[test]"]
-test-min = ["profimp", "pytest (>=4.4)", "pytest-nunit"]
+test = ["scanpy[dask]", "scanpy[leiden]", "scanpy[scrublet]", "scanpy[test-min]", "zarr"]
+test-full = ["scanpy[dask-ml]", "scanpy[harmony]", "scanpy[louvain]", "scanpy[magic]", "scanpy[scanorama]", "scanpy[skmisc]", "scanpy[test]"]
+test-min = ["profimp", "pytest (>=7.4.2)", "pytest-cov", "pytest-mock", "pytest-nunit"]
 
 [[package]]
 name = "scikit-learn"

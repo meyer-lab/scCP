@@ -25,4 +25,5 @@ def makeFigure():
         plotCmpPerCellType(X, cmp, ax[2 * i], cellType="leiden")
         plotCmpUMAP(X, cmp, ax[2 * i + 1], cbarMax=0.25)
 
+
     return f
