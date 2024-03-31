@@ -21,11 +21,11 @@ def makeFigure():
 
     # Add subplot labels
     subplotLabel(ax)
-
+    # Top .1% for cmp 28 and top .5% for cmp 27
     cmp = 27
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
     
-    X = cmpGated(X, cmp, perc=5, positive=False)
+    X = cmpGated(X, cmp, perc=.5, positive=False)
     
     genes = bot_top_genes(X, cmp, geneAmount=3)
     
