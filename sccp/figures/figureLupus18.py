@@ -32,17 +32,17 @@ def makeFigure():
     X = myeloid_score(X)
     plotScore(X, ax[2], cellType="Cell Type2")
 
-    # XX = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
-    # X = import_lupus(); change gene threshold.001
-    # X.obs["Cell Type2"] = XX.obs["Cell Type2"]
-    # X = cytotoxic_score(X)
-    # plotScore(X, ax[3], cellType="Cell Type2")
+    XX = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
+    X = import_lupus(geneThreshold=.001)
+    X.obs["Cell Type2"] = XX.obs["Cell Type2"]
+    X = cytotoxic_score(X)
+    plotScore(X, ax[3], cellType="Cell Type2")
     
-    # X = interferon_score(X)
-    # plotScore(X, ax[4], cellType="Cell Type2")
+    X = interferon_score(X)
+    plotScore(X, ax[4], cellType="Cell Type2")
     
-    # X = interferon_score(X, csv=False)
-    # plotScore(X, ax[5], cellType="Cell Type2")
+    X = myeloid__score(X)
+    plotScore(X, ax[5], cellType="Cell Type2")
     
     
     return f

@@ -79,7 +79,7 @@ def import_thomson() -> anndata.AnnData:
     return prepare_dataset(X, "Condition", geneThreshold=0.01)
 
 
-def import_lupus() -> anndata.AnnData:
+def import_lupus(geneThreshold = 0.1) -> anndata.AnnData:
     """Import Lupus PBMC dataset.
 
     -- columns from observation data:
@@ -124,7 +124,7 @@ def import_lupus() -> anndata.AnnData:
     # get rid of IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831 (only 3 cells)
     X = X[X.obs["Condition"] != "IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831"]
 
-    return prepare_dataset(X, "Condition", geneThreshold=0.1)
+    return prepare_dataset(X, "Condition", geneThreshold=geneThreshold)
 
 
 def import_citeseq() -> anndata.AnnData:
