@@ -8,12 +8,13 @@ from ..imports import import_thomson
 import numpy as np
 from ..factorization import pf2
 import pandas as pd
+import seaborn as sns
 
 
 def makeFigure():
     rank = 20
     data = import_thomson()
-    ax, f = getSetup((3, 3), (1, 1))
+    ax, f = getSetup((2, 2), (1, 1))
     bCellGeneSet = [
         "PXK",
         "MS4A1",
@@ -48,47 +49,35 @@ def plot_weights_across_percents(
     """
     Plots the raw weight of the identifying component across the percentages dropped
     """
-    vals = {}
-    for percent in np.arange(percent_min, percent_max, percent_step):
-        print(f"Percent: {percent}")
-        idx = (data.obs["Cell Type"] != cell_type) | (
-            data.obs["Condition"] != condition
-        )
-        false_idx = idx.index[idx == False]
-        idx[
-            np.random.choice(
-                false_idx, size=int(len(false_idx) * (1 - percent)), replace=False
+    all_percents, all_weights = [], []
+    for i in range(5):
+        vals = {}
+        for percent in np.arange(percent_min, percent_max, percent_step):
+            print(f"Percent: {percent}")
+            idx = (data.obs["Cell Type"] != cell_type) | (
+                data.obs["Condition"] != condition
             )
-        ] = True
-        sampled_data = data[idx]
+            false_idx = idx[~idx].index
+            size = int(len(false_idx) * (1 - percent))
 
-        sampledX = pf2(sampled_data, rank, doEmbedding=False)
-        gene_values = np.array(sampledX.varm["Pf2_C"])
-        yt = data.var.index.values
-        inds = []
-        for i, gene in enumerate(yt):
-            if gene in geneset:
-                inds.append(i)
-        gene_values = gene_values[inds]
-        most_exp_cmp = np.argmax(np.sum(np.abs(gene_values), axis=0))
-        Y = np.array(sampledX.uns["Pf2_A"])
-        Y = Y[:, most_exp_cmp]
-        labels = pd.Series(np.unique(sampledX.obs["Condition"]))
-        for i, txt in enumerate(labels):
-            if txt == condition:
-                vals[percent] = Y[i]
-                break
+            idx[np.random.choice(false_idx, size=size, replace=False)] = True
+            sampled_data = data[idx]
 
-    percents = []
-    weights = []
-    for percent, weight in vals.items():
-        percents.append(percent)
-        weights.append(weight)
-    weights = [x for _, x in sorted(zip(percents, weights))]
-    percents = sorted(percents)
-    ax.plot(percents, weights)
-    min_val, max_val = min(weights), max(weights)
-    padding = (max_val - min_val) * 0.1
-    ax.set_ylim(min_val - padding, max_val + padding)
-    ax.set_xlabel("Percent of B Cells Dropped")
-    ax.set_ylabel(f"Weight of Identifying Component (Component {most_exp_cmp})")
+            sampledX = pf2(sampled_data, rank, doEmbedding=False)
+            gene_values = np.array(sampledX.varm["Pf2_C"])[
+                [i for i, gene in enumerate(data.var.index.values) if gene in geneset]
+            ]
+            most_exp_cmp = np.argmax(np.sum(np.abs(gene_values), axis=0))
+            Y = np.array(sampledX.uns["Pf2_A"])[:, most_exp_cmp]
+            i = next(i for i, txt in enumerate(pd.Series(np.unique(sampledX.obs["Condition"]))) if txt == condition)
+            vals[percent] = Y[i]
+
+        percents, weights = zip(*sorted((int(p * 100), w) for p, w in vals.items()))
+        all_percents += percents
+        all_weights += weights
+
+    df = pd.DataFrame(data={"Percent": all_percents, "Weight": all_weights})
+    df = df.sort_values(by="Percent")
+    sns.lineplot(data=df, x="Percent", y="Weight", ax=ax)
+    ax.set_xlabel("% B Cells Dropped")
+    ax.set_ylabel(f"Component {most_exp_cmp} Weight")

@@ -78,66 +78,32 @@ def plotDifferentialExpression(
     Returns:
         None
     """
-    sampled_data = None
-    ctarg = "Cell Type"
-    if ct2:
-        ctarg = "Cell Type2"
-    idx = (data.obs[ctarg] != cell_type) | (data.obs["Condition"] != condition)
-    sampled_data = data[idx]
+
+    ctarg = "Cell Type2" if ct2 else "Cell Type"
+    sampled_data = data[
+        (data.obs[ctarg] != cell_type) | (data.obs["Condition"] != condition)
+    ]
 
     origX = pf2(data, rank, doEmbedding=False)
 
     sampledX = pf2(sampled_data, rank, doEmbedding=False)
-    most_exp_cmp = -1
-    most_exp_cmp2 = -1
+    most_exp_cmp, most_exp_cmp2 = -1, -1
     yt = pd.Series(np.unique(origX.obs["Condition"]))
-    yt2 = pd.Series(np.unique(sampledX.obs["Condition"]))
+    numberOfCellType = [len(data[(data.obs["Condition"] == txt) & (data.obs[ctarg] == cell_type)]) for txt in yt]
 
-    numberOfCellType = []
-    for txt in yt:
-        numberOfCellType.append(
-            len(data[(data.obs["Condition"] == txt) & (data.obs[ctarg] == cell_type)])
-        )
-
-    all_r2 = []
-    all_r2_2 = []
     if not override: # Use r^2 values to find the most important component
-        X = np.array(origX.uns["Pf2_A"])
-        X2 = np.array(sampledX.uns["Pf2_A"])
-        for i in range(X.shape[1]):
-            _, _, r_value, _, _ = linregress(X[:, i], numberOfCellType)
-            _, _, r_value2, _, _ = linregress(X2[:, i], numberOfCellType)
-            all_r2.append(r_value ** 2)
-            all_r2_2.append(r_value2 ** 2)
-        most_exp_cmp = np.argmax(all_r2)
-        most_exp_cmp2 = np.argmax(all_r2_2)
-        print(f"All r2 original: {all_r2}")
-        print(f"All r2 sampled: {all_r2_2}")
+        X, X2 = np.array(origX.uns["Pf2_A"]), np.array(sampledX.uns["Pf2_A"])
+        all_r2, all_r2_2 = [linregress(X[:, i], numberOfCellType)[2] ** 2 for i in range(X.shape[1])], \
+            [linregress(X2[:, i], numberOfCellType)[2] ** 2 for i in range(X.shape[1])]
+        most_exp_cmp, most_exp_cmp2 = np.argmax(all_r2), np.argmax(all_r2_2)
     else:
-        most_exp_cmp = override[0]
-        most_exp_cmp2 = override[1]
-
+        most_exp_cmp, most_exp_cmp2 = override[0], override[1]
         all_r2 = [0] * rank
-        X = np.array(origX.uns["Pf2_A"])
-        _, _, r_value, _, _ = linregress(X[:, most_exp_cmp], numberOfCellType)
-        all_r2[most_exp_cmp] = r_value ** 2
+        all_r2[most_exp_cmp] = linregress(np.array(origX.uns["Pf2_A"])[:, most_exp_cmp], numberOfCellType)[2] ** 2
 
-    X = np.array(origX.uns["Pf2_A"])
-    X = X[:, most_exp_cmp]
-    Y = np.array(sampledX.uns["Pf2_A"])
-    Y = Y[:, most_exp_cmp2]
+    X, Y = np.array(origX.uns["Pf2_A"])[:, most_exp_cmp], np.array(sampledX.uns["Pf2_A"])[:, most_exp_cmp2]
 
-    assert yt.equals(yt2)
-
-    print(f"Number of {cell_type}: {len(data[data.obs[ctarg] == cell_type])}")
-    print(
-        f"Number of {cell_type} in {condition}: {len(data[(data.obs['Condition'] == condition) & (data.obs[ctarg] == cell_type)])}"
-    )
-
-    colors = ['b'] * len(yt)
-    for i, txt in enumerate(yt):
-        if txt == condition:
-            colors[i] = 'r'
+    colors = ["r" if txt == condition else "b" for txt in yt]
 
     args[0].scatter(X, Y, c=colors)
     a, b = np.polyfit(X, Y, 1)
@@ -162,7 +128,7 @@ def plotDifferentialExpression(
     args[1].axline(
         (0, b),
         slope=a,
-        label=f"R^2 value: {all_r2[most_exp_cmp]}",
+        label=f"R^2 value: {int(all_r2[most_exp_cmp]*100)/100}",
         linestyle='--'
     )
     args[1].set_ylim(bottom=0)
