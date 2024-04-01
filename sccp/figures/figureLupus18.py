@@ -27,8 +27,8 @@ def makeFigure():
     X = cytotoxic_score(X)
     plotScore(X, ax[0], cellType="Cell Type2")
     
-    X = interferon_score(X)
-    plotScore(X, ax[1], cellType="Cell Type2")
+    # X = interferon_score(X)
+    # plotScore(X, ax[1], cellType="Cell Type2")
     
     # X = interferon_score(X, csv=False)
     # plotScore(X, ax[2], cellType="Cell Type2")
@@ -65,7 +65,7 @@ def interferon_score(X, csv=True):
         # Based on DEG analysis for general cell types
         df = pd.read_csv("sccp/data/Lupus/DEgenes.csv")
         df = pd.DataFrame(data=df.iloc[:, [0, -1]].to_numpy(), columns = ["Gene", "Category"])
-        df = df.loc[df["Category"] == "Down-Monocyte"]
+        df = df.loc[df["Category"] == "Up-Monocyte"]
         interferon_genes = df["Gene"].to_numpy()
     else:
         # Obtained from the figure co-expression figure
