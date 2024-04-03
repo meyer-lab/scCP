@@ -27,7 +27,7 @@ def geneOntology(X: AnnData, cmpNumb: int) -> pd.DataFrame:
     geneRank = pd.Series(X.varm["Pf2_C"][:, cmpNumb - 1], index=X.var_names)
     geneRank = geneRank.sort_values()
     
-    geneRank = geneRank.index.values[-50:]
+    geneRank = geneRank.index.values[:50]
     
     
     for i in geneRank:

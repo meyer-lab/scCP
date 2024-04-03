@@ -8,17 +8,47 @@ from .common import (
 )
 from ..geneontology import geneOntology
 from gseapy import barplot, dotplot
+import pandas as pd
 
+import seaborn as sns
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((20, 10), (2, 3))
+    ax, f = getSetup((8, 6), (2, 3))
 
     # Add subplot labels
     subplotLabel(ax)
 
 
-    X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad", backed="r")
+    # X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad", backed="r")
+    
+    
+    df = pd.read_csv("topgene_cmp14.csv", dtype=str)
+
+    df = df.drop(columns=["ID", "Verbose ID", "Unnamed: 55", 
+                    "Unnamed: 56", "Unnamed: 57",
+                    "Unnamed: 58", "Unnamed: 59"])
+
+    
+    category= df["Category"].to_numpy().astype(str)
+    
+    df = df.drop(columns=["Category"])
+    df["Process"] = category
+    df = df.iloc[:1000, :]
+    print(df)
+    df["Total Genes"] = df.iloc[:, 2:-1].astype(int).sum(axis=1).to_numpy()
+
+
+    # df = df.loc(df["Process"] == "GO: Biological Process")
+
+    df= df.loc[df.loc[:, "Process"] == "GO: Biological Process"]
+    df["pValue"] = df["pValue"].astype(float)
+    
+    sns.scatterplot(data=df.iloc[:10, :], x="pValue", y="Name", hue="Total Genes", ax=ax[0])
+    ax[0].set(xscale="log")
+    
+    
+    
 
 
 
@@ -32,16 +62,17 @@ def makeFigure():
 
 
 
-    df = geneOntology(X, 27)
+
+    # df = geneOntology(X, 14)
 
 
 
 
-    # a = dotplot(df, column="FDR q-val", ax=ax[0], ofname=ax[0])
-    a = barplot(df, x="Gene_set", column="FDR q-val", ax=ax[0], ofname="save.png")
-    # a = dotplot(df.res2d, ax=ax[0], ofname="save.png")
-    # a.imshow()
-    f.show()
+    # # a = dotplot(df, column="FDR q-val", ax=ax[0], ofname=ax[0])
+    # a = barplot(df, x="Gene_set", column="FDR q-val", ax=ax[0], ofname="save.png")
+    # # a = dotplot(df.res2d, ax=ax[0], ofname="save.png")
+    # # a.imshow()
+    # f.show()
     
 
 
