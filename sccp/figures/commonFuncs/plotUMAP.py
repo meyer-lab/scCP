@@ -55,7 +55,7 @@ def plotGeneUMAP(gene: str, decompType: str, X: anndata.AnnData, ax: Axes):
 
     values = geneList
 
-    points = np.array(X.obsm["embedding"])
+    points = np.array(X.obsm["X_pf2_PaCMAP"])
 
     canvas = _get_canvas(points)
     data = pd.DataFrame(points, columns=("x", "y"))
@@ -81,11 +81,11 @@ def plotGeneUMAP(gene: str, decompType: str, X: anndata.AnnData, ax: Axes):
     ax.set(title=f"{gene}-{decompType}-Based Decomposition")
 
 
-def plotCmpUMAP(X: anndata.AnnData, cmp: int, ax: Axes, cbarMax=1):
+def plotCmpUMAP(X: anndata.AnnData, cmp: int, ax: Axes, cbarMax: float = 1.0):
     """Scatterplot of UMAP visualization weighted by
     projections for a component and cell state"""
     values = X.obsm["weighted_projections"][:, cmp - 1]
-    points = X.obsm["embedding"]
+    points = X.obsm["X_pf2_PaCMAP"]
 
     cmap = sns.diverging_palette(250, 30, l=65, center="dark", as_cmap=True)
 
@@ -121,9 +121,10 @@ def plotLabelsUMAP(
 
     if condition is not None:
         labels = pd.Series([c if c in condition else "Z Other" for c in labels])
-
+    labels = labels.cat.set_categories(np.sort(labels.cat.categories.values), ordered=True)
     indices = np.argsort(labels)
-    points = X.obsm["embedding"][indices, :]
+    
+    points = X.obsm["X_pf2_PaCMAP"][indices, :]
     labels = labels.iloc[indices]
 
     canvas = _get_canvas(points)
@@ -132,7 +133,9 @@ def plotLabelsUMAP(
     data["label"] = pd.Categorical(labels)
     aggregation = canvas.points(data, "x", "y", agg=ds.count_cat("label"))
 
-    unique_labels = np.unique(labels)
+    unique_labels = np.unique(labels)#.tolist()
+    #unique_labels.sort(key=str.lower)
+    #unique_labels = np.array(unique_labels)
     num_labels = unique_labels.shape[0]
     color_key = _to_hex(plt.get_cmap(cmap)(np.linspace(0, 1, num_labels)))
     legend_elements = [
@@ -150,12 +153,14 @@ def plotLabelsUMAP(
     ax = assignAxes(ax)
 
 
-def plotCmpPerCellType(X: anndata.AnnData, cmp: int, ax: Axes, outliers: bool = False):
+def plotCmpPerCellType(
+    X: anndata.AnnData, cmp: int, ax: Axes, outliers: bool = False, cellType="Cell Type"
+):
     """Boxplot of weighted projections for one component across cell types"""
     XX = X.obsm["weighted_projections"][:, cmp - 1]
     cmpName = f"Cmp. {cmp}"
 
-    df = pd.DataFrame({cmpName: XX, "Cell Type": X.obs["Cell Type"]})
+    df = pd.DataFrame({cmpName: XX, "Cell Type": X.obs[cellType].to_numpy()})
 
     sns.boxplot(
         data=df,
@@ -164,7 +169,7 @@ def plotCmpPerCellType(X: anndata.AnnData, cmp: int, ax: Axes, outliers: bool = 
         showfliers=outliers,
         ax=ax,
     )
-    maxvalue = 0.75  # np.max(np.abs(ax.get_xticks()))
+    maxvalue = np.max(np.abs(ax.get_xticks()))
     ax.set(
         xticks=np.linspace(-maxvalue, maxvalue, num=5), xlabel="Cell Specific Weight"
     )

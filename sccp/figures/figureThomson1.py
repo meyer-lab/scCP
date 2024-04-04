@@ -21,11 +21,11 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = read_h5ad("factor_cache/Thomson.h5ad", backed="r")
+    X = read_h5ad("/opt/pf2/thomson_fitted.h5ad", backed="r")
 
     drugNames = groupDrugs(X.obs["Condition"])
 
-    plotConditionsFactors(X, ax[0], drugNames, ThomsonNorm=True)
+    plotConditionsFactors(X, ax[0], drugNames, ThomsonNorm=True, groupConditions=True)
     plotCellState(X, ax[1])
     plotGeneFactors(X, ax[2])
     plotWeight(X, ax[3])

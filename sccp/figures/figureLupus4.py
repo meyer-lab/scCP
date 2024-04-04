@@ -1,39 +1,24 @@
 """
-Lupus: Cross validation for determining optimal paramaters for logistic regression
+Lupus: UMAP and boxplots of weighted projectoins per component
 """
-from ..imports import import_lupus
-from ..logisticReg import testPf2Ranks
-from .common import (
-    subplotLabel,
-    getSetup,
-)
-from .commonFuncs.plotLupus import plotPf2RankTest
+import numpy as np
+from anndata import read_h5ad
+from .common import subplotLabel, getSetup
+from .commonFuncs.plotGeneral import plotR2X_pf2
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8, 8), (1, 1))  # fig size  # grid size
+    ax, f = getSetup((3, 3), (1, 1))
 
     # Add subplot labels
     subplotLabel(ax)
+    ranks = np.arange(5, 55, 5)
 
-    X = import_lupus()
-    X = X.to_memory()
+    X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad", backed="r")
 
-    condStatus = X.obs[
-        ["Condition", "SLE_status", "Processing_Cohort"]
-    ].drop_duplicates()
-    condStatus = condStatus.set_index("Condition")
-
-    rank = [2, 3]
-    # results = testPf2Ranks(
-    #     X,
-    #     condStatus,
-    #     rank,
-    #     cv_group="Processing_Cohort",
-    # )
-
-    # plotPf2RankTest(results, ax[0])
+    plotR2X_pf2(X, ranks, ax[0])
+    ax[0].set(xlim=(0, 55), ylim=(0, 0.15))
 
     return f

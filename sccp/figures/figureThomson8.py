@@ -1,7 +1,7 @@
 """
 Thomson: Plots all top and bottom genes Pf2 weights
 """
-import anndata
+from anndata import read_h5ad
 from .common import getSetup
 from .commonFuncs.plotGeneral import plotGeneFactors
 
@@ -9,12 +9,12 @@ from .commonFuncs.plotGeneral import plotGeneFactors
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((20, 24), (10, 6))
+    ax, f = getSetup((14, 24), (10, 4))
 
-    X = anndata.read_h5ad("factor_cache/Thomson.h5ad", backed="r")
+    X = read_h5ad("/opt/pf2/thomson_fitted.h5ad", backed="r")
 
     for i in range(X.uns["Pf2_A"].shape[1]):
-        plotGeneFactors(i + 1, X, ax[2 * i], geneAmount=10, top=True)
-        plotGeneFactors(i + 1, X, ax[2 * i + 1], geneAmount=10, top=False)
+        plotGeneFactors(i + 1, X, ax[2 * i], geneAmount=20, top=True)
+        plotGeneFactors(i + 1, X, ax[2 * i + 1], geneAmount=20, top=False)
 
     return f

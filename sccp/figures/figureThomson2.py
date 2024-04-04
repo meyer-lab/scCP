@@ -10,53 +10,39 @@ from .commonFuncs.plotUMAP import plotLabelsUMAP, plotCmpUMAP
 from .commonFuncs.plotGeneral import (
     plotGenePerCellType,
     plotGenePerCategCond,
-    plotGeneFactors,
     gene_plot_cells,
+    plot_cell_gene_corr,
+    heatmapGeneFactors,
 )
-from ..gating import gateThomsonCells
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((24, 24), (4, 4))
-    # ax, f = getSetup((16, 16), (2, 2))
+    ax, f = getSetup((15, 18), (4, 3))
 
     # Add subplot labels
     subplotLabel(ax)
 
-    X = read_h5ad("factor_cache/Thomson.h5ad", backed="r")
-
-    # plotfms(X, 30, ax[0])
-    # plotR2X_pf2(X, 15, ax[1])
-
-    gateThomsonCells(X)
+    X = read_h5ad("/opt/pf2/thomson_fitted.h5ad", backed="r")
 
     plotLabelsUMAP(X, "Cell Type", ax[0])
     plotLabelsUMAP(X, "Cell Type2", ax[1])
+    heatmapGeneFactors([15, 19, 20], X, ax[2], geneAmount=5)
 
-    # plotLabelsUMAP(X, "doublet", ax[2], cmap='viridis')
-    # plotLabelsUMAP(X, "doublet_score", ax[3], cmap='viridis')
+    plotCmpUMAP(X, 15, ax[3], 0.2)  # pDC
+    geneSet1 = ["FXYD2", "SERPINF1", "RARRES2"]
+    plotGenePerCellType(geneSet1, X, ax[4], cellType="Cell Type2")
 
-    plotCmpUMAP(X, 4, ax[2], 0.2)  # NK
-    plotCmpUMAP(X, 23, ax[4], 0.2)  # Gluco
-    plotCmpUMAP(X, 25, ax[5], 0.2)  # B Cell
+    plotCmpUMAP(X, 19, ax[5], 0.2)  # Alpro
+    X_genes = X[:, ["THBS1", "EREG"]].to_memory()
+    X_genes = X_genes[X_genes.obs["Cell Type"] == "DCs", :]
+    gene_plot_cells(
+        X_genes, unique=["Alprostadil"], hue="Condition", ax=ax[6], kde=False
+    )
+    ax[6].set(title="Gene Expression in DCs")
 
-    plotCmpUMAP(X, 24, ax[5], 0.2)  # Dex Hcl
-
-    plotGeneFactors(3, X, ax[6], geneAmount=10, top=True)
-    plotGeneFactors(23, X, ax[7], geneAmount=10, top=False)
-    plotGeneFactors(13, X, ax[8], geneAmount=10, top=False)
-    # plotGeneFactors(26, X, ax[9], geneAmount=10, top=False)
-    # plotGeneFactors(26, X, ax[10], geneAmount=10, top=True)
-
-    geneSet1 = ["NKG7", "GNLY", "GZMB", "GZMH", "PRF1", "CD3D"]
-    geneSet2 = ["MS4A1", "CD79A", "CD79B", "TNFRSF13B", "BANK1"]
-
-    genes = [geneSet1, geneSet2]
-    for i in range(len(genes)):
-        plotGenePerCellType(genes[i], X, ax[i + 11])
-
+    plotCmpUMAP(X, 20, ax[7], 0.2)  # Gluco
     glucs = [
         "Betamethasone Valerate",
         "Loteprednol etabonate",
@@ -64,7 +50,22 @@ def makeFigure():
         "Triamcinolone Acetonide",
         "Meprednisone",
     ]
-    geneSet3 = ["CD163"]
-    plotGenePerCategCond(glucs, "Gluco", geneSet3, X, [ax[13]])
+    plotGenePerCategCond(glucs, "Gluco", "CD163", X, ax[8], cellType="Cell Type2")
+    plotGenePerCategCond(glucs, "Gluco", "MS4A6A", X, ax[9], cellType="Cell Type2")
+
+    X_genes = X[:, ["CD163", "MS4A6A"]].to_memory()
+    plot_cell_gene_corr(
+        X_genes,
+        unique=glucs,
+        hue="Condition",
+        cells=["Intermediate Monocytes", "Myeloid Suppressors"],
+        cellType="Cell Type2",
+        ax=ax[10],
+    )
+
+    ax[6].set(xlim=(-0.05, 0.6), ylim=(-0.05, 0.6))
+    ax[8].set(ylim=(-0.05, 0.2))
+    ax[9].set(ylim=(-0.05, 0.2))
+    ax[10].set(xlim=(-0.05, 0.2), ylim=(-0.05, 0.2))
 
     return f
