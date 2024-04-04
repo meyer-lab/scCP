@@ -35,6 +35,7 @@ def makeFigure():
         ["CCL4", "CD247"],
     ]
 
+    
     for i, gene in enumerate(np.ravel(genes)):
         plotGenePerStatus(X, gene, ax[i])
 

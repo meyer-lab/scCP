@@ -41,7 +41,7 @@ def makeFigure():
     X = interferon_score(X)
     plotScore(X, ax[4], cellType="Cell Type2")
     
-    X = myeloid__score(X)
+    X = myeloid_score(X)
     plotScore(X, ax[5], cellType="Cell Type2")
     
     
