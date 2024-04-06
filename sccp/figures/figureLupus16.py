@@ -9,37 +9,24 @@ from .common import (
 import numpy as np
 import seaborn as sns
 import pandas as pd
+from ..figures.commonFuncs.plotFactors import bot_top_genes
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((25, 20), (5, 6))
+    ax, f = getSetup((25, 20), (5, 2))
 
     # Add subplot labels
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
-    # Cmp.4 Most weighted pos/neg genes
-    genes = [
-        ["GZMK", "DUSP2"],
-        ["CMC1", "LYAR"],
-        ["AC092580.4", "CD8B"],
-        ["FAM173A", "CLDND1"],
-        ["PIK3R1", "CD8A"],
-        ["SPON2", "FGFBP2"],
-        ["GZMB", "PRF1"],
-        ["GZMH", "CLIC3"],
-        ["NKG7", "GNLY"],
-        ["CCL4", "CD247"],
-    ]
+    cmp=27
+    genes = bot_top_genes(X, cmp, geneAmount=3)
 
     for i, gene in enumerate(np.ravel(genes)):
-        plotGenePerStatus(X, gene, ax[i])
-
-    for i, gene in enumerate(genes):
-        plot2GenePerCellTypeStatus(X, gene[0], gene[1], "NK", "NK", ax[i + 20])
+        plotGenePerStatus(X, gene, ax[i], cellType="leiden")
 
     return f
 

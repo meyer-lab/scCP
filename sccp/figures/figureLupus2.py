@@ -15,8 +15,9 @@ def makeFigure():
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad", backed="r")
+    # print(X.obs("leiden"))
 
-    plotLabelsUMAP(X, "Cell Type", ax[0])
+    plotLabelsUMAP(X, "leiden", ax[0])
     plotLabelsUMAP(X, "Cell Type2", ax[1])
 
     return f
