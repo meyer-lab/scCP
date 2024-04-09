@@ -70,7 +70,7 @@ import pandas as pd
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((25, 20), (5, 6))
+    ax, f = getSetup((5, 5), (2, 2))
 
     # Add subplot labels
     subplotLabel(ax)
