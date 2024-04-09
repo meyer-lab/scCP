@@ -14,7 +14,7 @@ from scipy.stats import linregress, pearsonr, spearmanr
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((30, 16), (5, 4))
+    ax, f = getSetup((5, 5), (2, 2))
 
 
     # Add subplot labels
@@ -106,7 +106,8 @@ def plotCmpPerCellCount(X, cmp, cellcountDF, ax, cellPerc=True):
         for k in range(3):
             correlationdf = pd.concat([correlationdf, pd.DataFrame({"Cell Type": celltype, "Correlation": [test[k]], "Value": [correl[k]]})])
             
-    sns.barplot(data=correlationdf, x="Cell Type", y="Value", hue="Correlation", ax=ax[-1])
+    correlationdf = correlationdf.rename(columns={"Cell Type": "Leiden Cluster"})
+    sns.barplot(data=correlationdf.loc[correlationdf["Leiden Cluster"] == "30"], x="Leiden Cluster", y="Value", hue="Correlation", ax=ax[-1])
     ax[-1].set_xticks(ax[-1].get_xticks())
     ax[-1].set_xticklabels(labels=ax[-1].get_xticklabels(), rotation=90)
     ax[-1].set(title=f"Cmp. {cmp} V. Cell Count")

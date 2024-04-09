@@ -15,15 +15,15 @@ from ..figures.commonFuncs.plotFactors import bot_top_genes
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((25, 20), (5, 2))
+    ax, f = getSetup((5, 5), (2, 2))
 
     # Add subplot labels
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
-    cmp=27
-    genes = bot_top_genes(X, cmp, geneAmount=3)
+    cmp=28
+    genes = bot_top_genes(X, cmp, geneAmount=2)
 
     for i, gene in enumerate(np.ravel(genes)):
         plotGenePerStatus(X, gene, ax[i], cellType="leiden")
@@ -46,10 +46,37 @@ def plotGenePerStatus(X, gene, ax, cellType="Cell Type"):
 
     df = df.groupby(["Status", "Cell Type", "Gene", "Condition"], observed=False).mean()
     df = df.rename(columns={"Value": "Average Gene Expression"}).reset_index()
+    df = df.loc[df["Gene"] == gene]
+    df = df.rename(columns={"Cell Type": "Leiden Cluster"})
+    
+    
+    df1 = df.loc[df["Leiden Cluster"] == "21"]
+    df2 = df.loc[df["Leiden Cluster"] == "30"]
+    
+    print(df)
+    
+    
+    newdf =  df.loc[(df["Leiden Cluster"] != "21") & (df["Leiden Cluster"] != "30")]
+    nonleiden = np.repeat("Other", newdf.shape[0])
+    
 
+    dfcombine = pd.concat([df1, df2]).reset_index(drop=True)
+    leiden = dfcombine["Leiden Cluster"].to_numpy()
+    
+    dfcombine = dfcombine.drop(columns=["Leiden Cluster"])
+    
+    dfcombine = pd.concat([dfcombine, newdf]).reset_index(drop=True)
+    
+    dfcombine["Leiden Cluster"] = np.concatenate([leiden, nonleiden])
+    
+    
+
+    print(np.unique(dfcombine["Leiden Cluster"]))
+    
+    
     sns.boxplot(
-        data=df.loc[df["Gene"] == gene],
-        x="Cell Type",
+        data=dfcombine,
+        x="Leiden Cluster",
         y="Average Gene Expression",
         hue="Status",
         ax=ax,

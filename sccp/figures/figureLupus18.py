@@ -21,25 +21,12 @@ def makeFigure():
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
-    cmp=28
-    gene = "IFI27"
-    dfGene = dfGenePerStatus(X, gene, cellType="leiden")
-    dfWP = dfWPPerStatus(X, cmp, cellType="leiden")
-    dfWP["Gene"] = dfGene["Average Gene Expression"]
-
     
-    # dfWP = dfWP.replace("44", "Non")
-    louvainclusters = np.unique(dfWP["Cell Type"])
-    result = np.where(louvainclusters=="30")[0]
-    louvainclusters = np.delete(louvainclusters,result)
+    dfWPGene(X, 27, "RETN", "44", "leiden", ax[0])
+    dfWPGene(X, 27, "S100A8", "44", "leiden", ax[1])
+    dfWPGene2(X, 28, "IFI27", "30", "leiden", ax[2], "21")
+    # dfWPGene(X, 27, "S100A8", "44", "leiden", ax[1])?
     
-    dfWP = dfWP.replace(louvainclusters, "Non")
-    print(np.unique(dfWP["Cell Type"]))
-    print(dfWP)
-
-    sns.scatterplot(dfWP, x="WProjs", y="Gene", hue="Cell Type", ax=ax[0])
-    ax[0].set_yscale("log")
-
 
     return f
 
@@ -47,7 +34,6 @@ def dfGenePerStatus(X, gene, cellType="Cell Type"):
     """Plots average gene expression across cell types for a category of drugs"""
     genesV = X[:, gene]
     dataDF = genesV.to_df()
-    # dataDF = dataDF.subtract(genesV.var["means"].values)
     dataDF["Status"] = genesV.obs["SLE_status"].values
     dataDF["Condition"] = genesV.obs["Condition"].values
     dataDF["Cell Type"] = genesV.obs[cellType].values
@@ -81,47 +67,39 @@ def dfWPPerStatus(X, cmp, cellType="Cell Type"):
 
 
 
+def dfWPGene(X, cmp, gene, cluster, celltype, ax, cluster2=None):
+    dfGene = dfGenePerStatus(X, gene, cellType=celltype)
+    dfWP = dfWPPerStatus(X, cmp, cellType=celltype)
+    dfWP["Gene"] = dfGene["Average Gene Expression"]
 
-def plotCmpPerCellCount(X,totaldf, ax):
-    """Plot component weights by cell count for a cell type"""
-
-    # totaldf = pd.DataFrame([])
-    correlationdf = pd.DataFrame([])
-
-
-    for i, celltype in enumerate(np.unique(totaldf["Cell Type"])):
-        # for j, cond in enumerate(np.unique(df["Condition"])):
-        #     status = np.unique(df.loc[df["Condition"] == cond]["Status"])
-        #     smalldf = df.loc[(df["Condition"] == cond) & (df["Cell Type"] == celltype)]
-
-        #     if smalldf.empty is False: 
-        #         smalldf = smalldf.assign(Cmp=factorsA[j])
-        #     else:
-        #         smalldf = pd.DataFrame({"Condition": cond, "Cell Type": celltype, "Status": status,
-        #                                           cellPerc: 0, "Cmp": factorsA[j]})
-
-            # totaldf = pd.concat([totaldf, smalldf])
-
-        df = totaldf.loc[totaldf["Cell Type"] == celltype]   
-        _, _, r_value, _, _ = linregress(df["WProjs"], df["Gene"])
-        pearson = pearsonr(df["WProjs"], df["Gene"])[0]
-        spearman = spearmanr(df["WProjs"], df["Gene"])[0]
-
-        # sns.scatterplot(data=df, x="WProjs", y="Gene", hue="Status", ax=ax[i])
-        # ax[i].set(title=f"{celltype}: R2 Value - {np.round(r_value**2, 3)}")
-        
-        correl = [np.round(r_value**2, 3), spearman, pearson]
-        test = ["R2 Value ", "Pearson", "Spearman"]
-        
-        for k in range(3):
-            # if k[i] == 0:
-            #     k = 
-            correlationdf = pd.concat([correlationdf, pd.DataFrame({"Cell Type": str(celltype), "Correlation": [test[k]], "Value": [correl[k]]})])
     
-    print(correlationdf)       
-    sns.barplot(data=correlationdf.reset_index(), x="Cell Type", y="Value", hue="Correlation", ax=ax[0])
-    ax[0].set_xticks(ax[0].get_xticks())
-    ax[0].set_xticklabels(labels=ax[0].get_xticklabels(), rotation=90)
-    # ax[-1].set(title=f"Cmp. {cmp} V. Cell Count")
-            
+    louvainclusters = np.unique(dfWP["Cell Type"])
+    result = np.where(louvainclusters==cluster)[0]
+    louvainclusters = np.delete(louvainclusters,result)
     
+    dfWP = dfWP.replace(louvainclusters, f"Other")
+    dfWP = dfWP.rename(columns={"Cell Type": "Leiden Cluster"})
+
+    sns.scatterplot(dfWP, x="WProjs", y="Gene", hue="Leiden Cluster", ax=ax)
+    ax.set_yscale("log")
+    ax.set(ylabel = f"Average {gene} Expression", xlabel="Average Weighted Projs")
+
+
+def dfWPGene2(X, cmp, gene, cluster, celltype, ax, cluster2=None):
+    dfGene = dfGenePerStatus(X, gene, cellType=celltype)
+    dfWP = dfWPPerStatus(X, cmp, cellType=celltype)
+    dfWP["Gene"] = dfGene["Average Gene Expression"]
+
+    
+    louvainclusters = np.unique(dfWP["Cell Type"])
+    print(np.where(louvainclusters==cluster)[0])
+    print(np.where(louvainclusters==cluster2)[0])
+    result = np.concatenate((np.where(louvainclusters==cluster)[0], np.where(louvainclusters==cluster2)[0]))
+    louvainclusters = np.delete(louvainclusters,result)
+    
+    dfWP = dfWP.replace(louvainclusters, f"Other")
+    dfWP = dfWP.rename(columns={"Cell Type": "Leiden Cluster"})
+
+    sns.scatterplot(dfWP, x="WProjs", y="Gene", hue="Leiden Cluster", ax=ax)
+    ax.set_yscale("log")
+    ax.set(ylabel = f"Average {gene} Expression", xlabel="Average Weighted Projs")
