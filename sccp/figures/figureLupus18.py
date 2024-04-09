@@ -14,24 +14,31 @@ from scipy.stats import linregress, pearsonr, spearmanr
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((15, 16), (6, 1))
+    ax, f = getSetup((5, 5), (2, 2))
 
 
     # Add subplot labels
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
-    cmp=27
-    gene = "RETN"
+    cmp=28
+    gene = "IFI27"
     dfGene = dfGenePerStatus(X, gene, cellType="leiden")
     dfWP = dfWPPerStatus(X, cmp, cellType="leiden")
     dfWP["Gene"] = dfGene["Average Gene Expression"]
-    
-    print(dfWP)
-    
 
-    idx = len(np.unique(dfWP["Cell Type"]))
-    plotCmpPerCellCount(X, dfWP, ax[1:3])
+    
+    # dfWP = dfWP.replace("44", "Non")
+    louvainclusters = np.unique(dfWP["Cell Type"])
+    result = np.where(louvainclusters=="30")[0]
+    louvainclusters = np.delete(louvainclusters,result)
+    
+    dfWP = dfWP.replace(louvainclusters, "Non")
+    print(np.unique(dfWP["Cell Type"]))
+    print(dfWP)
+
+    sns.scatterplot(dfWP, x="WProjs", y="Gene", hue="Cell Type", ax=ax[0])
+    ax[0].set_yscale("log")
 
 
     return f
@@ -40,7 +47,7 @@ def dfGenePerStatus(X, gene, cellType="Cell Type"):
     """Plots average gene expression across cell types for a category of drugs"""
     genesV = X[:, gene]
     dataDF = genesV.to_df()
-    dataDF = dataDF.subtract(genesV.var["means"].values)
+    # dataDF = dataDF.subtract(genesV.var["means"].values)
     dataDF["Status"] = genesV.obs["SLE_status"].values
     dataDF["Condition"] = genesV.obs["Condition"].values
     dataDF["Cell Type"] = genesV.obs[cellType].values

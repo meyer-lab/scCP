@@ -21,8 +21,8 @@ def makeFigure():
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
-    cmp=28
-    gene = "IFI27"
+    cmp=27
+    gene = "RETN"
     dfGene = dfGenePerStatus(X, gene, cellType="leiden")
     dfWP = dfWPPerStatus(X, cmp, cellType="leiden")
     # print(dfGene)
@@ -105,7 +105,7 @@ def plotCmpPerCellCount(X,totaldf, ax):
         pearson = pearsonr(df["WProjs"], df["Gene"])[0]
         spearman = spearmanr(df["WProjs"], df["Gene"])[0]
         
-        if celltype == "30":    
+        if celltype == "44":    
             sns.scatterplot(data=df, x="WProjs", y="Gene", hue="Status", ax=ax[1])
             ax[1].set(title=f"{celltype}")
         
