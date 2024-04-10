@@ -32,6 +32,8 @@ def makeFigure():
         data, "B Cells", "CTRL4", 0, 1, 0.1, rank, bCellGeneSet, ax[0]
     )
 
+    ### Can add other cell types here
+
     return f
 
 
@@ -53,12 +55,13 @@ def plot_weights_across_percents(
     for i in range(5):
         vals = {}
         for percent in np.arange(percent_min, percent_max, percent_step):
-            print(f"Percent: {percent}")
             idx = (data.obs["Cell Type"] != cell_type) | (
                 data.obs["Condition"] != condition
             )
+
+            # Calculate the number of cells to drop based on the percentage
             false_idx = idx[~idx].index
-            size = int(len(false_idx) * (1 - percent))
+            size = int(len(false_idx) * (1 - percent)) 
 
             idx[np.random.choice(false_idx, size=size, replace=False)] = True
             sampled_data = data[idx]
@@ -66,8 +69,8 @@ def plot_weights_across_percents(
             sampledX = pf2(sampled_data, rank, doEmbedding=False)
             gene_values = np.array(sampledX.varm["Pf2_C"])[
                 [i for i, gene in enumerate(data.var.index.values) if gene in geneset]
-            ]
-            most_exp_cmp = np.argmax(np.sum(np.abs(gene_values), axis=0))
+            ] # Sum of the gene expression for the marker genes
+            most_exp_cmp = np.argmax(np.sum(np.abs(gene_values), axis=0)) # The component with the highest sum of gene expression
             Y = np.array(sampledX.uns["Pf2_A"])[:, most_exp_cmp]
             i = next(i for i, txt in enumerate(pd.Series(np.unique(sampledX.obs["Condition"]))) if txt == condition)
             vals[percent] = Y[i]
