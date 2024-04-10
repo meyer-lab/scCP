@@ -11,6 +11,10 @@ from gseapy import barplot, dotplot
 import pandas as pd
 
 import seaborn as sns
+from .commonFuncs.plotFactors import bot_top_genes
+
+
+
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
@@ -20,14 +24,29 @@ def makeFigure():
     subplotLabel(ax)
 
 
-    # X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad", backed="r")
+    X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad", backed="r")
+    
+    # amount = 50
+    # genes = bot_top_genes(X, cmp=4, geneAmount=amount)
+    
+    # topgenes = genes[amount:]
+    # botgenes = genes[:amount]
+    
+    # for i in topgenes:
+    #     print(i) 
     
     
-    df = pd.read_csv("topgene_cmp14.csv", dtype=str)
 
-    df = df.drop(columns=["ID", "Verbose ID", "Unnamed: 55", 
-                    "Unnamed: 56", "Unnamed: 57",
-                    "Unnamed: 58", "Unnamed: 59"])
+    
+    
+    
+    df = pd.read_csv("botgene_cmp4.csv", dtype=str)
+
+    # df = df.drop(columns=["ID", "Verbose ID", "Unnamed: 55", 
+    #                 "Unnamed: 56", "Unnamed: 57",
+    #                 "Unnamed: 58", "Unnamed: 59"])
+    df = df.drop(columns=["ID", "Verbose ID"])
+
 
     
     category= df["Category"].to_numpy().astype(str)
