@@ -71,7 +71,7 @@ def plot_weights_across_percents(
             ] # Sum of the gene expression for the marker genes
             most_exp_cmp = np.argmax(np.sum(np.abs(gene_values), axis=0)) # The component with the highest sum of gene expression
             Y = np.array(sampledX.uns["Pf2_A"])[:, most_exp_cmp]
-            i = next(i for i, txt in enumerate(pd.Series(np.unique(sampledX.obs["Condition"]))) if txt == condition) # Aims to find the index of the condition to set its corresponding weight
+            i = np.where(np.unique(sampledX.obs["Condition"]) == condition)[0][0]  # Aims to find the index of the condition to set its corresponding weight
             vals[percent] = Y[i]
 
         percents, weights = zip(*sorted((int(p * 100), w) for p, w in vals.items()))
