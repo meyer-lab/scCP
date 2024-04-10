@@ -7,7 +7,6 @@ corresponding weight for the condition removed significantly dropped.
 from .common import getSetup
 from ..imports import import_thomson
 from ..factorization import pf2
-from ..imports import import_thomson
 import pandas as pd
 import numpy as np
 from anndata import AnnData
@@ -21,7 +20,7 @@ def makeFigure():
     
     ax, f = getSetup((6, 3), (1, 2))
    
-    plotDifferentialExpression(data, "CTRL4", "B Cells", rank, *ax[0:2])
+    plotDifferentialExpression(data, "CTRL4", "B Cells", rank, ax[0:2])
 
     ### Uncomment to plot other cell types
 
@@ -63,7 +62,7 @@ def plotDifferentialExpression(
     condition: str,
     cell_type: str,
     rank: int,
-    *args: list[Axes],
+    axes: list[Axes],
     ct2:bool = False,
     override: tuple[int, int] = None,
 ):
@@ -108,32 +107,32 @@ def plotDifferentialExpression(
 
     colors = ["r" if txt == condition else "b" for txt in yt]
 
-    args[0].scatter(X, Y, c=colors)
+    axes[0].scatter(X, Y, c=colors)
     a, b = np.polyfit(X, Y, 1)
-    args[0].axline(
+    axes[0].axline(
         (0, b),
         slope=a,
         linestyle='--'
     )
-    args[0].scatter([], [], c='b', label='Other Conditions')
-    args[0].scatter([], [], c='r', label=condition)
-    args[0].set_xlabel(f"Component {most_exp_cmp + 1} Weight (Full Data)")
-    args[0].set_ylabel(f"Component {most_exp_cmp + 1} Weight (Sampled Data)")
-    args[0].set_title(f"Full Data vs {cell_type} removed from {condition}")
-    args[0].set_ylim(bottom=0)
-    args[0].set_xlim(left=0)
-    args[0].legend(loc="upper left")
+    axes[0].scatter([], [], c='b', label='Other Conditions')
+    axes[0].scatter([], [], c='r', label=condition)
+    axes[0].set_xlabel(f"Component {most_exp_cmp + 1} Weight (Full Data)")
+    axes[0].set_ylabel(f"Component {most_exp_cmp + 1} Weight (Sampled Data)")
+    axes[0].set_title(f"Full Data vs {cell_type} removed from {condition}")
+    axes[0].set_ylim(bottom=0)
+    axes[0].set_xlim(left=0)
+    axes[0].legend(loc="upper left")
 
-    args[1].set_xlabel(f"Component {most_exp_cmp + 1} Weight (Full Data)")
-    args[1].set_ylabel(f"Number of {cell_type} per condition (Full Data)")
-    args[1].scatter(X, numberOfCellType)
+    axes[1].set_xlabel(f"Component {most_exp_cmp + 1} Weight (Full Data)")
+    axes[1].set_ylabel(f"Number of {cell_type} per condition (Full Data)")
+    axes[1].scatter(X, numberOfCellType)
     a, b = np.polyfit(X, numberOfCellType, 1)
-    args[1].axline(
+    axes[1].axline(
         (0, b),
         slope=a,
         label=f"R^2 value: {int(all_r2[most_exp_cmp]*100)/100}",
         linestyle='--'
     )
-    args[1].set_ylim(bottom=0)
-    args[1].set_xlim(left=0)
-    args[1].legend(loc="upper left")
+    axes[1].set_ylim(bottom=0)
+    axes[1].set_xlim(left=0)
+    axes[1].legend(loc="upper left")
