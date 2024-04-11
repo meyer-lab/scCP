@@ -91,7 +91,7 @@ def plotDifferentialExpression(
     origX = pf2(data, rank, doEmbedding=False)
 
     sampledX = pf2(sampled_data, rank, doEmbedding=False)
-    most_exp_cmp, most_exp_cmp2 = -1, -1
+    # most_exp_cmp, most_exp_cmp2 = -1, -1
     yt = pd.Series(np.unique(origX.obs["Condition"]))
     numberOfCellType = [len(data[(data.obs["Condition"] == txt) & (data.obs[ctarg] == cell_type)]) for txt in yt] # Number of cells in the chosen condition
 
