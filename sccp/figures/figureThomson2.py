@@ -1,16 +1,19 @@
 """
 Thomson: XX
 """
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import statsmodels.api as sm
 from anndata import read_h5ad
 from .common import (
     subplotLabel,
     getSetup,
 )
-from .commonFuncs.plotUMAP import plotLabelsUMAP, plotCmpUMAP, plotGeneUMAP
+from .commonFuncs.plotUMAP import plotLabelsUMAP, plotCmpUMAP
 from .commonFuncs.plotGeneral import (
     plotGenePerCellType,
     plotGenePerCategCond,
-    plotGeneFactors,
     gene_plot_cells,
     plot_cell_gene_corr,
     heatmapGeneFactors,
@@ -20,30 +23,32 @@ from .commonFuncs.plotGeneral import (
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((15, 18), (4, 3))
+    ax, f = getSetup((18, 25), (6, 4))
 
     # Add subplot labels
     subplotLabel(ax)
 
     X = read_h5ad("/opt/pf2/thomson_fitted.h5ad", backed="r")
+    cellDF = getCellCountDF(X, "Cell Type2")
 
     plotLabelsUMAP(X, "Cell Type", ax[0])
     plotLabelsUMAP(X, "Cell Type2", ax[1])
     heatmapGeneFactors([15, 19, 20], X, ax[2], geneAmount=5)
 
     plotCmpUMAP(X, 15, ax[3], 0.2)  # pDC
-    geneSet1 = ["FXYD2", "SERPINF1", "RARRES2"]
-    plotGenePerCellType(geneSet1, X, ax[4], cellType="Cell Type2")
+    plotGenePerCellType(["FXYD2"], X, ax[4], cellType="Cell Type2")
+    plotGenePerCellType(["SERPINF1"], X, ax[5], cellType="Cell Type2")
+    plotGenePerCellType(["RARRES2"], X, ax[6], cellType="Cell Type2")
 
-    plotCmpUMAP(X, 19, ax[5], 0.2)  # Alpro
+    plotCmpUMAP(X, 19, ax[7], 0.2)  # Alpro
     X_genes = X[:, ["THBS1", "EREG"]].to_memory()
     X_genes = X_genes[X_genes.obs["Cell Type"] == "DCs", :]
     gene_plot_cells(
-        X_genes, unique=["Alprostadil"], hue="Condition", ax=ax[6], kde=False
+        X_genes, unique=["Alprostadil"], hue="Condition", ax=ax[8], kde=False
     )
-    ax[6].set(title="Gene Expression in DCs")
+    ax[8].set(title="Gene Expression in DCs")
 
-    plotCmpUMAP(X, 20, ax[7], 0.2)  # Gluco
+    plotCmpUMAP(X, 20, ax[9], 0.2)  # Gluco
     glucs = [
         "Betamethasone Valerate",
         "Loteprednol etabonate",
@@ -51,8 +56,8 @@ def makeFigure():
         "Triamcinolone Acetonide",
         "Meprednisone",
     ]
-    plotGenePerCategCond(glucs, "Gluco", "CD163", X, ax[8], cellType="Cell Type2")
-    plotGenePerCategCond(glucs, "Gluco", "MS4A6A", X, ax[9], cellType="Cell Type2")
+    plotGenePerCategCond(glucs, "Gluco", "CD163", X, ax[10], cellType="Cell Type2")
+    plotGenePerCategCond(glucs, "Gluco", "MS4A6A", X, ax[11], cellType="Cell Type2")
 
     X_genes = X[:, ["CD163", "MS4A6A"]].to_memory()
     plot_cell_gene_corr(
@@ -61,12 +66,146 @@ def makeFigure():
         hue="Condition",
         cells=["Intermediate Monocytes", "Myeloid Suppressors"],
         cellType="Cell Type2",
-        ax=ax[10],
+        ax=ax[12],
     )
 
-    ax[6].set(xlim=(-0.05, 0.6), ylim=(-0.05, 0.6))
-    ax[8].set(ylim=(-0.05, 0.2))
-    ax[9].set(ylim=(-0.05, 0.3))
-    ax[10].set(xlim=(-0.05, 0.3), ylim=(-0.05, 0.2))
+    X.obs["Condition_gluc"] = X.obs["Condition"].cat.add_categories("Other")
+    X.obs["Condition_gluc"] = X.obs["Condition_gluc"].cat.add_categories(
+        "Glucocorticoids"
+    )
+    X.obs.loc[~X.obs["Condition_gluc"].isin(glucs), "Condition_gluc"] = "Other"
+    X.obs.loc[X.obs["Condition_gluc"].isin(glucs), "Condition_gluc"] = "Glucocorticoids"
+    X.obs["Condition_gluc"] = X.obs["Condition_gluc"].cat.remove_unused_categories()
+
+    color_key = np.flip(sns.color_palette(n_colors=2).as_hex())
+    plotLabelsUMAP(X, "Condition_gluc", ax[13], color_key=color_key)
+
+    plot_cell_perc_comp_corr(X, cellDF, "Classical Monocytes", 20, ax[14], unique=glucs)
+    plot_cell_perc_comp_corr(X, cellDF, "Myeloid Suppressors", 20, ax[15], unique=glucs)
+
+    cell_perc_box(cellDF, glucs, "Glucocorticoids", ax[16])
+    plotCmpUMAP(X, 9, ax[17], 0.2)  # Gluco
+
+    ax[4].set(ylim=(-0.1, 1.2))
+    ax[5].set(ylim=(-0.1, 1.2))
+    ax[6].set(ylim=(-0.1, 1.2))
+    ax[8].set(xlim=(-0.05, 0.6), ylim=(-0.05, 0.6))
+    ax[10].set(ylim=(-0.05, 0.2))
+    ax[11].set(ylim=(-0.05, 0.2))
+    ax[12].set(xlim=(-0.05, 0.2), ylim=(-0.05, 0.2))
+    ax[14].set(xlim=(0, 0.5), ylim=(0, 70))
+    ax[15].set(xlim=(0, 0.5), ylim=(0, 70))
+    ax[16].set(ylim=(-10, 70))
 
     return f
+
+
+def getCellCountDF(X, celltype="Cell Type", cellPerc=True):
+    """Returns DF with percentages of cells"""
+
+    df = X.obs[["Cell Type", "Condition", "Cell Type2"]].reset_index(drop=True)
+
+    dfCond = (
+        df.groupby(["Condition"], observed=True).size().reset_index(name="Cell Number")
+    )
+    dfCellType = (
+        df.groupby([celltype, "Condition"], observed=True)
+        .size()
+        .reset_index(name="Count")
+    )
+    dfCellType["Count"] = dfCellType["Count"].astype("float")
+
+    if cellPerc is True:
+        dfCellType["Cell Type Percentage"] = 0.0
+        for i, cond in enumerate(np.unique(df["Condition"])):
+            dfCellType.loc[dfCellType["Condition"] == cond, "Cell Type Percentage"] = (
+                100
+                * dfCellType.loc[dfCellType["Condition"] == cond, "Count"].to_numpy()
+                / dfCond.loc[dfCond["Condition"] == cond]["Cell Number"].to_numpy()
+            )
+
+    dfCellType.rename(columns={celltype: "Cell Type"}, inplace=True)
+
+    return dfCellType
+
+
+def plot_cell_perc_corr(cellDF, pop1, pop2, ax):
+    """Plots correlation of cell percentages against each other"""
+    newDF = pd.DataFrame()
+    newDF2 = pd.DataFrame()
+    newDF[[pop1, "Condition"]] = cellDF.loc[cellDF["Cell Type"] == pop1][
+        ["Cell Type Percentage", "Condition"]
+    ]
+    newDF2[[pop2, "Condition"]] = cellDF.loc[cellDF["Cell Type"] == pop2][
+        ["Cell Type Percentage", "Condition"]
+    ]
+    newDF = newDF.merge(newDF2, on="Condition")
+    sns.scatterplot(newDF, x=pop1, y=pop2, hue="Condition", ax=ax)
+
+
+def plot_cell_perc_comp_corr(X, cellDF, pop, comp, ax, unique=None):
+    """Plots correlation of cell percentages against each conditions component value"""
+    newDF = pd.DataFrame()
+    newDF[[pop, "Condition"]] = cellDF.loc[cellDF["Cell Type"] == pop][
+        ["Cell Type Percentage", "Condition"]
+    ]
+    newDF2 = pd.DataFrame(
+        {
+            "Comp. " + str(comp): X.uns["Pf2_A"][:, comp - 1],
+            "Condition": np.unique(X.obs["Condition"]),
+        }
+    )
+    newDF = newDF.merge(newDF2, on="Condition")
+
+    if unique is not None:
+        newDF["Condition"] = newDF["Condition"].astype(str)
+        newDF.loc[~newDF["Condition"].isin(unique), "Condition"] = "Other"
+
+    sns.scatterplot(newDF, x="Comp. " + str(comp), y=pop, hue="Condition", ax=ax)
+
+
+def cell_perc_box(cellDF, unique, uniqueLabel, ax):
+    """Plots percentages of cells against each other"""
+    cellDF["Category"] = uniqueLabel
+    cellDF.loc[~cellDF.Condition.isin(unique), "Category"] = "Other"
+    hue_order = ["Other", uniqueLabel]
+    sns.boxplot(
+        data=cellDF,
+        x="Cell Type",
+        y="Cell Type Percentage",
+        hue="Category",
+        showfliers=False,
+        hue_order=hue_order,
+        ax=ax,
+    )
+    ax.set_xticks(ax.get_xticks())
+    ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=45)
+    pValDF = diff_abund_test(cellDF)
+    print(pValDF)
+
+
+def diff_abund_test(cellDF):
+    """Calculates whether cells are statistically signicantly different"""
+    pvalDF = pd.DataFrame()
+    cellDF["Y"] = 1
+    cellDF.loc[cellDF.Category == "Other", "Y"] = 0
+    for cell in cellDF["Cell Type"].unique():
+        Y = cellDF.loc[cellDF["Cell Type"] == cell]["Cell Type Percentage"].values
+        X = cellDF.loc[cellDF["Cell Type"] == cell].Y.values
+        weights = np.power(cellDF.loc[cellDF["Cell Type"] == cell]["Count"].values, 1)
+        mod_wls = sm.WLS(Y, sm.tools.tools.add_constant(X), weights=weights)
+        res_wls = mod_wls.fit()
+        pvalDF = pd.concat(
+            [
+                pvalDF,
+                pd.DataFrame(
+                    {
+                        "Cell Type": [cell],
+                        "p Value": res_wls.pvalues[1]
+                        * cellDF["Cell Type"].unique().size,
+                    }
+                ),
+            ]
+        )
+
+    return pvalDF
