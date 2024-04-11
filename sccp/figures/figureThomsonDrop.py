@@ -7,6 +7,8 @@ corresponding weight for the condition removed significantly dropped.
 from .common import getSetup
 from ..imports import import_thomson
 from ..factorization import pf2
+from ..imports import import_thomson
+from .commonFuncs.plotFactors import reorder_table
 import pandas as pd
 import numpy as np
 from anndata import AnnData
