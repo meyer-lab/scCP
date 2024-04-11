@@ -64,7 +64,7 @@ def plotDifferentialExpression(
     rank: int,
     axes: list[Axes],
     ct2:bool = False,
-    override: tuple[int, int] = None,
+    override: tuple[int, int] = (-1, -1),
 ):
     """
     Plots the differences in model weights of a gene set in the original data and the data. The determining component is the component that has the highest correlation with the number of cells in the cell type selected.
@@ -93,7 +93,7 @@ def plotDifferentialExpression(
     yt = pd.Series(np.unique(origX.obs["Condition"]))
     numberOfCellType = [len(data[(data.obs["Condition"] == txt) & (data.obs[ctarg] == cell_type)]) for txt in yt] # Number of cells in the chosen condition
 
-    if not override: # Use r^2 values to find the most important component
+    if override == (-1, -1): # Use r^2 values to find the most important component
         X, X2 = np.array(origX.uns["Pf2_A"]), np.array(sampledX.uns["Pf2_A"])
         all_r2, all_r2_2 = [linregress(X[:, i], numberOfCellType)[2] ** 2 for i in range(X.shape[1])], \
             [linregress(X2[:, i], numberOfCellType)[2] ** 2 for i in range(X.shape[1])]
