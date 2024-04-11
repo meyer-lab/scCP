@@ -98,7 +98,7 @@ def plotDifferentialExpression(
         X, X2 = np.array(origX.uns["Pf2_A"]), np.array(sampledX.uns["Pf2_A"])
         all_r2, all_r2_2 = [linregress(X[:, i], numberOfCellType)[2] ** 2 for i in range(X.shape[1])], \
             [linregress(X2[:, i], numberOfCellType)[2] ** 2 for i in range(X.shape[1])]
-        most_exp_cmp, most_exp_cmp2 = np.argmax(all_r2), np.argmax(all_r2_2)
+        most_exp_cmp, most_exp_cmp2 = int(np.argmax(all_r2)), int(np.argmax(all_r2_2))
     else: # Use the override component numbers
         most_exp_cmp, most_exp_cmp2 = override[0], override[1]
         all_r2 = [0] * rank
