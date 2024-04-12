@@ -11,7 +11,6 @@ from .commonFuncs.plotFactors import (
 )
 from .commonFuncs.plotLupus import getSamplesObs
 from ..factorization import correct_conditions
-from ..imports import import_lupus
 
 
 def makeFigure():
@@ -21,7 +20,6 @@ def makeFigure():
 
     # Add subplot labels
     subplotLabel(ax)
-    import_lupus()
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
