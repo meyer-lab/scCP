@@ -44,7 +44,7 @@ def Thomson_Doublet():
     X.obs["doublet"].to_csv("sccp/data/Thomson/ThomsonDoublets.csv")
 
 
-def getHiResOld(X) -> npt.ArrayLike:
+def getHiResOldLupus(X) -> npt.ArrayLike:
     """Manually gates cell types for Thomson UMAP"""
     X.obs["Cell Type Old2"] = X.obs["Cell Type Old"].astype(str)
     X.obs.cell_type_lympho = X.obs.cell_type_lympho.astype(str)

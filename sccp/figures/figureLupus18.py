@@ -7,7 +7,7 @@ import seaborn as sns
 import numpy as np
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotUMAP import plotLabelsUMAP
-from ..gating import getHiResOld
+from ..gating import getHiResOldLupus
 
 
 def makeFigure():
@@ -19,7 +19,7 @@ def makeFigure():
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad", backed="r")
-    X = getHiResOld(X)
+    X = getHiResOldLupus(X)
     X.obs["Cell Type2"] = X.obs["Cell Type2"].cat.set_categories(np.sort(X.obs["Cell Type2"].cat.categories.values))
     popCrossTabPlot(X, "Cell Type2", "Cell Type Old2", ax[2])
 
