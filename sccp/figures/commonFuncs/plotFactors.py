@@ -121,7 +121,7 @@ def plotGeneFactors(data: AnnData, ax: Axes, trim=True):
     X = X[ind]
     X = X / np.max(np.abs(X))
     yt = [yt[ii] for ii in ind]
-    xticks = [f"Cmp. {i}" for i in np.arange(1, rank)]
+    xticks = np.arange(1, rank+1)
 
     sns.heatmap(
         data=X,
@@ -133,7 +133,7 @@ def plotGeneFactors(data: AnnData, ax: Axes, trim=True):
         vmin=-1,
         vmax=1,
     )
-    ax.set_title("Components by Gene")
+    ax.set(title="Components by Gene", xlabel="Component")
 
 
 def plotWeight(X: AnnData, ax: Axes):

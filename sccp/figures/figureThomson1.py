@@ -16,19 +16,21 @@ import pandas as pd
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((10, 12), (2, 2))
+    ax, f = getSetup((10, 24), (1, 1))
 
     # Add subplot labels
     subplotLabel(ax)
 
     X = read_h5ad("/opt/pf2/thomson_fitted.h5ad", backed="r")
 
+
     drugNames = groupDrugs(X.obs["Condition"])
 
-    plotConditionsFactors(X, ax[0], drugNames, ThomsonNorm=True, groupConditions=True)
-    plotCellState(X, ax[1])
-    plotGeneFactors(X, ax[2])
-    plotWeight(X, ax[3])
+    # plotConditionsFactors(X, ax[0], drugNames, ThomsonNorm=True, groupConditions=True)
+    # plotCellState(X, ax[1])
+    plotGeneFactors(X, ax[0])
+    # plotWeight(X, ax[3])
+
 
     return f
 
