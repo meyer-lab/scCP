@@ -5,14 +5,12 @@ import scanpy as sc
 import anndata
 from matplotlib.axes import Axes
 
-from ...factorization import pf2_r2x
+from ...factorization import pf2_pca_r2x
 
 
-def plotR2X(data, rank, ax: Axes):
+def plotR2X(data, rank_vec, ax: Axes):
     """Creates R2X plot for parafac2 tensor decomposition"""
-    r2xError = pf2_r2x(data, rank)
-
-    rank_vec = np.arange(1, rank + 1)
+    r2xError = pf2_pca_r2x(data, rank_vec)
     labelNames = ["Fit: Pf2", "Fit: PCA"]
     colorDecomp = ["r", "b"]
     markerShape = ["o", "o"]
@@ -30,7 +28,7 @@ def plotR2X(data, rank, ax: Axes):
     ax.set(
         ylabel="Variance Explained",
         xlabel="Number of Components",
-        xticks=np.linspace(0, rank, num=8, dtype=int),
+        xticks=np.linspace(0, rank_vec[-1], num=8, dtype=int),
         yticks=np.linspace(
             0, np.max(np.append(r2xError[0], r2xError[1])) + 0.01, num=5
         ),

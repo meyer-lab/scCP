@@ -4,7 +4,8 @@ from sklearn.linear_model import LinearRegression
 from scipy.stats import gmean
 from tlviz.factor_tools import degeneracy_score
 from parafac2.parafac2 import parafac2_nd
-
+from sklearn.decomposition import PCA
+# from scipy.sparse import csc_matrix
 
 import anndata
 import numpy as np
@@ -73,17 +74,21 @@ def store_pf2(
     return X
 
 
-def pf2_r2x(X: anndata.AnnData, ranks: np.ndarray):
+def pf2_pca_r2x(X: anndata.AnnData, ranks):
     X = X.to_memory()
+    XX = sps.csr_array(X.X)
 
-    r2x_vec = np.empty(ranks.size)
+    r2x_pf2 = np.zeros(len(ranks))
 
-    for i in tqdm(range(len(r2x_vec)), total=len(r2x_vec)):
-        _, R2X = parafac2_nd(X, rank=i + 1)
-
-        r2x_vec[i] = R2X
-
-    return r2x_vec
+    for i in tqdm(range(len(r2x_pf2)), total=len(r2x_pf2)):
+        _, R2X = parafac2_nd(X, rank=i+1)
+        r2x_pf2[i] = R2X
+        
+    pca = PCA(n_components=ranks[-1], svd_solver="arpack")
+    pca.fit(XX)
+    r2x_pca = np.cumsum(pca.explained_variance_ratio_)
+  
+    return r2x_pf2, r2x_pca[np.array(ranks)-1]
 
 
 def pf2(
