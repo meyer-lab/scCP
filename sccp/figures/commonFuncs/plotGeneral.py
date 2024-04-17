@@ -28,7 +28,7 @@ def plotR2X(data, rank_vec, ax: Axes):
     ax.set(
         ylabel="Variance Explained",
         xlabel="Number of Components",
-        xticks=np.linspace(0, rank_vec[-1], num=10, dtype=int),
+        xticks=np.linspace(0, rank_vec[-1], num=6, dtype=int),
         yticks=np.linspace(
             0, np.max(np.append(r2xError[0], r2xError[1])) + 0.01, num=5
         ),
