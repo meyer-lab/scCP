@@ -16,17 +16,17 @@ import numpy as np
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((4, 4), (1, 1))
+    ax, f = getSetup((4, 3), (1, 1))
 
     # Add subplot labels
     subplotLabel(ax)
 
     X = read_h5ad("/opt/pf2/thomson_fitted.h5ad", backed="r")
 
-    ranks = [2, 3, 4]
+    ranks = [5, 10, 15, 20]
+    
     
     plotR2X(X, ranks, ax[0])
-    # for i in range(0, 8):
-    #     plotCmpUMAP(X, i, ax[i])
+    
 
     return f

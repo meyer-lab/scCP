@@ -74,6 +74,19 @@ def store_pf2(
     return X
 
 
+def pf2_r2x(X: anndata.AnnData, ranks: np.ndarray):
+    X = X.to_memory()
+
+    r2x_vec = np.empty(ranks.size)
+
+    for i in tqdm(range(len(r2x_vec)), total=len(r2x_vec)):
+        _, R2X = parafac2_nd(X, rank=i + 1)
+
+        r2x_vec[i] = R2X
+
+    return r2x_vec
+
+
 def pf2_pca_r2x(X: anndata.AnnData, ranks):
     X = X.to_memory()
     XX = sps.csr_array(X.X)
