@@ -39,7 +39,7 @@ def makeFigure():
 
 def getCellCountPercDF(X, celltype="Cell Type", cellPerc=True):
     """Determine cell count or cell type percentage per condition and patient"""
-    df = X.obs[["Cell Type", "SLE_status", "Condition", "Cell Type2"]].reset_index(drop=True)
+    df = X.obs[["Cell Type", "SLE_status", "Condition", "Cell Type2", "leiden"]].reset_index(drop=True)
     dfCond = (
         df.groupby(["Condition"], observed=True).size().reset_index(name="Cell Number")
     )
