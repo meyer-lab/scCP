@@ -21,7 +21,7 @@ def makeFigure():
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad", backed="r")
 
     ranks = np.arange(5, 10, 5)
-    # plot_r2x(X, ranks, ax[0])
+    plot_r2x(X, ranks, ax[0])
     
     plot_predaccuracy_ranks_lupus(X, ranks, ax[1])
  
