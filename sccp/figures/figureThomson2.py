@@ -11,7 +11,7 @@ from .common import (
     subplotLabel,
     getSetup,
 )
-from .commonFuncs.plotUMAP import plot_labels_pacmap, plot_wp_pacmap
+from .commonFuncs.plotPaCMAP import plot_labels_pacmap, plot_wp_pacmap
 from .commonFuncs.plotGeneral import (
     plotGenePerCellType,
     plotGenePerCategCond,
