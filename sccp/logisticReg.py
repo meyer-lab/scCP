@@ -15,7 +15,6 @@ def predaccuracy_ranks_lupus(
     condition_labels_all,
     ranks_to_test,
     error_metric="accuracy",
-    cv_group=None,
 ):
     """Tests various numbers of components for Pf2 by optimizing some error metric in logisitic regression (predicting SLE status)
     pfx2_data: data in Pf2X format
@@ -34,18 +33,6 @@ def predaccuracy_ranks_lupus(
          
         A_matrix = pf2_output.uns["Pf2_A"]
         condition_labels = condition_labels_all["SLE_status"]
-
-        # train a logisitic regression model on that rank, using cross validation
-        # if we want cross validation groups made across a certain feature (like batch or patient); make them
-        cvs = None
-
-        if cv_group is not None:
-            sgkf = StratifiedGroupKFold(n_splits=4)
-            # get labels for the group that you want to do cross validation by
-            group_cond_labels = condition_labels_all[cv_group]
-            cvs = sgkf.split(
-                A_matrix, condition_labels.to_numpy(), group_cond_labels.to_numpy()
-            )
 
         log_reg = logistic_regression(scoring=error_metric)
 
