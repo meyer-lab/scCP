@@ -23,7 +23,7 @@ def makeFigure():
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
-    status = samples_only_lupus(X.obs)
+    status = samples_only_lupus(X)
 
     pair_logistic_regression(correct_conditions(X), status, ax[0])
 

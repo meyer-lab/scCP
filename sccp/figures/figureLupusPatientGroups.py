@@ -20,7 +20,7 @@ def makeFigure():
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted.h5ad")
     X.uns["Pf2_A"] = correct_conditions(X)
 
-    df = samples_only_lupus(X.obs)
+    df = samples_only_lupus(X)
 
     plot_condition_factors(X, ax[0], df["pool"], groupConditions=True)
     ax[0].set(yticks=[])
