@@ -6,7 +6,6 @@ from anndata import read_h5ad
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from sklearn.linear_model import LogisticRegressionCV
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotLupus import samples_only_lupus
 from ..factorization import correct_conditions
