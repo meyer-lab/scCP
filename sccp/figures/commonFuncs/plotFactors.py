@@ -134,7 +134,7 @@ def plot_gene_factors(data: AnnData, ax: Axes, trim=True):
         vmax=1,
     )
     ax.set(xlabel="Component")
-    
+
         
 def plot_gene_factors_partial(
     cmp: int, dataIn: AnnData, ax: Axes, geneAmount: int = 5, top=True
@@ -145,7 +145,6 @@ def plot_gene_factors_partial(
     df = pd.DataFrame(
         data=dataIn.varm["Pf2_C"][:, cmp - 1], index=dataIn.var_names, columns=[cmpName]
     )
-
     df = df.reset_index(names="Gene")
     df = df.sort_values(by=cmpName)
 
