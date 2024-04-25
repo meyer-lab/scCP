@@ -36,7 +36,7 @@ def makeFigure():
     logreg_weights_anc["Predicting"] = "Euro-Ancestry"
     logreg_weights_comb = pd.concat([logreg_weights_status, logreg_weights_anc])
     
-    plot_logreg_weights_status(logreg_weights_comb, ax[1])
+    plot_logreg_weights_comb(logreg_weights_comb, ax[1])
 
    
     return f
@@ -70,7 +70,7 @@ def plot_logreg_weights_status(logreg_weights_df: pd.DataFrame, logreg_predaccur
     )
      
      
-def plot_logreg_weights_status(logreg_weights_combined: pd.DataFrame, ax: Axes):
+def plot_logreg_weights_comb(logreg_weights_combined: pd.DataFrame, ax: Axes):
     """Plots logistic regression weights for predicting by status and ancestry"""
     sns.barplot(
         data=logreg_weights_combined,
