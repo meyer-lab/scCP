@@ -54,7 +54,7 @@ def makeFigure():
     return f
 
 
-def plot_correlation_cmp_cell_count_perc(X: anndata, cmp: int, cellcountDF: pd.DataFrame, ax: Axes, cellPerc=True):
+def plot_correlation_cmp_cell_count_perc(X: anndata, cmp: int, cellcountDF: pd.DataFrame, ax: list[Axes], cellPerc=True):
     """Plot component weights by cell type count or percentage for a cell type"""
     yt = np.unique(X.obs["Condition"])
     factorsA = np.array(X.uns["Pf2_A"])

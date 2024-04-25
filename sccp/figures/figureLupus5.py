@@ -62,7 +62,7 @@ def plot_logreg_weights_status(logreg_weights_df: pd.DataFrame, logreg_predaccur
         y="Weight",
         color="k",
         errorbar=None,
-        ax=ax[1],
+        ax=ax,
     )
     ax.set(
         ylim=[-10, 10],
