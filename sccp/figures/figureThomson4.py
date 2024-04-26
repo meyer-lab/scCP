@@ -18,7 +18,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = read_h5ad("/opt/pf2/thomson_fitted.h5ad")
+    X = read_h5ad("thomson_fitted.h5ad", backed="r")
 
     genes = ["NKG7"]
     for i, gene in enumerate(genes):
@@ -28,6 +28,8 @@ def makeFigure():
     for i, drug in enumerate(drugs):
         plotLabelsUMAP(X, "Condition", ax[i + 1], drug, cmap="Set1")
         ax[i + 2].set(title="Pf2-Based Decomposition")
+
+    return f
 
     # PCA dimension reduction
     pc = PCA(n_components=30)

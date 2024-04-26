@@ -17,7 +17,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = read_h5ad("/opt/pf2/thomson_fitted.h5ad", backed="r")
+    X = read_h5ad("thomson_fitted.h5ad", backed="r")
 
     for i in range(0, 8):
         plotCmpUMAP(X, i, ax[i])

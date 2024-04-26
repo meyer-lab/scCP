@@ -29,7 +29,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = read_h5ad("/opt/pf2/thomson_fitted.h5ad", backed="r")
+    X = read_h5ad("thomson_fitted.h5ad", backed="r")
     cellDF = getCellCountDF(X, "Cell Type2")
 
     plotLabelsUMAP(X, "Cell Type", ax[0])

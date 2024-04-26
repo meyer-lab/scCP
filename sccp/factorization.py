@@ -4,6 +4,7 @@ from sklearn.linear_model import LinearRegression
 from scipy.stats import gmean
 from tlviz.factor_tools import degeneracy_score
 from parafac2.parafac2 import parafac2_nd
+from sklearn.decomposition import NMF
 
 
 import anndata
@@ -92,14 +93,30 @@ def pf2(
     random_state=1,
     doEmbedding: bool = True,
     tolerance=1e-9,
+    non_negative=False,
 ):
-    pf_out, _ = parafac2_nd(
-        X, rank=rank, random_state=random_state, tol=tolerance, n_iter_max=500
-    )
+    if non_negative:
+        sgIndex = X.obs["condition_unique_idxs"]
 
-    X = store_pf2(X, pf_out)
+        nnmf = NMF(n_components=rank, random_state=random_state, max_iter=2000, verbose=True)
+        X.obsm["weighted_projections"] = nnmf.fit_transform(X.X)
+        X.varm["Pf2_C"] = nnmf.components_.T
+        X.uns["Pf2_B"] = np.eye(rank)
+        X.uns["Pf2_weights"] = np.ones(rank)
+        X.uns["Pf2_A"] = np.zeros((np.amax(sgIndex) + 1, rank))
+        X.obsm["projections"] = X.obsm["weighted_projections"]
 
-    print(f"Degeneracy score: {degeneracy_score((pf_out[0], pf_out[1]))}")
+        for i in range(X.uns["Pf2_A"].shape[0]):
+            X.uns["Pf2_A"][i] = np.mean(X.obsm["weighted_projections"][sgIndex == i], axis=0)
+            X.obsm["projections"][sgIndex == i] /= X.uns["Pf2_A"][i]
+    else:
+        pf_out, _ = parafac2_nd(
+            X, rank=rank, random_state=random_state, tol=tolerance, n_iter_max=500
+        )
+
+        X = store_pf2(X, pf_out)
+
+        print(f"Degeneracy score: {degeneracy_score((pf_out[0], pf_out[1]))}")
 
     if doEmbedding:
         pcm = PaCMAP(random_state=random_state)

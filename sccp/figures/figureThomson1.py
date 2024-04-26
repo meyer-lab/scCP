@@ -2,6 +2,8 @@
 Thomson: Plotting Pf2 factors and weights
 """
 
+from ..imports import import_thomson
+from ..factorization import pf2
 from anndata import read_h5ad
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotFactors import (
@@ -22,13 +24,15 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = read_h5ad("/opt/pf2/thomson_fitted.h5ad", backed="r")
+    X = import_thomson()
+    X = pf2(X, 20, non_negative=True)
+    X.write_h5ad("thomson_fitted.h5ad")
 
     drugNames = groupDrugs(X.obs["Condition"])
 
     plotConditionsFactors(X, ax[0], drugNames, ThomsonNorm=True, groupConditions=True)
     plotCellState(X, ax[1])
-    plotGeneFactors(X, ax[2])
+    # plotGeneFactors(X, ax[2])
     plotWeight(X, ax[3])
 
     return f
