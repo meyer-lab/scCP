@@ -7,6 +7,7 @@ import anndata
 import scipy.sparse as sps
 import numpy as np
 from tqdm import tqdm
+import cupy as cp
 
 
 def correct_conditions(X: anndata.AnnData):
@@ -64,3 +65,22 @@ def pf2_pca_r2x(X: anndata.AnnData, ranks):
     r2x_pca = np.cumsum(pca.explained_variance_ratio_)
 
     return r2x_pf2, r2x_pca[np.array(ranks) - 1]
+
+def nuclear_norm(X: anndata.AnnData):
+    
+    
+    Xarr = sps.csr_array(X.X)
+    means = X.var["means"].to_numpy()
+
+    # Deal with non-zero values first, by centering
+    centered_nonzero = Xarr.data - means[Xarr.indices]
+    
+    means = cp.array(means)
+    
+    for i, mat in enumerate(X_list):
+        if isinstance(mat, np.ndarray):
+            mat = cp.array(mat)
+            
+    
+    
+     U, _, Vh = cp.linalg.svd(mat @ lhs - means @ lhs, full_matrices=False)
