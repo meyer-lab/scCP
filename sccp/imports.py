@@ -149,7 +149,6 @@ def import_citeseq() -> anndata.AnnData:
     return prepare_dataset(X, "Condition", geneThreshold=0.1)
 
 
-
 def import_cytokine() -> anndata.AnnData:
     """Import Meyer Cytokine PBMC dataset.
     -- columns from observation data:
