@@ -1,5 +1,5 @@
 """
-Lupus: Plotting Cytokine factors and weights
+Cytokines: Plotting Cytokine factors and weights
 """
 from anndata import read_h5ad
 from .common import subplotLabel, getSetup
