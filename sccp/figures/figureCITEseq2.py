@@ -1,12 +1,13 @@
 """
-CITEseq: Plotting weighted projections per component
+CITEseq: Weighted projections per component in PaCMAP and boxplot
 """
+
 from anndata import read_h5ad
 from .common import (
     subplotLabel,
     getSetup,
 )
-from .commonFuncs.plotUMAP import plotCmpUMAP, plotCmpPerCellType
+from .commonFuncs.plotPaCMAP import plot_wp_pacmap, plot_wp_per_celltype
 
 
 def makeFigure():
@@ -22,7 +23,7 @@ def makeFigure():
     comps = [22, 33, 47, 48, 23, 31, 43]
 
     for i, cmp in enumerate(comps):
-        plotCmpPerCellType(X, cmp, ax[2 * i], cellType="leiden")
-        plotCmpUMAP(X, cmp, ax[2 * i + 1], cbarMax=0.25)
+        plot_wp_per_celltype(X, cmp, ax[2 * i], cellType="leiden")
+        plot_wp_pacmap(X, cmp, ax[2 * i + 1], cbarMax=0.25)
 
     return f

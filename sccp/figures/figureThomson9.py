@@ -1,9 +1,10 @@
 """
-Thomson: Boxplots of weighted projectoins per component
+Thomson: Weighted projections per cell type
 """
+
 from anndata import read_h5ad
 from .common import getSetup
-from .commonFuncs.plotUMAP import plotCmpPerCellType
+from .commonFuncs.plotPaCMAP import plot_wp_per_celltype
 
 
 def makeFigure():
@@ -14,6 +15,6 @@ def makeFigure():
     X = read_h5ad("/opt/pf2/thomson_fitted.h5ad", backed="r")
 
     for i in range(X.uns["Pf2_A"].shape[1]):
-        plotCmpPerCellType(X, i + 1, ax[i], outliers=False, cellType="Cell Type2")
+        plot_wp_per_celltype(X, i + 1, ax[i], outliers=False, cellType="Cell Type2")
 
     return f

@@ -4,19 +4,15 @@ import seaborn as sns
 import scanpy as sc
 import anndata
 from matplotlib.axes import Axes
+from ...factorization import pf2_pca_r2x
 
-from ...factorization import pf2_r2x
 
-
-def plotR2X(data, rank, ax: Axes):
-    """Creates R2X plot for parafac2 tensor decomposition"""
-    r2xError = pf2_r2x(data, rank)
-
-    rank_vec = np.arange(1, rank + 1)
+def plot_r2x(data, rank_vec, ax: Axes):
+    """Creates R2X plot for parafac2 tensor decomposition and pca"""
+    r2xError = pf2_pca_r2x(data, rank_vec)
     labelNames = ["Fit: Pf2", "Fit: PCA"]
     colorDecomp = ["r", "b"]
     markerShape = ["o", "o"]
-
     for i in range(2):
         ax.scatter(
             rank_vec,
@@ -26,53 +22,17 @@ def plotR2X(data, rank, ax: Axes):
             c=colorDecomp[i],
             s=30.0,
         )
-
     ax.set(
         ylabel="Variance Explained",
         xlabel="Number of Components",
-        xticks=np.linspace(0, rank, num=8, dtype=int),
+        xticks=np.linspace(0, rank_vec[-1], num=6, dtype=int),
         yticks=np.linspace(
             0, np.max(np.append(r2xError[0], r2xError[1])) + 0.01, num=5
         ),
     )
 
-    ax.legend()
 
-
-def plotR2X_pf2(data, ranks, ax: Axes):
-    """Creates R2X plot for parafac2 tensor decomposition"""
-    r2xError = pf2_r2x(data, ranks)
-
-    ax.scatter(
-        ranks,
-        r2xError,
-        c="k",
-        s=30.0,
-    )
-
-    ax.set(
-        ylabel="R2X",
-        xlabel="Number of Components",
-    )
-
-
-def plotCellTypePerExpCount(dataDF, condition, ax: Axes):
-    """Plots historgram of cell counts per experiment"""
-    sns.histplot(data=dataDF, x="Cell Type", hue="Cell Type", ax=ax)
-    ax.set(title=condition)
-
-
-def plotCellTypePerExpPerc(dataDF, condition, ax: Axes):
-    """Plots historgram of cell types percentages per experiment"""
-    df = dataDF.groupby(["Cell Type"]).size().reset_index(name="Count")
-    perc = df["Count"].values / np.sum(df["Count"].values)
-    df["Count"] = perc
-
-    sns.barplot(data=df, x="Cell Type", y="Count", ax=ax)
-    ax.set(title=condition)
-
-
-def plotGenePerCellType(genes, adata, ax, cellType="Cell Type"):
+def plot_avegene_per_celltype(adata, genes, ax, cellType="Cell Type"):
     """Plots average gene expression across cell types for all conditions"""
     genesV = adata[:, genes]
     dataDF = genesV.to_df()
@@ -83,18 +43,18 @@ def plotGenePerCellType(genes, adata, ax, cellType="Cell Type"):
         columns={"variable": "Gene", "value": "Value"}
     )
     df = data.groupby(["Condition", "Cell Type", "Gene"], observed=False).mean()
-    df = df.rename(columns={"Value": "Average Gene Expression For Drugs"})
+    df = df.rename(columns={"Value": "Average Gene Expression"})
     sns.boxplot(
         data=df,
         x="Gene",
-        y="Average Gene Expression For Drugs",
+        y="Average Gene Expression",
         hue="Cell Type",
         ax=ax,
         fliersize=0,
     )
 
 
-def plotGenePerCategCond(
+def plot_avegene_per_category(
     conds, categoryCond, gene, adata, ax, mean=True, cellType="Cell Type"
 ):
     """Plots average gene expression across cell types for a category of drugs"""
@@ -129,29 +89,6 @@ def plotGenePerCategCond(
     ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=45)
 
 
-def plotGeneFactors(
-    cmp: int, dataIn: anndata.AnnData, ax: Axes, geneAmount: int = 20, top=True
-):
-    """Plotting weights for gene factors for both most negatively/positively weighted terms"""
-    cmpName = f"Cmp. {cmp}"
-
-    df = pd.DataFrame(
-        data=dataIn.varm["Pf2_C"][:, cmp - 1], index=dataIn.var_names, columns=[cmpName]
-    )
-
-    df = df.reset_index(names="Gene")
-    df = df.sort_values(by=cmpName)
-
-    if top:
-        sns.barplot(
-            data=df.iloc[-geneAmount:, :], x="Gene", y=cmpName, color="k", ax=ax
-        )
-    else:
-        sns.barplot(data=df.iloc[:geneAmount, :], x="Gene", y=cmpName, color="k", ax=ax)
-
-    ax.tick_params(axis="x", rotation=90)
-
-
 def heatmapGeneFactors(
     cmps: list, dataIn: anndata.AnnData, ax: Axes, geneAmount: int = 20
 ):
@@ -178,15 +115,6 @@ def heatmapGeneFactors(
     sns.heatmap(
         data=heatmapDF.transpose()[genes], ax=ax, cmap=cmap, vmin=-vmax, vmax=vmax
     )
-
-
-def population_bar_chart(
-    adata: anndata.AnnData, cellType: str, category: str, ax: Axes
-):
-    """Plots proportion of cells by type stratified by an identifying condition or patient attribute (i.e. Lupus Status)"""
-    cellDF = pd.crosstab(adata.obs[category], adata.obs[cellType], normalize="index")
-    cellDF.plot.bar(ax=ax, stacked=True).legend(loc="upper right")
-    ax.set(ylim=(0, 1), ylabel="Proportion of Cells")
 
 
 def cell_comp_hist(X, category: str, comp: int, unique, ax: Axes):
@@ -374,3 +302,45 @@ def plot_cell_gene_corr(
         ax=ax,
         alpha=alpha,
     )
+
+
+def cell_count_perc_df(X, celltype="Cell Type", status=False):
+    """Returns DF with cell counts and percentages for experiment"""
+    if status is False:
+        grouping = [celltype, "Condition"]
+    else:
+        grouping = [celltype, "Condition", "SLE_status"]
+
+    df = X.obs[grouping].reset_index(drop=True)
+
+    dfCond = (
+        df.groupby(["Condition"], observed=True).size().reset_index(name="Cell Count")
+    )
+    dfCellType = (
+        df.groupby(grouping, observed=True).size().reset_index(name="Cell Count")
+    )
+    dfCellType["Cell Count"] = dfCellType["Cell Count"].astype("float")
+
+    dfCellType["Cell Type Percentage"] = 0.0
+    for cond in np.unique(df["Condition"]):
+        dfCellType.loc[dfCellType["Condition"] == cond, "Cell Type Percentage"] = (
+            100
+            * dfCellType.loc[dfCellType["Condition"] == cond, "Cell Count"].to_numpy()
+            / dfCond.loc[dfCond["Condition"] == cond]["Cell Count"].to_numpy()
+        )
+
+    dfCellType.rename(columns={celltype: "Cell Type"}, inplace=True)
+
+    return dfCellType
+
+
+def rotate_xaxis(ax, rotation=90):
+    """Rotates text by 90 degrees for x-axis"""
+    ax.set_xticks(ax.get_xticks())
+    ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=rotation)
+
+
+def rotate_yaxis(ax, rotation=90):
+    """Rotates text by 90 degrees for y-axis"""
+    ax.set_yticks(ax.get_yticks())
+    ax.set_yticklabels(labels=ax.get_yticklabels(), rotation=rotation)

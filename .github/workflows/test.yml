@@ -14,6 +14,10 @@ jobs:
       run: poetry install
     - name: Run mypy check
       run: make mypy
+    - name: Run ruff check
+      run: poetry run ruff check sccp
+    - name: Run ruff format check
+      run: poetry run ruff format --check sccp
     - name: Test with pytest
       run: make coverage.xml
     - name: Upload coverage to Codecov

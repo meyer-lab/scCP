@@ -1,16 +1,18 @@
 """
 Thomson: Plotting Pf2 factors and weights
 """
+
 from anndata import read_h5ad
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotFactors import (
-    plotConditionsFactors,
-    plotCellState,
-    plotGeneFactors,
-    plotWeight,
+    plot_condition_factors,
+    plot_eigenstate_factors,
+    plot_gene_factors,
+    plot_factor_weight,
 )
 import numpy as np
 import pandas as pd
+import anndata
 
 
 def makeFigure():
@@ -23,18 +25,19 @@ def makeFigure():
 
     X = read_h5ad("/opt/pf2/thomson_fitted.h5ad", backed="r")
 
-    drugNames = groupDrugs(X.obs["Condition"])
+    drugNames = groupDrugs(X, "Condition")
 
-    plotConditionsFactors(X, ax[0], drugNames, ThomsonNorm=True, groupConditions=True)
-    plotCellState(X, ax[1])
-    plotGeneFactors(X, ax[2])
-    plotWeight(X, ax[3])
+    plot_condition_factors(X, ax[0], drugNames, ThomsonNorm=True, groupConditions=True)
+    plot_eigenstate_factors(X, ax[1])
+    plot_gene_factors(X, ax[2])
+    plot_factor_weight(X, ax[3])
 
     return f
 
 
-def groupDrugs(labels):
+def groupDrugs(X: anndata, label_name: str):
     """Groups drugs of similar category"""
+    labels = X.obs[label_name]
     names = np.unique(labels)
 
     glucs = [
@@ -45,7 +48,7 @@ def groupDrugs(labels):
         "Meprednisone",
     ]
     for i in glucs:
-        names[names == i] = "Glucocoritcoids"
+        names[names == i] = "Glucocorticoids"
 
     ctrl = ["CTRL1", "CTRL2", "CTRL3", "CTRL4", "CTRL5", "CTRL6"]
     for i in ctrl:
@@ -57,7 +60,7 @@ def groupDrugs(labels):
     names[names == "Cyclosporine"] = "Calcineruin Inhibitor"
 
     condition = [
-        "Glucocoritcoids",
+        "Glucocorticoids",
         "Control",
         "Prostaglandin",
         "mTOR Inhibitor",

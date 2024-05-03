@@ -2,39 +2,45 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 from matplotlib.axes import Axes
-from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import RocCurveDisplay, auc
 from sklearn.model_selection import StratifiedGroupKFold
+from ...logisticReg import (
+    predaccuracy_ranks_lupus,
+    logistic_regression,
+    roc_lupus_fourtbatch,
+)
 
 
-def getSamplesObs(obs: pd.DataFrame) -> pd.DataFrame:
-    df_samples = obs.drop_duplicates(subset="condition_unique_idxs")
+def samples_only_lupus(X) -> pd.DataFrame:
+    """Obtain samples once only with corresponding observations"""
+    samples = X.obs
+    df_samples = samples.drop_duplicates(subset="condition_unique_idxs")
     df_samples = df_samples.sort_values("condition_unique_idxs")
     return df_samples
 
 
-def plotPf2RankTest(
-    rank_test_results, ax: Axes, error_metric="accuracy", palette="tab10"
+def plot_predaccuracy_ranks_lupus(
+    X, ranks, ax: Axes, error_metric="accuracy", palette="tab10"
 ):
     """Plots results from Pf2 test of various ranks using defined error metric and logistic reg"""
+    pred_accuracy_df = predaccuracy_ranks_lupus(X, samples_only_lupus(X), ranks)
     sns.lineplot(
-        data=rank_test_results,
-        x="rank",
+        data=pred_accuracy_df,
+        x="Component",
         y=error_metric,
-        hue="penalty",
+        hue="Penalty",
         palette=palette,
         ax=ax,
     )
     sns.scatterplot(
-        data=rank_test_results,
-        x="rank",
+        data=pred_accuracy_df,
+        x="Component",
         y=error_metric,
-        hue="penalty",
+        hue="Penalty",
         palette=palette,
         legend=False,
         ax=ax,
     )
-    ax.set_title(error_metric + " by Hyperparameter input")
     ax.set(ylim=[-0.05, 1.05])
 
 
@@ -82,44 +88,43 @@ def investigate_comp(X, comp: int, obs_column: str, ax: Axes, threshold: float =
     )
 
 
-def plotROCAcrossGroups(
-    A_matrix,
-    group_labs,
+def plot_roc_allbatches_lupus(
+    X,
     ax: Axes,
     pred_group="SLE_status",
     cv_group="Processing_Cohort",
-    penalty=50,
     n_splits=4,
 ):
-    condition_labels_all = group_labs
+    cond_factors = X.uns["Pf2_A"]
+    condition_labels_all = samples_only_lupus(X)
 
-    condition_labels = group_labs[pred_group]
+    condition_labels = condition_labels_all[pred_group]
 
     sgkf = StratifiedGroupKFold(n_splits=n_splits)
 
     # get labels for the group that you want to do cross validation by
     group_cond_labels = condition_labels_all[cv_group]
-    # set up log reg specs
-    log_reg = LogisticRegression(
-        random_state=0, max_iter=5000, penalty="l1", solver="saga", C=penalty
-    )
+
+    log_reg = logistic_regression(scoring="roc_auc")
 
     tprs = []
     aucs = []
     mean_fpr = np.linspace(0, 1, 100)
 
     for fold, (train, test) in enumerate(
-        sgkf.split(A_matrix, condition_labels.to_numpy(), group_cond_labels.to_numpy())
+        sgkf.split(
+            cond_factors, condition_labels.to_numpy(), group_cond_labels.to_numpy()
+        )
     ):
         # adding escape option for the second fold (@ index 1) because it has no SLE cases.
         # otherwise we just get NA for our mean and NA for that fold. which isn't super helpful
         # this if statement shouldn't be used with other data
         if fold == 1:
             continue
-        log_reg.fit(A_matrix[train], condition_labels.to_numpy()[train])
+        log_reg.fit(cond_factors[train], condition_labels.to_numpy()[train])
         viz = RocCurveDisplay.from_estimator(
             log_reg,
-            A_matrix[test],
+            cond_factors[test],
             condition_labels.to_numpy()[test],
             name=f"ROC fold {fold}",
             alpha=0.3,
@@ -154,3 +159,12 @@ def plotROCAcrossGroups(
     )
     ax.axis("square")
     ax.legend(loc="lower right")
+
+
+def plot_roc_fourthbatch(X, ax):
+    """Plots ROC curve for prediction"""
+    y_test, sle_decisions = roc_lupus_fourtbatch(X, samples_only_lupus(X))
+
+    RocCurveDisplay.from_predictions(
+        y_test, sle_decisions, pos_label=True, plot_chance_level=True, ax=ax
+    )

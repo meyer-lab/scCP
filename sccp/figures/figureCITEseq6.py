@@ -1,10 +1,11 @@
 """
-CITEseq: Plotting cell count per Leiden cluster per condition
+CITEseq: Cell type percentage per Leiden cluster per condition
 """
+
 from anndata import read_h5ad
 from .common import subplotLabel, getSetup
 import seaborn as sns
-import pandas as pd
+from .commonFuncs.plotGeneral import cell_count_perc_df
 
 
 def makeFigure():
@@ -17,37 +18,15 @@ def makeFigure():
 
     X = read_h5ad("/opt/pf2/CITEseq_fitted_annotated.h5ad", backed="r")
 
-    plotCellCount(X, ax[0])
+    df = cell_count_perc_df(X, celltype="leiden")
 
-    return f
-
-
-def plotCellCount(X, ax, celltype="leiden"):
-    """Plots cell count per cluster per condition and as a percentage"""
-    df = X.obs[[celltype, "Condition"]].reset_index(drop=True)
-
-    dfCond = (
-        df.groupby(["Condition"], observed=True).size().reset_index(name="Cell Number")
-    )
-
-    dfCellType = (
-        df.groupby([celltype, "Condition"], observed=True)
-        .size()
-        .reset_index(name="Count")
-    )
-    dfCellType["Count"] = dfCellType["Count"].astype("float")
-    for i, cond in enumerate(pd.unique(df["Condition"])):
-        dfCellType.loc[dfCellType["Condition"] == cond, "Count"] = (
-            100
-            * dfCellType.loc[dfCellType["Condition"] == cond, "Count"].to_numpy()
-            / dfCond.loc[dfCond["Condition"] == cond]["Cell Number"].to_numpy()
-        )
-    dfCellType.rename(columns={"Count": "Cell Type Percentage"}, inplace=True)
     sns.barplot(
-        data=dfCellType,
-        x=celltype,
+        data=df,
+        x="Cell Type",
         y="Cell Type Percentage",
         hue="Condition",
-        ax=ax,
+        ax=ax[0],
         errorbar=None,
     )
+
+    return f

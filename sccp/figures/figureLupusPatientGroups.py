@@ -1,12 +1,11 @@
 """
-Lupus: Plotting Pf2 factors and weights
+Lupus: Pf2 factors and weights labeled differently
 """
+
 from anndata import read_h5ad
 from .common import subplotLabel, getSetup
-from .commonFuncs.plotFactors import (
-    plotConditionsFactors,
-)
-from .commonFuncs.plotLupus import getSamplesObs
+from .commonFuncs.plotFactors import plot_condition_factors
+from .commonFuncs.plotLupus import samples_only_lupus
 from ..factorization import correct_conditions
 
 
@@ -21,13 +20,13 @@ def makeFigure():
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted.h5ad")
     X.uns["Pf2_A"] = correct_conditions(X)
 
-    df = getSamplesObs(X.obs)
+    df = samples_only_lupus(X)
 
-    plotConditionsFactors(X, ax[0], df["pool"], groupConditions=True)
+    plot_condition_factors(X, ax[0], df["pool"], groupConditions=True)
     ax[0].set(yticks=[])
-    plotConditionsFactors(X, ax[1], df["Processing_Cohort"], groupConditions=True)
+    plot_condition_factors(X, ax[1], df["Processing_Cohort"], groupConditions=True)
     ax[1].set(yticks=[])
-    plotConditionsFactors(X, ax[2], df["Status"], groupConditions=True)
+    plot_condition_factors(X, ax[2], df["Status"], groupConditions=True)
     ax[2].set(yticks=[])
 
     return f
