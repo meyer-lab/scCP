@@ -11,8 +11,8 @@ from .commonFuncs.plotFactors import (
 )
 from .commonFuncs.plotLupus import samples_only_lupus
 from ..factorization import correct_conditions
-from ..imports import import_cytokine
-from ..factorization import pf2
+#from ..imports import import_cytokine
+#from ..factorization import pf2
 
 
 def makeFigure():
