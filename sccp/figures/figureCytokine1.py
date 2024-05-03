@@ -4,12 +4,12 @@ Cytokines: Plotting Cytokine factors and weights
 from anndata import read_h5ad
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotFactors import (
-    plotConditionsFactors,
-    plotCellState,
-    plotGeneFactors,
-    plotWeight,
+    plot_condition_factors,
+    plot_eigenstate_factors,
+    plot_gene_factors,
+    plot_factor_weight,
 )
-from .commonFuncs.plotLupus import getSamplesObs
+from .commonFuncs.plotLupus import samples_only_lupus
 from ..factorization import correct_conditions
 from ..imports import import_cytokine
 from ..factorization import pf2
@@ -29,15 +29,15 @@ def makeFigure():
         cytok_pf2 = pf2(X, rank)
         cytok_pf2.write_h5ad("/home/brianoj/scCP/cytok_pf2/cytok_pf2_" + str(rank))
     """
-    X = read_h5ad("/home/brianoj/scCP/cytok_pf2/cytok_pf2_30")
+    X = read_h5ad("sccp/notebooks/cytok/cytok_pf2_30.h5ad")
 
     X.uns["Pf2_A"] = correct_conditions(X)
-    stimulations = getSamplesObs(X.obs)["Condition"]
+    stimulations = samples_only_lupus(X)["Condition"]
 
-    plotConditionsFactors(X, ax[0], stimulations)
+    plot_condition_factors(X, ax[0], stimulations)
     ax[0].set(yticks=[])
-    plotCellState(X, ax[1])
-    plotGeneFactors(X, ax[2])
-    plotWeight(X, ax[3])
+    plot_eigenstate_factors(X, ax[1])
+    plot_gene_factors(X, ax[2])
+    plot_factor_weight(X, ax[3])
 
     return f
