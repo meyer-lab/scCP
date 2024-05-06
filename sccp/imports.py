@@ -210,4 +210,4 @@ def import_cytokine() -> anndata.AnnData:
     """
     X = anndata.read_h5ad("/opt/extra-storage/Treg_h5ads/Treg_raw.h5ad")
 
-    return prepare_dataset(X, "Condition", geneThreshold=0.1)
+    return prepare_dataset(X, "Condition", geneThreshold=0.01)
