@@ -211,6 +211,6 @@ def import_cytokine() -> anndata.AnnData:
     X = anndata.read_h5ad("/opt/extra-storage/Treg_h5ads/Treg_raw.h5ad")
 
     # Remove multiplexing identifiers
-    X = X[:, ~X.var_names.str.match("^CMO3[0-9]{2}$")] # type: ignore
+    X = X[:, ~X.var_names.str.match("^CMO3[0-9]{2}$")]  # type: ignore
 
     return prepare_dataset(X, "Condition", geneThreshold=0.01)
