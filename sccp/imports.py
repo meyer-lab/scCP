@@ -201,3 +201,13 @@ def import_CCLE() -> anndata.AnnData:
     X.X = csr_matrix(X.X)
 
     return prepare_dataset(X, "sample", geneThreshold=0.1)
+
+
+def import_cytokine() -> anndata.AnnData:
+    """Import Meyer Cytokine PBMC dataset.
+    -- columns from observation data:
+    {'Stimulation': Cytokine and Dose}
+    """
+    X = anndata.read_h5ad("/opt/extra-storage/Treg_h5ads/Treg_raw.h5ad")
+
+    return prepare_dataset(X, "Condition", geneThreshold=0.1)
