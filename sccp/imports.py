@@ -1,3 +1,4 @@
+import glob
 from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 import pandas as pd
@@ -143,6 +144,32 @@ def import_citeseq() -> anndata.AnnData:
         ]
 
         data = {k: futures[i].result() for i, k in enumerate(files)}
+
+    X = anndata.concat(data, merge="same", label="Condition")
+
+    return prepare_dataset(X, "Condition", geneThreshold=0.1)
+
+
+def import_HTAN() -> anndata.AnnData:
+    """Imports Vanderbilt's HTAN 10X data."""
+    files = glob.glob("/opt/extra-storage/HTAN/*.mtx.gz")
+    futures = []
+    data = {}
+
+    with ProcessPoolExecutor(max_workers=10) as executor:
+        for filename in files:
+            future = executor.submit(
+                sc.read_10x_mtx,
+                "/opt/extra-storage/HTAN/",
+                gex_only=False,
+                make_unique=True,
+                prefix=filename.split("/")[-1].split("matrix.")[0],
+            )
+            futures.append(future)
+
+        for i, k in enumerate(files):
+            result = futures[i].result()
+            data[k.split("/")[-1].split("_matrix.")[0]] = result
 
     X = anndata.concat(data, merge="same", label="Condition")
 
