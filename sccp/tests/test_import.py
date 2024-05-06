@@ -4,11 +4,18 @@ Test the cross validation accuracy.
 
 import pytest
 import numpy as np
-from ..imports import import_thomson, import_lupus, import_citeseq, import_HTAN
+from ..imports import (
+    import_thomson,
+    import_lupus,
+    import_citeseq,
+    import_HTAN,
+    import_CCLE,
+)
 
 
 @pytest.mark.parametrize(
-    "import_func", [import_thomson, import_lupus, import_citeseq, import_HTAN]
+    "import_func",
+    [import_thomson, import_lupus, import_citeseq, import_HTAN, import_CCLE],
 )
 def test_imports(import_func):
     """Test import functions."""

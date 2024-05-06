@@ -1,10 +1,11 @@
 import glob
+from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 import pandas as pd
 import anndata
 import scanpy as sc
-from scipy.sparse import spmatrix
+from scipy.sparse import spmatrix, csr_matrix
 from sklearn.utils.sparsefuncs import inplace_column_scale, mean_variance_axis
 from .gating import gateThomsonCells
 
@@ -174,3 +175,29 @@ def import_HTAN() -> anndata.AnnData:
     X = anndata.concat(data, merge="same", label="Condition")
 
     return prepare_dataset(X, "Condition", geneThreshold=0.1)
+
+
+def import_CCLE() -> anndata.AnnData:
+    """Imports barcoded cell data."""
+    # TODO: Still need to add gene names and barcodes.
+    folder = "/opt/extra-storage/asm/Heiser-barcode/CCLE/"
+
+    adatas = {
+        "HCT116_1": anndata.read_text(
+            Path(folder + "HCT116_tracing_T1.count_mtx.tsv")
+        ).T,
+        "HCT116_2": anndata.read_text(
+            Path(folder + "HCT116_tracing_T2.count_mtx.tsv")
+        ).T,
+        "MDA-MB-231_1": anndata.read_text(
+            Path(folder + "MDA-MB-231_tracing_T1.count_mtx.tsv")
+        ).T,
+        "MDA-MB-231_2": anndata.read_text(
+            Path(folder + "MDA-MB-231_tracing_T2.count_mtx.tsv")
+        ).T,
+    }
+
+    X = anndata.concat(adatas, label="sample")
+    X.X = csr_matrix(X.X)
+
+    return prepare_dataset(X, "sample", geneThreshold=0.1)
