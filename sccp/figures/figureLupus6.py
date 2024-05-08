@@ -15,6 +15,7 @@ from .commonFuncs.plotGeneral import rotate_xaxis
 from ..stats import wls_stats_comparison
 from matplotlib.axes import Axes
 import anndata
+from .commonFuncs.plotFactors import bot_top_genes
 
 
 def makeFigure():
@@ -36,7 +37,9 @@ def makeFigure():
 
 def cytotoxic_score(X: anndata.AnnData):
     """Scanpy average gene score for all cells"""
-    cytotoxic_genes = ["PRF1", "GZMH", "GZMB"]
+    
+    cytotoxic_genes = bot_top_genes(X, 22, geneAmount=30)[30:]
+    # cytotoxic_genes = ["PRF1", "GZMH", "GZMB"]
     X = sc.tl.score_genes(adata=X, gene_list=cytotoxic_genes, copy=True, use_raw=False)
 
     return X
