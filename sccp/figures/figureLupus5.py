@@ -12,6 +12,7 @@ from ..factorization import correct_conditions
 from ..logisticReg import logistic_regression
 from matplotlib.axes import Axes
 import anndata
+from ..factorization import correct_conditions, pf2
 
 
 def makeFigure():
@@ -23,6 +24,7 @@ def makeFigure():
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
+    X = pf2(X, rank=int(30), doEmbedding=False)
     X.uns["Pf2_A"] = correct_conditions(X)
 
     samples_only_df = samples_only_lupus(X)
@@ -32,13 +34,13 @@ def makeFigure():
     )
     plot_logreg_weights_status(logreg_weights_status, logreg_score_status, ax[0])
 
-    samples_only_df["ancestry"] = samples_only_df["ancestry"] == "European"
-    logreg_weights_anc, _ = logreg_weights_scores(X, samples_only_df, "ancestry")
-    logreg_weights_status["Predicting"] = "SLE Status"
-    logreg_weights_anc["Predicting"] = "Euro-Ancestry"
-    logreg_weights_comb = pd.concat([logreg_weights_status, logreg_weights_anc])
+    # samples_only_df["ancestry"] = samples_only_df["ancestry"] == "European"
+    # logreg_weights_anc, _ = logreg_weights_scores(X, samples_only_df, "ancestry")
+    # logreg_weights_status["Predicting"] = "SLE Status"
+    # logreg_weights_anc["Predicting"] = "Euro-Ancestry"
+    # logreg_weights_comb = pd.concat([logreg_weights_status, logreg_weights_anc])
 
-    plot_logreg_weights_comb(logreg_weights_comb, ax[1])
+    # plot_logreg_weights_comb(logreg_weights_comb, ax[1])
 
     return f
 
@@ -70,7 +72,7 @@ def plot_logreg_weights_status(
         ax=ax,
     )
     ax.set(
-        ylim=[-10, 10],
+        # ylim=[-10, 10],
         title="LR Prediction Accuracy: " + str(np.round(logreg_predaccuracy, 3)),
     )
 

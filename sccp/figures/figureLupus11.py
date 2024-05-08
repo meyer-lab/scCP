@@ -49,11 +49,11 @@ def makeFigure():
     )
     print(pval_df)
 
-    cmp = 22
-    idx = len(np.unique(celltype_count_perc_df["Cell Type"]))
-    plot_correlation_cmp_cell_count_perc(
-        X, cmp, celltype_count_perc_df, ax[1 : idx + 2], cellPerc=False
-    )
+    # cmp = 22
+    # idx = len(np.unique(celltype_count_perc_df["Cell Type"]))
+    # plot_correlation_cmp_cell_count_perc(
+    #     X, cmp, celltype_count_perc_df, ax[1 : idx + 2], cellPerc=False
+    # )
 
     return f
 

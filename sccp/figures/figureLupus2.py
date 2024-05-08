@@ -25,6 +25,7 @@ def makeFigure():
     plot_labels_pacmap(X, "Cell Type", ax[0])
     plot_labels_pacmap(X, "Cell Type2", ax[1])
 
+
     plot_pair_gene_factors(X, 22, 28, ax[2])
 
     return f
