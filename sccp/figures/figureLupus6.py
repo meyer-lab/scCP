@@ -55,12 +55,23 @@ def plot_score(X: anndata, ax: Axes, cellType="Cell Type"):
         .dropna()
         .sort_values(["Cell Type", "Condition"])
     )
+    
+    print(df_mean_score)
+    
+    print(df.groupby(["Status", "Cell Type", "Condition"], observed=False)
+        .mean()
+        .reset_index()
+        .sort_values(["Cell Type", "Condition"])
+    )
+
     df_count = (
         df.groupby(["Cell Type", "Condition"], observed=False)
         .size()
         .reset_index(name="Cell Count")
         .sort_values(["Cell Type", "Condition"])
     )
+    
+    print((df_count))
 
     df_mean_score["Cell Count"] = df_count["Cell Count"].to_numpy()
 
