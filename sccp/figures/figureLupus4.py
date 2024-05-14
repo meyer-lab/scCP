@@ -2,11 +2,10 @@
 Lupus: R2X for PCA/Pf2 and prediction accuracy for different components
 """
 
-import numpy as np
 from anndata import read_h5ad
 from .common import subplotLabel, getSetup
-from .commonFuncs.plotGeneral import plot_r2x
-from .commonFuncs.plotLupus import plot_predaccuracy_ranks_lupus
+# from .commonFuncs.plotGeneral import plot_r2x
+# from .commonFuncs.plotLupus import plot_predaccuracy_ranks_lupus
 
 
 def makeFigure():
