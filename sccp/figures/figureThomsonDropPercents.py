@@ -21,9 +21,7 @@ def makeFigure():
     data = import_thomson()
     ax, f = getSetup((2, 2), (1, 1))
 
-    plot_weights_across_percents(
-        data, "B Cells", "CTRL4", 0, 1, 0.25, rank, ax[0]
-    )
+    plot_weights_across_percents(data, "B Cells", "CTRL4", 0, 1, 0.25, rank, ax[0])
 
     ### Can add other cell types here
 
@@ -72,7 +70,10 @@ def plot_weights_across_percents(
 
             if override == -1:  # Use r^2 values to find the most important component
                 X = np.array(sampledX.uns["Pf2_A"])
-                all_r2 = [linregress(X[:, i], numberOfCellType)[2] ** 2 for i in range(X.shape[1])]
+                all_r2 = [
+                    linregress(X[:, i], numberOfCellType)[2] ** 2
+                    for i in range(X.shape[1])
+                ]
                 most_exp_cmp = int(np.argmax(all_r2))
             else:  # Use the override component numbers
                 most_exp_cmp = override
