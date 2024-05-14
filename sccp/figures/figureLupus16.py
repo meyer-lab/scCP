@@ -90,17 +90,31 @@ def plot_avegene_per_status_per_cluster(
     
     
     df_count = (
-        df.groupby(["Cell Type", "Condition"], observed=False)
+        dataDF.groupby(["Cell Type", "Condition"], observed=False)
         .size()
         .reset_index(name="Cell Count")
-        .sort_values(["Cell Type", "Condition"])
+        
+        # .sort_values(["Cell Type", "Condition"])
     )
+    # df_count["Cell Type"] = df_count["Cell Type"].to_numpy().astype(str)
     
-    dfClusterCount = df_count.loc[df_count["Cell Type"] == clusterName1]
+    for i, leiden in enumerate(np.unique(df_count["Cell Type"])):
+        df_leiden = df_count.loc[df_count["Cell Type"] == leiden]
+        mean = df_leiden["Cell Count"].mean()
+        print("Leiden: ", leiden)
+        print("Leiden Mean: ", mean)
     
-    print(dfClusterCount)
-    print(dfClust)
+    
+    # print(df_count)
+    # print(df_count.groupby(["Cell Type"]).mean())
+    
     a
+    
+    # dfClusterCount = df_count.loc[df_count["Cell Type"] == clusterName1]
+    
+    # print(dfClusterCount)
+    # print(dfClust)
+    # a
     
     
     
