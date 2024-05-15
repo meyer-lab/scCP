@@ -1,12 +1,9 @@
 import seaborn as sns
 import pandas as pd
-import numpy as np
 from matplotlib.axes import Axes
-from sklearn.metrics import RocCurveDisplay, auc
-from sklearn.model_selection import StratifiedGroupKFold
+from sklearn.metrics import RocCurveDisplay
 from ...logisticReg import (
     predaccuracy_ranks_lupus,
-    logistic_regression,
     roc_lupus_fourtbatch,
 )
 
