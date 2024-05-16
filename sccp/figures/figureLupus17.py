@@ -18,7 +18,7 @@ import anndata
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((5, 2.5), (1, 2))
+    ax, f = getSetup((5, 2), (1, 2))
 
     # Add subplot labels
     subplotLabel(ax)
@@ -31,7 +31,7 @@ def makeFigure():
     df_total = pd.DataFrame([])
 
     for i, gene in enumerate(np.ravel(genes)):
-        df = avegene_per_status(X, gene, ax[i])
+        df = avegene_per_status(X, gene, ax[i], cellType="Cell Type2")
         df_total = pd.concat([df, df_total])
 
     df_total = df_total.pivot(index=["Status", "Cell Type", "Condition"], columns="Gene", values="Average Gene Expression")
@@ -46,7 +46,7 @@ def makeFigure():
         style="Status",
         ax=ax[0]
     )
-    colors = sns.color_palette()
+    colors = sns.color_palette("hls", len(np.unique(df_mean["Cell Type"])))
     fmt = ["o", '*']
     
     for i, status in enumerate(np.unique(df_mean["Status"])):
