@@ -13,7 +13,7 @@ def predaccuracy_ranks_lupus(
     pfx2_data,
     condition_labels_all,
     ranks_to_test,
-    error_metric="accuracy",
+    error_metric="roc_auc",
 ):
     """Tests various numbers of components for Pf2 by optimizing some error metric in logisitic regression (predicting SLE status)
     pfx2_data: data in Pf2X format
@@ -73,11 +73,9 @@ def roc_lupus_fourtbatch(
     )
     y = (condition_batch_labels["SLE_status"] == "SLE").to_numpy(dtype=bool)
 
-    # train + fit a logisitic regression model using cross validation ON ONLY THE TRAINING (GROUP 4) DATA
     log_reg = logistic_regression(scoring=error_metric)
     log_fit = log_reg.fit(cond_factors[cohort_four], y[cohort_four])
 
-    # Decision function for ROC AUC
     sle_decisions = log_fit.decision_function(cond_factors[~cohort_four])
     y_test = y[~cohort_four]
 
