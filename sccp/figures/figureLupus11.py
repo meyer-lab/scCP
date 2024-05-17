@@ -93,10 +93,9 @@ def plot_correlation_cmp_cell_count_perc(
                         "Cmp": factorsA[j],
                     }
                 )
-        
+
             totaldf = pd.concat([totaldf, smalldf])
-        
-    
+
         df = totaldf.loc[totaldf["Cell Type"] == celltype]
         print("Cell Type:", celltype)
         print("Cell Count:", df["Cell Count"].mean())

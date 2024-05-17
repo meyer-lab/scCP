@@ -8,7 +8,6 @@ from .common import subplotLabel, getSetup
 # from .commonFuncs.plotLupus import plot_accuracy_ranks_lupus
 
 
-
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
