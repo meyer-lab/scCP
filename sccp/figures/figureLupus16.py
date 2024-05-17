@@ -13,7 +13,6 @@ import pandas as pd
 from .commonFuncs.plotFactors import bot_top_genes
 from matplotlib.axes import Axes
 import anndata
-from ..stats import wls_stats_comparison
 
 
 def makeFigure():
