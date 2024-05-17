@@ -5,6 +5,7 @@ import scanpy as sc
 import anndata
 from matplotlib.axes import Axes
 from ...factorization import pf2_pca_r2x
+from ...stats import wls_stats_comparison
 
 
 def plot_r2x(data, rank_vec, ax: Axes):
@@ -55,7 +56,7 @@ def plot_avegene_per_celltype(adata, genes, ax, cellType="Cell Type"):
 
 
 def plot_avegene_per_category(
-    conds, categoryCond, gene, adata, ax, mean=True, cellType="Cell Type"
+    conds, categoryCond, gene, adata, ax, cellType="Cell Type"
 ):
     """Plots average gene expression across cell types for a category of drugs"""
     genesV = adata[:, gene]
@@ -67,19 +68,19 @@ def plot_avegene_per_category(
     df = pd.melt(dataDF, id_vars=["Condition", "Cell Type"], value_vars=gene).rename(
         columns={"variable": "Gene", "value": "Value"}
     )
-    if mean is True:
-        df = df.groupby(["Condition", "Cell Type", "Gene"], observed=False).mean()
+  
+    df_mean = df.groupby(["Condition", "Cell Type", "Gene"], observed=False).mean()
 
-    df = df.rename(columns={"Value": "Average Gene Expression For Drugs"}).reset_index()
+    df_mean = df_mean.rename(columns={"Value": "Average Gene Expression"}).reset_index()
 
-    df["Condition"] = np.where(df["Condition"].isin(conds), df["Condition"], "Other")
+    df_mean["Category"] = np.where(df_mean["Condition"].isin(conds), df_mean["Condition"], "Other")
     for i in conds:
-        df = df.replace({"Condition": {i: categoryCond}})
-
+        df_mean = df_mean.replace({"Category": {i: categoryCond}})
+  
     sns.boxplot(
-        data=df.loc[df["Gene"] == gene],
+        data=df_mean.loc[df_mean["Gene"] == gene],
         x="Cell Type",
-        y="Average Gene Expression For Drugs",
+        y="Average Gene Expression",
         hue="Condition",
         ax=ax,
         showfliers=False,
@@ -87,6 +88,26 @@ def plot_avegene_per_category(
     ax.set(title=gene)
     ax.set_xticks(ax.get_xticks())
     ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=45)
+    
+    df_mean = df_mean.sort_values(["Cell Type", "Condition"])
+    df_count = (
+        df.groupby(["Cell Type", "Condition"], observed=False)
+        .size()
+        .reset_index(name="Cell Count")
+        .sort_values(["Cell Type", "Condition"])
+    )
+    
+    df_mean["Cell Count"] = df_count["Cell Count"].to_numpy()
+    
+    pval_df = wls_stats_comparison(
+        df_mean,
+        column_comparison_name="Average Gene Expression",
+        category_name="Category",
+        status_name=categoryCond,
+    )
+
+    print(pval_df)
+
 
 
 def heatmapGeneFactors(
