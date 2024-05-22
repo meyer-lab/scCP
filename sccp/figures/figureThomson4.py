@@ -45,15 +45,16 @@ def makeFigure():
 
     plot_labels_pacmap(X, "Cell Type", ax[9])
     
-    # pf2_batch_df = batch_correction_metrics(X, "projections")
-    # pf2_batch_df["Fit"] = "Pf2"
+    pf2_batch_df = batch_correction_metrics(X, "projections")
+    pf2_batch_df["Fit"] = "Pf2"
 
-    # X.obsm["pca"] = pcaPoints
-    # pca_batch_df = batch_correction_metrics(X, "pca")
-    # pca_batch_df["Fit"] = "PCA"
+    X.obsm["pca"] = pcaPoints
+    pca_batch_df = batch_correction_metrics(X, "pca")
+    pca_batch_df["Fit"] = "PCA"
 
-    # batch_df =  pd.concat([pf2_batch_df, pca_batch_df])
-    # sns.barplot(data=batch_df, x="Value", y="Metric", hue="Fit", ax=ax[10])
+    batch_df =  pd.concat([pf2_batch_df, pca_batch_df])
+    sns.barplot(data=batch_df, x="Value", y="Metric", hue="Fit", ax=ax[10])
+
 
     return f
 
