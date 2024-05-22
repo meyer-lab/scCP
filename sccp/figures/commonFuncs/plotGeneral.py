@@ -87,8 +87,8 @@ def plot_avegene_per_category(
     ax.set(title=gene)
     ax.set_xticks(ax.get_xticks())
     ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=45)
-    
-    
+
+
 def plot_avegene_per_status(
     X: anndata.AnnData, gene: str, ax: Axes, cellType="Cell Type"
 ):
@@ -116,7 +116,7 @@ def plot_avegene_per_status(
         showfliers=False,
     )
     ax.set(title=gene)
-    
+
     return df
 
 
