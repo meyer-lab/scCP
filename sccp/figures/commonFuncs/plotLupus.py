@@ -16,14 +16,12 @@ def samples_only_lupus(X) -> pd.DataFrame:
     return df_samples
 
 
-def plot_accuracy_ranks_lupus(
-    X, ranks, ax: Axes, error_metric="roc_auc"
-):
+def plot_accuracy_ranks_lupus(X, ranks, ax: Axes, error_metric="roc_auc"):
     """Plots results from Pf2 test of various ranks using defined error metric and logistic reg"""
     pred_accuracy_df = predaccuracy_ranks_lupus(
         X, samples_only_lupus(X), ranks, error_metric
     )
-    
+
     sns.lineplot(
         data=pred_accuracy_df,
         x="Component",
