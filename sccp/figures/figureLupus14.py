@@ -18,14 +18,14 @@ import anndata
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((10, 8), (4, 3))
+    ax, f = getSetup((10, 8), (4, 5))
 
     # Add subplot labels
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
-    genes = bot_top_genes(X, cmp=14, geneAmount=2)
+    genes = bot_top_genes(X, cmp=1, geneAmount=10)
 
     for i, gene in enumerate(np.ravel(genes)):
         plot_avegene_per_status(X, gene, ax[i])

@@ -12,7 +12,7 @@ from .commonFuncs.plotPaCMAP import (
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((12, 10), (5, 4))
+    ax, f = getSetup((8.5, 8), (5, 4))
 
     # Add subplot labels
     subplotLabel(ax)
