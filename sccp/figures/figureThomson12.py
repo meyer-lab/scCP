@@ -19,17 +19,20 @@ import anndata
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((8, 11.5), (4, 5))
+    ax, f = getSetup((15, 15.5), (4, 5))
 
     # Add subplot labels
     subplotLabel(ax)
 
     X = read_h5ad("/opt/pf2/thomson_fitted.h5ad", backed="r")
 
-    genes = bot_top_genes(X, cmp=1, geneAmount=10)
+    genes = bot_top_genes(X, cmp=20, geneAmount=30)
+    for i in genes[30:]:
+    # for i in genes[:30]:
+        print(i)
 
-    for i, gene in enumerate(np.ravel(genes)):
-        plot_avegene_per_celltype(X, gene, ax[i], cellType="Cell Type2")
+    # for i, gene in enumerate(np.ravel(genes)):
+    #     plot_avegene_per_celltype(X, gene, ax[i], cellType="Cell Type2")
 
     return f
 

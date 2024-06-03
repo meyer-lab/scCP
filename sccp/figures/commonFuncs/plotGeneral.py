@@ -76,13 +76,13 @@ def plot_avegene_per_category(
     for i in conds:
         df = df.replace({"Condition": {i: categoryCond}})
 
-    sns.boxplot(
+    print(df.loc[df["Gene"] == gene])
+    sns.stripplot(
         data=df.loc[df["Gene"] == gene],
         x="Cell Type",
         y="Average Gene Expression For Drugs",
         hue="Condition",
         ax=ax,
-        showfliers=False,
     )
     ax.set(title=gene)
     ax.set_xticks(ax.get_xticks())

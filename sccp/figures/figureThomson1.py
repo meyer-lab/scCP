@@ -35,6 +35,8 @@ def makeFigure():
     return f
 
 
+
+
 def groupDrugs(X: anndata, label_name: str):
     """Groups drugs of similar category"""
     labels = X.obs[label_name]

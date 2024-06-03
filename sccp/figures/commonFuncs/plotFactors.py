@@ -26,10 +26,10 @@ def plot_condition_factors(
     X = np.log10(X)
     if ThomsonNorm is True:
         controls = yt.str.contains("CTRL")
-        X = X[controls]
+        XX = X[controls]
 
-    X -= np.median(X, axis=0)
-    X /= np.std(X, axis=0)
+    X -= np.median(XX, axis=0)
+    X /= np.std(XX, axis=0)
 
     ind = reorder_table(X)
     X = X[ind]
