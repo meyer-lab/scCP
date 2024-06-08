@@ -27,10 +27,10 @@ def makeFigure():
 
     drugNames = groupDrugs(X, "Condition")
 
-    plot_condition_factors(X, ax[0], drugNames, ThomsonNorm=True, groupConditions=True)
-    plot_eigenstate_factors(X, ax[1])
+    # plot_condition_factors(X, ax[0], drugNames, ThomsonNorm=True, groupConditions=True)
+    # plot_eigenstate_factors(X, ax[1])
     plot_gene_factors(X, ax[2])
-    plot_factor_weight(X, ax[3])
+    # plot_factor_weight(X, ax[3])
 
     return f
 

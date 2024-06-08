@@ -134,6 +134,27 @@ def plot_gene_factors(data: AnnData, ax: Axes, trim=True):
     ax.set(xlabel="Component")
 
 
+    geneAmount = 30
+    genesTop = np.empty((geneAmount, X.shape[1]), dtype="<U10")
+    genesBottom = np.empty((geneAmount, X.shape[1]), dtype="<U10")
+    sort_idx = np.argsort(X, axis=0)
+    
+    
+
+    for j in range(rank):
+        rank_idx = [int(x) for x in sort_idx[:, j]]
+        sortGenes = np.array(yt)[np.array(rank_idx)]
+        genesTop[:, j] = np.flip(sortGenes[-geneAmount:])  
+        genesBottom[:, j] = sortGenes[:geneAmount]
+
+    dfTop = pd.DataFrame(data=genesTop, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+    dfBottom = pd.DataFrame(data=genesBottom, columns=[f"Cmp. {i}" for i in np.arange(1, rank + 1)])
+
+    dfTop.to_csv("TopGenes_Cmp.csv")
+    dfBottom.to_csv("BottomGenes.csv")
+
+
+
 def plot_gene_factors_partial(
     cmp: int, dataIn: AnnData, ax: Axes, geneAmount: int = 5, top=True
 ):
