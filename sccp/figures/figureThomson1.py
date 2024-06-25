@@ -13,6 +13,8 @@ from .commonFuncs.plotFactors import (
 import numpy as np
 import pandas as pd
 import anndata
+from ..imports import import_thomson
+from ..factorization import pf2
 
 
 def makeFigure():
@@ -23,7 +25,9 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = read_h5ad("/opt/pf2/thomson_fitted.h5ad", backed="r")
+    X = import_thomson()
+
+    X = pf2(X, 20, doEmbedding=True)
 
     drugNames = groupDrugs(X, "Condition")
 
