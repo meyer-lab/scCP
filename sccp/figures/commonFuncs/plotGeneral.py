@@ -99,8 +99,8 @@ def plot_avegene_per_category(
     ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=45)
 
 
-def plot_avegene_per_status(
-    X: anndata.AnnData, gene: str, ax: Axes, cellType="Cell Type"
+def avegene_per_status(
+    X: anndata.AnnData, gene: str, cellType="Cell Type"
 ):
     """Plots average gene expression across cell types for a category of drugs"""
     genesV = X[:, gene]
@@ -116,16 +116,6 @@ def plot_avegene_per_status(
 
     df = df.groupby(["Status", "Cell Type", "Gene", "Condition"], observed=False).mean()
     df = df.rename(columns={"Value": "Average Gene Expression"}).reset_index()
-
-    sns.boxplot(
-        data=df.loc[df["Gene"] == gene],
-        x="Cell Type",
-        y="Average Gene Expression",
-        hue="Status",
-        ax=ax,
-        showfliers=False,
-    )
-    ax.set(title=gene)
 
     return df
 
