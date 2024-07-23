@@ -55,7 +55,7 @@ def plot_avegene_per_celltype(adata, genes, ax, cellType="Cell Type"):
 
 
 def plot_avegene_per_category(
-    conds, categoryCond, gene, adata, ax, mean=True, cellType="Cell Type"
+    conds, categoryCond, gene, adata, ax, mean=True, cellType="Cell Type", swarm=False
 ):
     """Plots average gene expression across cell types for a category of drugs"""
     genesV = adata[:, gene]
@@ -76,14 +76,23 @@ def plot_avegene_per_category(
     for i in conds:
         df = df.replace({"Condition": {i: categoryCond}})
 
-    sns.boxplot(
-        data=df.loc[df["Gene"] == gene],
-        x="Cell Type",
-        y="Average Gene Expression For Drugs",
-        hue="Condition",
-        ax=ax,
-        showfliers=False,
-    )
+    if swarm is False: 
+        sns.boxplot(
+            data=df.loc[df["Gene"] == gene],
+            x="Cell Type",
+            y="Average Gene Expression For Drugs",
+            hue="Condition",
+            ax=ax,
+            showfliers=False,
+        )
+    else: 
+            sns.stripplot(
+            data=df.loc[df["Gene"] == gene],
+            x="Cell Type",
+            y="Average Gene Expression For Drugs",
+            hue="Condition",
+            ax=ax)
+        
     ax.set(title=gene)
     ax.set_xticks(ax.get_xticks())
     ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=45)
@@ -375,3 +384,4 @@ def rotate_yaxis(ax, rotation=90):
     """Rotates text by 90 degrees for y-axis"""
     ax.set_yticks(ax.get_yticks())
     ax.set_yticklabels(labels=ax.get_yticklabels(), rotation=rotation)
+

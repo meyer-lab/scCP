@@ -31,6 +31,6 @@ def makeFigure():
     X.uns["Pf2_A"] = correct_conditions(X)
     plot_roc_fourthbatch(X, ax[1])
 
-    plot_labels_pacmap(X, "Cell Type", ax[2])
+    plot_labels_pacmap(X, "Cell Type2", ax[2])
 
     return f
