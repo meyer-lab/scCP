@@ -11,9 +11,8 @@ from .common import (
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from scipy.stats import linregress, pearsonr, spearmanr
+from scipy.stats import pearsonr
 from .commonFuncs.plotGeneral import cell_count_perc_df, rotate_xaxis
-from ..stats import wls_stats_comparison
 from matplotlib.axes import Axes
 import anndata
 from .commonFuncs.plotGeneral import plot_avegene_per_status

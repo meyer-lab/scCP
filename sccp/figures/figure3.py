@@ -21,6 +21,7 @@ from .commonFuncs.plotGeneral import (
     cell_count_perc_df,
 )
 
+
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
@@ -37,14 +38,11 @@ def makeFigure():
     plot_avegene_per_celltype(X, ["FXYD2"], ax[1], cellType="Cell Type2")
     plot_avegene_per_celltype(X, ["SERPINF1"], ax[2], cellType="Cell Type2")
     plot_avegene_per_celltype(X, ["RARRES2"], ax[3], cellType="Cell Type2")
-    
-        
-    plot_wp_pacmap(X, 15, ax[4], 0.2)  
-    plot_wp_pacmap(X, 19, ax[5], 0.2)  
-    plot_wp_pacmap(X, 20, ax[6], 0.2) 
-    plot_wp_pacmap(X, 9, ax[7], 0.2)  
-    
-    
+
+    plot_wp_pacmap(X, 15, ax[4], 0.2)
+    plot_wp_pacmap(X, 19, ax[5], 0.2)
+    plot_wp_pacmap(X, 20, ax[6], 0.2)
+    plot_wp_pacmap(X, 9, ax[7], 0.2)
 
     plot_avegene_per_category(
         ["Alprostadil"], "Alpro", "EREG", X, ax[8], cellType="Cell Type", swarm=True
@@ -55,7 +53,6 @@ def makeFigure():
         X_genes, unique=["Alprostadil"], hue="Condition", ax=ax[9], kde=False
     )
     ax[9].set(title="Gene Expression in DCs")
-
 
     glucs = [
         "Betamethasone Valerate",
@@ -148,6 +145,7 @@ def cell_perc_box(cellDF, unique, uniqueLabel, ax):
     )
     ax.set_xticks(ax.get_xticks())
     ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=45)
+
 
 def set_xy_limits(ax):
     ax[1].set(ylim=(-0.1, 1.2))

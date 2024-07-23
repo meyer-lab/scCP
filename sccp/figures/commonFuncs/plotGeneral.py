@@ -76,7 +76,7 @@ def plot_avegene_per_category(
     for i in conds:
         df = df.replace({"Condition": {i: categoryCond}})
 
-    if swarm is False: 
+    if swarm is False:
         sns.boxplot(
             data=df.loc[df["Gene"] == gene],
             x="Cell Type",
@@ -85,14 +85,15 @@ def plot_avegene_per_category(
             ax=ax,
             showfliers=False,
         )
-    else: 
-            sns.stripplot(
+    else:
+        sns.stripplot(
             data=df.loc[df["Gene"] == gene],
             x="Cell Type",
             y="Average Gene Expression For Drugs",
             hue="Condition",
-            ax=ax)
-        
+            ax=ax,
+        )
+
     ax.set(title=gene)
     ax.set_xticks(ax.get_xticks())
     ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=45)
@@ -287,4 +288,3 @@ def rotate_yaxis(ax, rotation=90):
     """Rotates text by 90 degrees for y-axis"""
     ax.set_yticks(ax.get_yticks())
     ax.set_yticklabels(labels=ax.get_yticklabels(), rotation=rotation)
-
