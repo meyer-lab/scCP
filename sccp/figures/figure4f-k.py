@@ -30,14 +30,14 @@ def makeFigure():
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
     celltype_count_perc_df = cell_count_perc_df(X, celltype="Cell Type2", status=True)
-    
+
     cmps = [14, 22]
-    
+
     for i, cmp in enumerate(cmps):
         plot_correlation_cmp_cell_count_perc(
             X, cmp, celltype_count_perc_df, ax[i], cellPerc=False
         )
-        
+
     genes = ["IFITM3", "APOBEC3A"]
 
     df_total = pd.DataFrame([])
@@ -50,7 +50,6 @@ def makeFigure():
     plot_ave2genes_per_status(df_total, genes[0], genes[1], ax[2])
 
     return f
-
 
 
 def plot_correlation_cmp_cell_count_perc(
@@ -95,12 +94,12 @@ def plot_correlation_cmp_cell_count_perc(
         pearson = pearsonr(df["Cmp"], df[cellPerc])[0]
 
         correlationdf = pd.DataFrame(
-                    {
-                        "Cell Type": celltype,
-                        "Correlation": ["Pearson"],
-                        "Value": [pearson],
-                    }
-                )
+            {
+                "Cell Type": celltype,
+                "Correlation": ["Pearson"],
+                "Value": [pearson],
+            }
+        )
     sns.swarmplot(
         data=correlationdf, x="Cell Type", y="Value", hue="Correlation", ax=ax
     )

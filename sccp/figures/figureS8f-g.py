@@ -24,7 +24,7 @@ def makeFigure():
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
-    
+
     df = cell_count_perc_df(X, celltype="Cell Type2", status=True)
     sns.boxplot(
         data=df,
@@ -35,8 +35,7 @@ def makeFigure():
         ax=ax[0],
     )
     rotate_xaxis(ax[0])
-    
-    
+
     X.uns["Pf2_A"] = correct_conditions(X)
 
     samples_only_df = samples_only_lupus(X)
@@ -45,8 +44,6 @@ def makeFigure():
         X, samples_only_df, "SLE_status"
     )
     plot_logreg_weights_status(logreg_weights_status, logreg_score_status, ax[1])
-    
-    
 
     return f
 
@@ -81,5 +78,3 @@ def plot_logreg_weights_status(
         ylim=[-10, 10],
         title="LR Prediction Accuracy: " + str(np.round(logreg_predaccuracy, 3)),
     )
-
-

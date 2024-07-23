@@ -4,7 +4,7 @@ Lupus: R2X for PCA/Pf2 and accuracy for different components
 
 from anndata import read_h5ad
 from .common import subplotLabel, getSetup
-import anndata 
+import anndata
 import seaborn as sns
 # from .commonFuncs.plotGeneral import plot_r2x
 # from .commonFuncs.plotLupus import plot_accuracy_ranks_lupus
@@ -17,7 +17,7 @@ def makeFigure():
 
     # Add subplot labels
     subplotLabel(ax)
-    
+
     plot_cell_count_status(X, ax=ax[0])
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad", backed="r")
@@ -28,7 +28,6 @@ def makeFigure():
 
     for i in [1, 2]:
         ax[i].set(xticks=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50])
-
 
     return f
 

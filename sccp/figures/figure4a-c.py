@@ -5,9 +5,11 @@ Lupus: R2X for PCA/Pf2 and accuracy for different components
 from anndata import read_h5ad
 from .common import subplotLabel, getSetup
 from ..factorization import correct_conditions
+
 # from .commonFuncs.plotGeneral import plot_r2x
 from .commonFuncs.plotLupus import plot_accuracy_ranks_lupus, plot_roc_fourthbatch
 from .commonFuncs.plotPaCMAP import plot_labels_pacmap
+
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
@@ -25,11 +27,10 @@ def makeFigure():
     X = [0, 50]
     Y = [0.84, 0.84]
     ax[0].plot(X, Y, linestyle="--")
-    
+
     X.uns["Pf2_A"] = correct_conditions(X)
     plot_roc_fourthbatch(X, ax[1])
-    
+
     plot_labels_pacmap(X, "Cell Type", ax[2])
-    
 
     return f

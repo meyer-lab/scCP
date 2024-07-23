@@ -30,13 +30,10 @@ def makeFigure():
     X = cytotoxic_score(X)
     plot_score(X, ax[0], cellType="Cell Type2")
     ax[0].set(ylabel="Cytotoxic Score")
-    
-    
+
     plot_gene_pacmap("RETN", "Pf2", X, ax[1])
-    
+
     plot_pair_gene_factors(X, 22, 28, ax[2])
-    
-    
 
     return f
 
@@ -47,7 +44,6 @@ def cytotoxic_score(X: anndata.AnnData):
     X = sc.tl.score_genes(adata=X, gene_list=cytotoxic_genes, copy=True, use_raw=False)
 
     return X
-
 
 
 def plot_score(X: anndata, ax: Axes, cellType="Cell Type"):
@@ -84,6 +80,7 @@ def plot_score(X: anndata, ax: Axes, cellType="Cell Type"):
     )
 
     rotate_xaxis(ax)
+
 
 def plot_pair_gene_factors(X: anndata.AnnData, cmp1: int, cmp2: int, ax: Axes):
     """Plots two gene components weights"""

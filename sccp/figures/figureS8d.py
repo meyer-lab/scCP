@@ -32,7 +32,7 @@ def makeFigure():
     ax[0].set(yticks=[])
     plot_eigenstate_factors(X, ax[1])
     plot_gene_factors(X, ax[2])
-    
+
     plot_labels_pacmap(X, "Cell Type", ax[0])
 
     return f
