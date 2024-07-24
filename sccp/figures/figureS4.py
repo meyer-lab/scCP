@@ -19,11 +19,11 @@ def makeFigure():
 
     X = import_thomson()
 
-    percentList = np.arange(0.0, 8.0, 5.0)
-    plot_fms_percent_drop(X, ax[0], percentList=percentList, runs=3)
+    # percentList = np.arange(0.0, 8.0, 5.0)
+    # plot_fms_percent_drop(X, ax[0], percentList=percentList, runs=3)
 
-    ranks = list(range(1, 3))
-    plot_fms_diff_ranks(X, ax[1], ranksList=ranks, runs=3)
+    # ranks = list(range(1, 3))
+    # plot_fms_diff_ranks(X, ax[1], ranksList=ranks, runs=3)
 
     return f
 
