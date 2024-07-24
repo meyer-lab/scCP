@@ -1,5 +1,5 @@
 """
-Lupus: Prediction accuracy for all two
+Figure 4d: PCA and Pf2 PaCMAP labeled by genes and drugs Prediction accuracy for all two
 pair logistic regression combinations
 """
 

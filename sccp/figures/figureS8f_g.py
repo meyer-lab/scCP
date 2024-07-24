@@ -1,5 +1,5 @@
 """
-Lupus: Logistic regression weights for SLE and/or ancestry
+Figure 8f_g: PCA and Pf2 PaCMAP labeled by genes and drugs Logistic regression weights for SLE and/or ancestry
 """
 
 from anndata import read_h5ad

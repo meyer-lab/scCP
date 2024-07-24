@@ -1,5 +1,5 @@
 """
-Thomson: PCA and Pf2 PaCMAP labeled by genes and drugs
+Figure S2: PCA and Pf2 PaCMAP labeled by genes and drugs PCA and Pf2 PaCMAP labeled by genes and drugs
 """
 
 from anndata import read_h5ad
