@@ -7,8 +7,9 @@ from .common import subplotLabel, getSetup
 from ..factorization import correct_conditions
 
 # from .commonFuncs.plotGeneral import plot_r2x
-from .commonFuncs.plotLupus import plot_accuracy_ranks_lupus, plot_roc_fourthbatch
+from .commonFuncs.plotLupus import plot_roc_fourthbatch
 from .commonFuncs.plotPaCMAP import plot_labels_pacmap
+# from .commonFuncs.plotLupus import plot_accuracy_ranks_lupus
 
 
 def makeFigure():

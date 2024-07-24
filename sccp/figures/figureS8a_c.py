@@ -17,7 +17,7 @@ def makeFigure():
 
     # Add subplot labels
     subplotLabel(ax)
-    
+
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
     plot_cell_count_status(X, ax=ax[0])

@@ -27,7 +27,7 @@ def makeFigure():
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
-    
+
     plot_wp_pacmap(X, 4, ax[0], 0.25)
     plot_wp_pacmap(X, 27, ax[1], 0.25)
 
@@ -36,15 +36,11 @@ def makeFigure():
     ax[0].set(ylabel="Cytotoxic Score")
 
     plot_gene_pacmap("RETN", "Pf2", X, ax[4])
-    
+
     celltype_count_perc_df = cell_count_perc_df(X, celltype="leiden", status=True)
     plot_correlation_cmp_cell_count_perc(
-            X, 28, celltype_count_perc_df, ax[5], cellPerc=False
-        )
-    
-    
-
-    
+        X, 28, celltype_count_perc_df, ax[5], cellPerc=False
+    )
 
     return f
 
@@ -91,4 +87,3 @@ def plot_score(X: anndata, ax: Axes, cellType="Cell Type"):
     )
 
     rotate_xaxis(ax)
-
