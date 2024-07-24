@@ -14,12 +14,12 @@ from .commonFuncs.plotPaCMAP import plot_labels_pacmap
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     # Get list of axis objects
-    ax, f = getSetup((6, 2), (1, 3))
+    ax, f = getSetup((9, 4), (1, 3))
 
     # Add subplot labels
     subplotLabel(ax)
 
-    X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad", backed="r")
+    X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
     # ranks=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
     # plot_accuracy_ranks_lupus(X, ranks, ax[0], error_metric="roc_auc")
