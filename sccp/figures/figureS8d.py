@@ -2,7 +2,7 @@
 Figure 8d: PCA and Pf2 PaCMAP labeled by genes and drugsPf2 factors and weights
 """
 
-from anndata import read_h5ad
+import anndata 
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotFactors import (
     plot_condition_factors,
@@ -16,13 +16,10 @@ from .commonFuncs.plotPaCMAP import plot_labels_pacmap
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
-    # Get list of axis objects
     ax, f = getSetup((8, 8), (2, 2))
-
-    # Add subplot labels
     subplotLabel(ax)
 
-    X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
+    X = anndata.read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
     lupusStatus = samples_only_lupus(X)["SLE_status"]
 

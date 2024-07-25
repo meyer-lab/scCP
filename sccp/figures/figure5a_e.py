@@ -2,34 +2,25 @@
 Figure 5a_e: PCA and Pf2 PaCMAP labeled by genes and drugs Average cytotoxic score for each cell type
 """
 
-from anndata import read_h5ad
-from .common import (
-    subplotLabel,
-    getSetup,
-)
 import numpy as np
 import seaborn as sns
 import pandas as pd
 import scanpy as sc
-from .commonFuncs.plotGeneral import rotate_xaxis, cell_count_perc_df
 from matplotlib.axes import Axes
 import anndata
+from .common import subplotLabel, getSetup
+from .commonFuncs.plotGeneral import rotate_xaxis, cell_count_perc_df
 from .commonFuncs.plotPaCMAP import plot_gene_pacmap, plot_wp_pacmap
+from .commonFuncs.plotFactors import plot_gene_factors
 from .figure4e_k import plot_correlation_cmp_cell_count_perc
-from .commonFuncs.plotFactors import (
-    plot_gene_factors,
-)
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
-    # Get list of axis objects
     ax, f = getSetup((8, 8), (3, 3))
-
-    # Add subplot labels
     subplotLabel(ax)
 
-    X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
+    X = anndata.read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
     plot_gene_factors(X, ax[2])
 

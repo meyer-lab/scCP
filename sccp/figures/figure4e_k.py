@@ -3,34 +3,24 @@ Figure 4e_k: PCA and Pf2 PaCMAP labeled by genes and drugsCell type percentage b
 correlation between component and cell count/percentage for each cell type
 """
 
-from anndata import read_h5ad
-from .common import (
-    subplotLabel,
-    getSetup,
-)
 import numpy as np
 import seaborn as sns
 import pandas as pd
 from scipy.stats import pearsonr
-from .commonFuncs.plotGeneral import cell_count_perc_df, rotate_xaxis
 from matplotlib.axes import Axes
 import anndata
-from .commonFuncs.plotGeneral import avegene_per_status
+from .common import subplotLabel, getSetup
+from .commonFuncs.plotGeneral import avegene_per_status, cell_count_perc_df, rotate_xaxis
 from .commonFuncs.plotPaCMAP import plot_wp_pacmap
-from .commonFuncs.plotFactors import (
-    plot_gene_factors,
-)
+from .commonFuncs.plotFactors import plot_gene_factors
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
-    # Get list of axis objects
     ax, f = getSetup((18, 16), (5, 4))
-
-    # Add subplot labels
     subplotLabel(ax)
 
-    X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
+    X = anndata.read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
     plot_gene_factors(X, ax[2])
 

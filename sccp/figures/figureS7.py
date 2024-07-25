@@ -5,15 +5,15 @@ dataset. It can clearly be observed for all cell types that had an identifying c
 corresponding weight for the condition removed significantly dropped.
 """
 
-from .common import getSetup, subplotLabel
-from ..imports import import_thomson
-from ..factorization import pf2
 import pandas as pd
 import numpy as np
 from anndata import AnnData
 from matplotlib.axes import Axes
 from scipy.stats import linregress
 import seaborn as sns
+from .common import getSetup, subplotLabel
+from ..imports import import_thomson
+from ..factorization import pf2
 
 
 def makeFigure():

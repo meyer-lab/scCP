@@ -30,14 +30,13 @@ from .figure2f_h import groupDrugs
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     ax, f = getSetup((30, 30), (5, 5))
-
     subplotLabel(ax)
 
     X = anndata.read_h5ad("/opt/pf2/thomson_fitted.h5ad")
     cellDF = cell_count_perc_df(X, "Cell Type2")
     plot_labels_pacmap(X, "Cell Type2", ax[0])
     
-    # drugNames = groupDrugs(X, "Condition")
+    drugNames = groupDrugs(X, "Condition")
     plot_condition_factors(X, ax[1], ThomsonNorm=True)
     plot_gene_factors(X, ax[2])
     
@@ -97,7 +96,7 @@ def makeFigure():
         ax=ax[15],
     )
     
-    set_xy_limits(ax)
+    # set_xy_limits(ax)
 
     return f
 
