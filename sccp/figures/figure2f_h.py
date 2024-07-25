@@ -22,14 +22,12 @@ def makeFigure():
 
     drugNames = groupDrugs(X, "Condition")
 
-
-
     plot_condition_factors(X, ax[0], drugNames, ThomsonNorm=True, groupConditions=True)
     plot_eigenstate_factors(X, ax[1])
     plot_gene_factors(X, ax[2])
-    
-    return f
+    ax[2].yaxis.set_ticklabels([])
 
+    return f
 
 
 def groupDrugs(X: anndata, label_name: str):

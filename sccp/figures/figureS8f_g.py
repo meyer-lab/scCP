@@ -2,7 +2,7 @@
 Figure 8f_g: PCA and Pf2 PaCMAP labeled by genes and drugs Logistic regression weights for SLE and/or ancestry
 """
 
-import anndata 
+import anndata
 import numpy as np
 import pandas as pd
 import seaborn as sns

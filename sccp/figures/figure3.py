@@ -7,7 +7,7 @@ cell percentages and componnets, and correlation of genes
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import anndata 
+import anndata
 from .common import (
     subplotLabel,
     getSetup,
@@ -35,11 +35,12 @@ def makeFigure():
     X = anndata.read_h5ad("/opt/pf2/thomson_fitted.h5ad")
     cellDF = cell_count_perc_df(X, "Cell Type2")
     plot_labels_pacmap(X, "Cell Type2", ax[0])
-    
+
     drugNames = groupDrugs(X, "Condition")
-    plot_condition_factors(X, ax[1], ThomsonNorm=True)
+    plot_condition_factors(X, ax[1], drugNames, ThomsonNorm=True, groupConditions=True)
     plot_gene_factors(X, ax[2])
-    
+    ax[2].yaxis.set_ticklabels([])
+
     plot_wp_pacmap(X, 15, ax[3], 0.2)
     plot_avegene_per_celltype(X, ["FXYD2"], ax[4], cellType="Cell Type2")
     plot_avegene_per_celltype(X, ["SERPINF1"], ax[5], cellType="Cell Type2")
@@ -55,9 +56,9 @@ def makeFigure():
         X_genes, unique=["Alprostadil"], hue="Condition", ax=ax[9], kde=False
     )
     ax[9].set(title="Gene Expression in DCs")
-    
+
     plot_wp_pacmap(X, 20, ax[9], 0.2)
-    
+
     X.obs["Condition_gluc"] = X.obs["Condition"].cat.add_categories("Other")
     X.obs["Condition_gluc"] = X.obs["Condition_gluc"].cat.add_categories(
         "Glucocorticoids"
@@ -74,14 +75,13 @@ def makeFigure():
     X.obs["Condition_gluc"] = X.obs["Condition_gluc"].cat.remove_unused_categories()
     color_key = np.flip(sns.color_palette(n_colors=2).as_hex())
     plot_labels_pacmap(X, "Condition_gluc", ax[10], color_key=color_key)
-    
 
     cell_perc_box(cellDF, glucs, "Glucocorticoids", ax[11])
-    
+
     plot_cell_perc_comp_corr(X, cellDF, "Myeloid Suppressors", 20, ax[12], unique=glucs)
-    
+
     plot_wp_pacmap(X, 9, ax[13], 0.2)
-    
+
     plot_avegene_per_category(
         glucs, "Gluco", "MS4A6A", X, ax[14], cellType="Cell Type2"
     )
@@ -95,7 +95,7 @@ def makeFigure():
         cellType="Cell Type2",
         ax=ax[15],
     )
-    
+
     # set_xy_limits(ax)
 
     return f

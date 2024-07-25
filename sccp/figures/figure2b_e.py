@@ -4,11 +4,10 @@ Figure 2b_e: PCA and Pf2 PaCMAP labeled by genes and drugs
 
 import pacmap
 import numpy as np
-import anndata 
+import anndata
 from sklearn.decomposition import PCA
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotPaCMAP import plot_labels_pacmap
-
 
 
 def makeFigure():
@@ -21,7 +20,7 @@ def makeFigure():
     drug = ["Alprostadil"]
     plot_labels_pacmap(X, "Condition", ax[0], drug, cmap="Set1")
     ax[0].set(title="Pf2-Based Decomposition")
-    
+
     plot_labels_pacmap(X, "Cell Type", ax[2])
 
     pc = PCA(n_components=20)
@@ -30,9 +29,7 @@ def makeFigure():
 
     plot_labels_pacmap(X, "Condition", ax[1], drug, cmap="Set1")
     ax[1].set(title="PCA-Based Decomposition")
-    
+
     plot_labels_pacmap(X, "Cell Type", ax[3])
-
-
 
     return f

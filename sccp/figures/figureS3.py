@@ -9,7 +9,6 @@ from .common import subplotLabel, getSetup
 from .commonFuncs.plotGeneral import cell_count_perc_df, rotate_xaxis
 
 
-
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     ax, f = getSetup((11, 14), (4, 2))

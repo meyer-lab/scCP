@@ -13,7 +13,6 @@ from ..factorization import pf2
 # from ..imports import import_thomson
 
 
-
 def makeFigure():
     ax, f = getSetup((6, 3), (1, 2))
     subplotLabel(ax)
@@ -55,7 +54,6 @@ def plot_fms_percent_drop(
     runs: int,
     rank=20,
 ):
-    
     dataX = pf2(X, rank, doEmbedding=False)
 
     fmsLists = []

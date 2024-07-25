@@ -2,7 +2,7 @@
 Figure 8d: PCA and Pf2 PaCMAP labeled by genes and drugsPf2 factors and weights
 """
 
-import anndata 
+import anndata
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotFactors import (
     plot_condition_factors,
@@ -29,6 +29,7 @@ def makeFigure():
     ax[0].set(yticks=[])
     plot_eigenstate_factors(X, ax[1])
     plot_gene_factors(X, ax[2])
+    ax[2].yaxis.set_ticklabels([])
 
     plot_labels_pacmap(X, "Cell Type", ax[0])
 

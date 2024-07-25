@@ -2,7 +2,7 @@
 Figure 8a_c: PCA and Pf2 PaCMAP labeled by genes and drugs R2X for PCA/Pf2 and accuracy for different components
 """
 
-import anndata 
+import anndata
 import anndata
 import seaborn as sns
 from .common import subplotLabel, getSetup

@@ -2,7 +2,7 @@
 Figure S5: PCA and Pf2 PaCMAP labeled by genes and drugsCell counts and cell type percentages per condition
 """
 
-import anndata 
+import anndata
 import seaborn as sns
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotGeneral import cell_count_perc_df, rotate_xaxis

@@ -8,12 +8,12 @@ import numpy as np
 import scib
 import scanpy as sc
 import pandas as pd
+
 # import seaborn as sns
 from sklearn.decomposition import PCA
 from .common import subplotLabel, getSetup
 from .commonFuncs.plotPaCMAP import plot_labels_pacmap
 from .commonFuncs.plotGeneral import plot_r2x
-
 
 
 def makeFigure():

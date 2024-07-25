@@ -17,7 +17,6 @@ from ..factorization import correct_conditions
 from .commonFuncs.plotGeneral import rotate_xaxis, rotate_yaxis
 
 
-
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
     ax, f = getSetup((6, 6), (1, 1))

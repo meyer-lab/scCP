@@ -10,7 +10,11 @@ from scipy.stats import pearsonr
 from matplotlib.axes import Axes
 import anndata
 from .common import subplotLabel, getSetup
-from .commonFuncs.plotGeneral import avegene_per_status, cell_count_perc_df, rotate_xaxis
+from .commonFuncs.plotGeneral import (
+    avegene_per_status,
+    cell_count_perc_df,
+    rotate_xaxis,
+)
 from .commonFuncs.plotPaCMAP import plot_wp_pacmap
 from .commonFuncs.plotFactors import plot_gene_factors
 
