@@ -7,7 +7,7 @@ cell percentages and componnets, and correlation of genes
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from anndata import read_h5ad
+import anndata 
 from .common import (
     subplotLabel,
     getSetup,
@@ -20,11 +20,11 @@ from .commonFuncs.plotGeneral import (
     plot_cell_gene_corr,
     cell_count_perc_df,
 )
-from .figure2f_h import groupDrugs
 from .commonFuncs.plotFactors import (
     plot_condition_factors,
     plot_gene_factors,
 )
+from .figure2f_h import groupDrugs
 
 
 def makeFigure():
@@ -35,7 +35,7 @@ def makeFigure():
     # Add subplot labels
     subplotLabel(ax)
 
-    X = read_h5ad("/opt/pf2/thomson_fitted.h5ad", backed="r")
+    X = anndata.read_h5ad("/opt/pf2/thomson_fitted.h5ad", backed="r")
     cellDF = cell_count_perc_df(X, "Cell Type2")
 
     drugNames = groupDrugs(X, "Condition")
