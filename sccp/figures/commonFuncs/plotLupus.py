@@ -8,11 +8,12 @@ from ...logisticReg import (
 )
 
 
-def samples_only_lupus(X) -> pd.DataFrame:
+def samples_only_lupus(X):
     """Obtain samples once only with corresponding observations"""
     samples = X.obs
     df_samples = samples.drop_duplicates(subset="condition_unique_idxs")
     df_samples = df_samples.sort_values("condition_unique_idxs")
+
     return df_samples
 
 

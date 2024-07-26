@@ -29,7 +29,7 @@ def makeFigure():
     return f
 
 
-def calculateFMS(A: anndata.AnnData, B: anndata.AnnData) -> float:
+def calculateFMS(A: anndata.AnnData, B: anndata.AnnData):
     """Calculates FMS between 2 factors"""
     factors = [A.uns["Pf2_A"], A.uns["Pf2_B"], A.varm["Pf2_C"]]
     A_CP = CPTensor(
@@ -55,7 +55,7 @@ def plot_fms_percent_drop(
     ax: Axes,
     percentList: np.ndarray,
     runs: int,
-    rank=20,
+    rank: int = 20,
 ):
     """Plots FMS score when percentage is removed from data"""
     dataX = pf2(X, rank, doEmbedding=False)

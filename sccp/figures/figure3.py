@@ -95,7 +95,7 @@ def makeFigure():
         ax=ax[15],
     )
 
-    # set_xy_limits(ax)
+    set_xy_limits(ax)
 
     return f
 
@@ -114,7 +114,9 @@ def plot_cell_perc_corr(cellDF: pd.DataFrame, pop1: str, pop2: str, ax: Axes):
     sns.scatterplot(newDF, x=pop1, y=pop2, hue="Condition", ax=ax)
 
 
-def plot_cell_perc_comp_corr(X: anndata.AnnData, cellDF: pd.DataFrame, pop: str, comp: int, ax: Axes, unique=None):
+def plot_cell_perc_comp_corr(
+    X: anndata.AnnData, cellDF: pd.DataFrame, pop: str, comp: int, ax: Axes, unique=None
+):
     """Plots correlation of cell percentages against each conditions component value"""
     newDF = pd.DataFrame()
     newDF[[pop, "Condition"]] = cellDF.loc[cellDF["Cell Type"] == pop][
@@ -135,7 +137,7 @@ def plot_cell_perc_comp_corr(X: anndata.AnnData, cellDF: pd.DataFrame, pop: str,
     sns.scatterplot(newDF, x="Comp. " + str(comp), y=pop, hue="Condition", ax=ax)
 
 
-def cell_perc_box(cellDF: pd.DataFrame, unique, uniqueLabel, ax: Axes):
+def cell_perc_box(cellDF: pd.DataFrame, unique: np.ndarray, uniqueLabel: str, ax: Axes):
     """Plots percentages of cells against each other"""
     cellDF["Category"] = uniqueLabel
     cellDF.loc[~cellDF.Condition.isin(unique), "Category"] = "Other"
@@ -153,11 +155,12 @@ def cell_perc_box(cellDF: pd.DataFrame, unique, uniqueLabel, ax: Axes):
     ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=45)
 
 
-def set_xy_limits(ax):
-    ax[1].set(ylim=(-0.1, 1.2))
-    ax[2].set(ylim=(-0.1, 1.2))
-    ax[3].set(ylim=(-0.1, 1.2))
-
-    ax[10].set(ylim=(-0.05, 0.2))
-    ax[13].set(xlim=(0, 0.5), ylim=(0, 70))
-    ax[14].set(ylim=(-10, 70))
+def set_xy_limits(ax: Axes):
+    """Sets axis for plots"""
+    ax[4].set(ylim=(-0.1, 1.2))
+    ax[5].set(ylim=(-0.1, 1.2))
+    ax[6].set(ylim=(-0.1, 1.2))
+    ax[11].set(ylim=(-10, 70))
+    ax[12].set(xlim=(0, 0.5), ylim=(0, 70))
+    ax[14].set(ylim=(-0.05, 0.2))
+    ax[15].set(xlim=(-0.05, 0.2), ylim=(-0.05, 0.15))

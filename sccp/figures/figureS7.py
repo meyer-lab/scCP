@@ -62,7 +62,7 @@ def plot_diff_exp(
     numberOfCellType = [
         len(data[(data.obs["Condition"] == txt) & (data.obs[ctarg] == cell_type)])
         for txt in yt
-    ]  
+    ]
 
     if override == (-1, -1):  # Use R^2 values to find  most important component
         X, X2 = np.array(origX.uns["Pf2_A"]), np.array(sampledX.uns["Pf2_A"])

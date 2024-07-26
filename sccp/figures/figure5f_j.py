@@ -43,7 +43,7 @@ def plot_avegene_per_status_per_cluster(
     ax: Axes,
     clusterName1: str,
     clusterName2=None,
-    cellType: str="Cell Type",
+    cellType: str = "Cell Type",
 ):
     """Plots average gene expression across cell types for a category of drugs"""
     genesV = X[:, gene]
