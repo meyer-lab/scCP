@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import anndata
+from matplotlib.axes import Axes
 from .common import (
     subplotLabel,
     getSetup,
@@ -99,7 +100,7 @@ def makeFigure():
     return f
 
 
-def plot_cell_perc_corr(cellDF, pop1, pop2, ax):
+def plot_cell_perc_corr(cellDF: pd.DataFrame, pop1: str, pop2: str, ax: Axes):
     """Plots correlation of cell percentages against each other"""
     newDF = pd.DataFrame()
     newDF2 = pd.DataFrame()
@@ -113,7 +114,7 @@ def plot_cell_perc_corr(cellDF, pop1, pop2, ax):
     sns.scatterplot(newDF, x=pop1, y=pop2, hue="Condition", ax=ax)
 
 
-def plot_cell_perc_comp_corr(X, cellDF, pop, comp, ax, unique=None):
+def plot_cell_perc_comp_corr(X: anndata.AnnData, cellDF: pd.DataFrame, pop: str, comp: int, ax: Axes, unique=None):
     """Plots correlation of cell percentages against each conditions component value"""
     newDF = pd.DataFrame()
     newDF[[pop, "Condition"]] = cellDF.loc[cellDF["Cell Type"] == pop][
@@ -134,7 +135,7 @@ def plot_cell_perc_comp_corr(X, cellDF, pop, comp, ax, unique=None):
     sns.scatterplot(newDF, x="Comp. " + str(comp), y=pop, hue="Condition", ax=ax)
 
 
-def cell_perc_box(cellDF, unique, uniqueLabel, ax):
+def cell_perc_box(cellDF: pd.DataFrame, unique, uniqueLabel, ax: Axes):
     """Plots percentages of cells against each other"""
     cellDF["Category"] = uniqueLabel
     cellDF.loc[~cellDF.Condition.isin(unique), "Category"] = "Other"
