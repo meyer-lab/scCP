@@ -115,7 +115,7 @@ def plot_labels_pacmap(
     X: anndata.AnnData,
     labelType: str,
     ax: Axes,
-    condition = None,
+    condition=None,
     cmap: str = "tab20",
     color_key=None,
 ):
