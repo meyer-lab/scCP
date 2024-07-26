@@ -137,7 +137,7 @@ def plot_cell_perc_comp_corr(
     sns.scatterplot(newDF, x="Comp. " + str(comp), y=pop, hue="Condition", ax=ax)
 
 
-def cell_perc_box(cellDF: pd.DataFrame, unique: np.ndarray, uniqueLabel: str, ax: Axes):
+def cell_perc_box(cellDF: pd.DataFrame, unique: list[str], uniqueLabel: str, ax: Axes):
     """Plots percentages of cells against each other"""
     cellDF["Category"] = uniqueLabel
     cellDF.loc[~cellDF.Condition.isin(unique), "Category"] = "Other"
