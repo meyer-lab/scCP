@@ -155,7 +155,7 @@ def cell_perc_box(cellDF: pd.DataFrame, unique: np.ndarray, uniqueLabel: str, ax
     ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=45)
 
 
-def set_xy_limits(ax: Axes):
+def set_xy_limits(ax):
     """Sets axis for plots"""
     ax[4].set(ylim=(-0.1, 1.2))
     ax[5].set(ylim=(-0.1, 1.2))
