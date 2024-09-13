@@ -11,7 +11,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install dependencies
-      run: rye install
+      run: rye sync
     - name: Run pyright check
       run: make pyright
     - name: Run ruff check
