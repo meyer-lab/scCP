@@ -13,6 +13,8 @@ jobs:
       with:
         enable-cache: true
         version: '0.39.0'
+    - name: Setup environment
+      run: make .venv
     - name: Build figures
       run: make all -j 2
     - name: Upload files

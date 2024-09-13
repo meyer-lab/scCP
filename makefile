@@ -16,7 +16,7 @@ output/figure%.svg: sccp/figures/figure%.py
 test: .venv
 	rye run pytest -s -v -x
 
-.venv:
+.venv: pyproject.toml
 	rye sync
 
 coverage.xml: .venv
