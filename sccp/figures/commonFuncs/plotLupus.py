@@ -1,8 +1,9 @@
-import seaborn as sns
 import anndata
 import numpy as np
+import seaborn as sns
 from matplotlib.axes import Axes
 from sklearn.metrics import RocCurveDisplay
+
 from ...logisticReg import (
     predaccuracy_ranks_lupus,
     roc_lupus_fourtbatch,

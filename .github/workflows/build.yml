@@ -8,8 +8,11 @@ jobs:
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@v4
-    - name: Install dependencies
-      run: rye sync
+    - name: Setup rye
+      uses: eifinger/setup-rye@v4
+      with:
+        enable-cache: true
+        version: '0.39.0'
     - name: Build figures
       run: make all -j 2
     - name: Upload files

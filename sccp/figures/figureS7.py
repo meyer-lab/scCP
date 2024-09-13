@@ -2,15 +2,16 @@
 Figure S7
 """
 
-import pandas as pd
 import numpy as np
+import pandas as pd
+import seaborn as sns
 from anndata import AnnData
 from matplotlib.axes import Axes
 from scipy.stats import linregress
-import seaborn as sns
-from .common import getSetup, subplotLabel
-from ..imports import import_thomson
+
 from ..factorization import pf2
+from ..imports import import_thomson
+from .common import getSetup, subplotLabel
 
 
 def makeFigure():
@@ -175,7 +176,7 @@ def plot_weights_across_percents(
             ]  # Aims to find the index of the condition to set its corresponding weight
             vals[percent] = Y[idx]
 
-        percents, weights = zip(*sorted((int(p * 100), w) for p, w in vals.items()))
+        percents, weights = zip(*sorted((int(p * 100), w) for p, w in vals.items()), strict=False)
         all_percents += percents
         all_weights += weights
 
