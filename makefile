@@ -9,9 +9,9 @@ allThomson: $(filter output/figureThomson%, $(allOutput))
 
 allLupus: $(filter output/figureLupus%, $(allOutput))
 
-# output/figure%.svg: sccp/figures/figure%.py
-# 	@ mkdir -p ./output
-# 	poetry run fbuild $*
+output/figure%.svg: sccp/figures/figure%.py
+	@ mkdir -p ./output
+	rye run fbuild $*
 
 # output/figureLupus%.svg: sccp/figures/figureLupus%.py
 # 	@ mkdir -p ./output
