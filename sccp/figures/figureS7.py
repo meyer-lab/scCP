@@ -37,7 +37,9 @@ def plot_diff_exp(
     override: tuple[int, int] = (-1, -1),
 ):
     """
-    Plots the differences in model weights of a gene set in the original data and the data. The determining component is the component that has the highest correlation with the number of cells in the cell type selected.
+    Plots the differences in model weights of a gene set in the original data and the
+    data. The determining component is the component that has the highest correlation
+    with the number of cells in the cell type selected.
     Args:
         data: The AnnData object to be used
         condition: The condition to drop the cell type from
@@ -176,7 +178,9 @@ def plot_weights_across_percents(
             ]  # Aims to find the index of the condition to set its corresponding weight
             vals[percent] = Y[idx]
 
-        percents, weights = zip(*sorted((int(p * 100), w) for p, w in vals.items()), strict=False)
+        percents, weights = zip(
+            *sorted((int(p * 100), w) for p, w in vals.items()), strict=False
+        )
         all_percents += percents
         all_weights += weights
 
