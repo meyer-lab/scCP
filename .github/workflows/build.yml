@@ -9,7 +9,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install dependencies
-      run: poetry install
+      run: rye install
     - name: Build figures
       run: make all -j 2
     - name: Upload files

@@ -11,13 +11,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install dependencies
-      run: poetry install
-    - name: Run mypy check
-      run: make mypy
+      run: rye install
+    - name: Run pyright check
+      run: make pyright
     - name: Run ruff check
-      run: poetry run ruff check sccp
+      run: rye fmt check sccp
     - name: Run ruff format check
-      run: poetry run ruff format --check sccp
+      run: rye fmt --check sccp
     - name: Test with pytest
       run: make coverage.xml
     - name: Upload coverage to Codecov
