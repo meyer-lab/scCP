@@ -13,18 +13,6 @@ output/figure%.svg: sccp/figures/figure%.py
 	@ mkdir -p ./output
 	rye run fbuild $*
 
-# output/figureLupus%.svg: sccp/figures/figureLupus%.py
-# 	@ mkdir -p ./output
-# 	poetry run fbuild Lupus$*
-
-# output/figureCITEseq%.svg: sccp/figures/figureCITEseq%.py
-# 	@ mkdir -p ./output
-# 	poetry run fbuild CITEseq$*
-
-# output/figureThomson%.svg: sccp/figures/figureThomson%.py 
-# 	@ mkdir -p ./output
-# 	poetry run fbuild Thomson$*
-
 test: .venv
 	rye run pytest -s -v -x
 
