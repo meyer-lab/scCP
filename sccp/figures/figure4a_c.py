@@ -12,6 +12,7 @@ import numpy as np
 from scipy import sparse
 import pandas as pd
 import scanpy as sc
+from .commonFuncs.plotGeneral import cell_count_perc_df, rotate_xaxis
 
 # from .commonFuncs.plotLupus import plot_accuracy_ranks_lupus
 # from .commonFuncs.plotGeneral import plot_r2x
@@ -24,10 +25,12 @@ def makeFigure():
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
     print(X)
-    XX = aggregate_anndata(X, celltype_col='Cell Type', method='average')
-    print(XX)
+    # XX = aggregate_anndata(X, celltype_col="Cell Type", condition_col="Condition", method="Average")
+    # print(XX)
     
-    # Can you create a function that gets the cell type compositions per cell type across across all conditions 
+    XXX = cell_count_perc_df(X, celltype="Cell Type")
+    print(XXX)
+    
     
     
 
@@ -45,120 +48,35 @@ def makeFigure():
 
     return f
 
-
-
-def aggregate_anndata(adata, 
-                              celltype_col='cell_type',
-                              condition_col='Condition',
-                              method='average',
-                              layer=None,
-                              min_cells=5):
-    '''
-    Aggregates gene expression by both cell types and conditions.
-    
-    Parameters
-    ----------
-    adata : anndata.AnnData
-        AnnData object containing gene expression data and metadata
-    celltype_col : str, default='cell_type'
-        Column name in adata.obs containing cell type annotations
-    condition_col : str, default='condition'
-        Column name in adata.obs containing condition annotations
-    method : str, default='average'
-        Method to aggregate expression:
-        - 'average': Mean expression per group
-        - 'nn_cell_fraction': Fraction of cells with non-zero expression
-    layer : str, optional
-        Layer in AnnData to use for aggregation. If None, uses .X
-    min_cells : int, default=5
-        Minimum number of cells required for a cell type-condition group
-        
-    Returns
-    -------
-    AnnData
-        New AnnData object with aggregated data where:
-        - Observations are cell type-condition combinations
-        - Variables are genes
-        - .obs contains cell type and condition annotations
-    '''
-   
-    X = adata.X
-    
-    # Convert to dense if sparse
-    if sparse.issparse(X):
-        X = X.toarray()
-    
-    # Create combination groups
-    # adata.obs['group'] = adata.obs[celltype_col].astype(str) + "_" + adata.obs[condition_col].astype
-    
-    # Get unique combinations
+def aggregate_anndata(adata, celltype_col, condition_col, method="Average"):
+    """Aggregate AnnData object by cell type and condition."""
     cell_types = adata.obs[celltype_col].unique()
-    print(cell_types)
-    print(len(cell_types))
     conditions = adata.obs[condition_col].unique()
-    
-    print(len(conditions))
-    
-    # Initialize storage for aggregated data
-    aggregated_data = []
-    valid_groups = []
-    cell_counts = []
-    cell_type_list = []
-    condition_list = []
-    sle_status_list = []
-    
-    # Aggregate for each combination
+    results = []
+
     for ct in cell_types:
         for cond in conditions:
-            # Get mask for current group
             mask = (adata.obs[celltype_col] == ct) & (adata.obs[condition_col] == cond)
-            group_data = X[mask]
+            group_data = adata[mask]
+            if method == "Average":
+                agg_values = np.mean(group_data.X, axis=0)
+            elif method == "Sum":
+                agg_values = (np.sum(group_data.X, axis=0)) / (np.shape(group_data.X)[0])
+
+            sle_status = group_data.obs["SLE_status"].unique()[0]
+            agg_values = np.ravel(agg_values)
+
+    # Create a single result dictionary
+            result_dict = {
+                'Gene': adata.var_names,
+                'Value': agg_values,
+                'Cell Type': ct,
+                'Condition': cond,
+                'Status': sle_status
+            }
             
-            # Check if enough cells
-            if group_data.shape[0] >= min_cells:
-                if method == 'average':
-                    agg_values = np.mean(group_data, axis=0)
-                elif method == 'nn_cell_fraction':
-                    agg_values = np.mean(group_data > 0, axis=0)
-                
-                aggregated_data.append(agg_values)
-                valid_groups.append(f"{ct}_{cond}")
-                cell_counts.append(group_data.shape[0])
-                cell_type_list.append(ct)
-                condition_list.append(cond)
-                sle_status_list.append(group_data.obs['SLE Status'].unique()[0])
+            results.append(pd.DataFrame(result_dict))
     
-    # Convert to array
-    aggregated_data = np.array(aggregated_data)
-    
-    # Create observation DataFrame
-    obs_df = pd.DataFrame({
-        'cell_type': cell_type_list,
-        'condition': condition_list,
-        'n_cells': cell_counts,
-        'sle_status': sle_status_list
-    }, index=valid_groups)
-    
-    # Create new AnnData object
-    aggregated_adata = sc.AnnData(
-        X=aggregated_data,
-        obs=obs_df,
-        var=adata.var.copy()
-    )
-    
-    # Add metadata
-    aggregated_adata.uns['aggregation_method'] = method
-    aggregated_adata.uns['min_cells'] = min_cells
-    if layer:
-        aggregated_adata.uns['aggregation_layer'] = layer
-    
-    return aggregated_adata
+    # Concatenate all results at once
+    return pd.concat(results, ignore_index=True)
 
-
-def get_cell_type_compositions(adata, celltype_col, condition_col):
-    """Get cell type compositions per cell type across all conditions."""
-    compositions = {}
-    for condition in adata.obs[condition_col].unique():
-        condition_data = adata[adata.obs[condition_col] == condition]
-        compositions[condition] = condition_data.obs[celltype_col].value_counts(normalize=True)
-    return compositions
