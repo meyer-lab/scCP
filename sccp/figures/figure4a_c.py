@@ -24,19 +24,26 @@ def makeFigure():
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
-    # XX = aggregate_anndata(X, celltype_col="Cell Type", condition_col="Condition", method="Average")
-    # print(XX)
-    
-    cell_comp_df = cell_count_perc_df(X, celltype="Cell Type")
-    cell_comp_df = cell_comp_df.pivot(index=["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"], columns="Cell Type", values="Cell Type Percentage")
-    cell_comp_df = cell_comp_df.sort_values("condition_unique_idxs")
-    
-    df = predaccuracy_lupus(cell_comp_df)
-    print(df)
-    y = [df.iloc[0], df.iloc[0]]
 
-
+    
+    # cell_comp_df = cell_count_perc_df(X, celltype="Cell Type")
+    # cell_comp_df = cell_comp_df.pivot(index=["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"], columns="Cell Type", values="Cell Type Percentage")
+    # cell_comp_df = cell_comp_df.sort_values("condition_unique_idxs")
+    
+    # df = predaccuracy_lupus(cell_comp_df)
+    # print(df)
+    # y = [df.iloc[0], df.iloc[0]]
     # # # print(XXX)
+    
+    # cell_comp_gene_df = aggregate_anndata(X, celltype_col="Cell Type", condition_col="Condition", method="Average")
+    # cell_comp_gene_df = cell_comp_gene_df.sort_values("condition_unique_idxs")
+    
+    # df = predaccuracy_lupus(cell_comp_gene_df)
+    # print(df)
+    
+    
+    
+    
     
     
 
@@ -44,7 +51,7 @@ def makeFigure():
     # # prnt
     # plot_accuracy_ranks_lupus(X, ranks, ax[0], error_metric="roc_auc")
     # ax[0].set(xticks=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50])
-    x = [0, 50]
+    # x = [0, 50]
     # y = [0.84, 0.84]
     # ax[0].plot(x, y, linestyle="--")
 
@@ -71,6 +78,8 @@ def aggregate_anndata(adata, celltype_col, condition_col, method="Average"):
                 agg_values = (np.sum(group_data.X, axis=0)) / (np.shape(group_data.X)[0])
 
             sle_status = group_data.obs["SLE_status"].unique()[0]
+            cohort = group_data.obs["Processing_Cohort"].unique()[0]
+            idx = group_data.obs["condition_unique_idxs"].unique()[0]
             agg_values = np.ravel(agg_values)
 
     # Create a single result dictionary
@@ -79,11 +88,17 @@ def aggregate_anndata(adata, celltype_col, condition_col, method="Average"):
                 'Value': agg_values,
                 'Cell Type': ct,
                 'Condition': cond,
-                'Status': sle_status
+                'Status': sle_status,
+                'Processing_Cohort': cohort,
+                'condition_unique_idxs': idx
             }
             
             results.append(pd.DataFrame(result_dict))
     
-    # Concatenate all results at once
-    return pd.concat(results, ignore_index=True)
+    
+    df = pd.concat(results, ignore_index=True)
+    
+    pivot_df = df.pivot_table(index=["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"], columns=["Cell Type", "Gene"], values=["Value"])
+    
+    return pivot_df
 
