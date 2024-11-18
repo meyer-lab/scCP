@@ -9,63 +9,49 @@ from .common import getSetup, subplotLabel
 from .commonFuncs.plotLupus import plot_roc_fourthbatch
 from .commonFuncs.plotPaCMAP import plot_labels_pacmap
 import numpy as np
-from scipy import sparse
 import pandas as pd
-import scanpy as sc
-from .commonFuncs.plotGeneral import cell_count_perc_df, rotate_xaxis
+from .commonFuncs.plotGeneral import cell_count_perc_lupus_df
 from ..logisticReg import predaccuracy_lupus
 from .commonFuncs.plotLupus import plot_accuracy_ranks_lupus
-from .commonFuncs.plotGeneral import plot_r2x
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
-    ax, f = getSetup((9, 4), (1, 3))
+    ax, f = getSetup((8, 8), (2, 2))
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
-
     
-    # cell_comp_df = cell_count_perc_df(X, celltype="Cell Type")
+    # cell_comp_df = cell_count_perc_lupus_df(X, celltype="Cell Type")
     # cell_comp_df = cell_comp_df.pivot(index=["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"], columns="Cell Type", values="Cell Type Percentage")
     # cell_comp_df = cell_comp_df.sort_values("condition_unique_idxs")
     
-    # print(cell_comp_df)
-    # # df = predaccuracy_lupus(cell_comp_df)
-    # # print(df)
-    # # y = [df.iloc[0], df.iloc[0]]
-    # # # # print(XXX)
+    # cell_comp_pred = predaccuracy_lupus(cell_comp_df)
+    # y_cell_comp = [cell_comp_pred.iloc[0], cell_comp_pred.iloc[0]]
     
     # cell_comp_gene_df = aggregate_anndata(X, celltype_col="Cell Type", condition_col="Condition", method="Average")
     # cell_comp_gene_df = cell_comp_gene_df.sort_values("condition_unique_idxs")
     # cell_comp_gene_df.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in cell_comp_gene_df.columns]
     
-    # # df = predaccuracy_lupus(cell_comp_gene_df)
-    # print(cell_comp_gene_df)
-    
-    # cell_comp_gene_df = cell_comp_gene_df
-    
-    # print(cell_comp_gene_df)
-    
-    
-    
+    # cell_comp_gene_pred = predaccuracy_lupus(cell_comp_gene_df)
+    # y_cell_comp_gene = [cell_comp_gene_pred.iloc[0], cell_comp_gene_pred.iloc[0]]
     
     # combined_df = pd.concat([cell_comp_df.reset_index(), cell_comp_gene_df.reset_index(drop=True)], axis=1)
     # combined_df = combined_df.set_index(["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"])
-    # # combined_df = cell_comp_df.merge(cell_comp_gene_df, on=["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"], how="inner")
-    # print(combined_df)
     
-    # df = predaccuracy_lupus(combined_df)
+    # combined_pred = predaccuracy_lupus(combined_df)
+    # y_combined = [combined_pred.iloc[0], combined_pred.iloc[0]]
     
-    
-
-    # ranks=[1, 2]
-    # # # prnt
+    # ranks = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
     # plot_accuracy_ranks_lupus(X, ranks, ax[0], error_metric="roc_auc")
     # ax[0].set(xticks=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50])
+    
     # x = [0, 50]
-    # y = [0.84, 0.84]
-    # ax[0].plot(x, y, linestyle="--")
+    # y_perez_et_al = [0.84, 0.84]
+    # ax[0].plot(x, y_perez_et_al, linestyle="--", color="k")
+    # ax[0].plot(x, y_cell_comp, linestyle="--", color="r")
+    # ax[0].plot(x, y_cell_comp_gene, linestyle="--", color="g")
+    # ax[0].plot(x, y_combined, linestyle="--", color="m")
 
     # X.uns["Pf2_A"] = correct_conditions(X)
     # plot_roc_fourthbatch(X, ax[1])
