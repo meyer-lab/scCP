@@ -30,10 +30,11 @@ def predaccuracy_ranks_lupus(
         pf2_output.uns["Pf2_A"] = correct_conditions(pf2_output)
 
         A_matrix = pf2_output.uns["Pf2_A"]
-
+        
         cohort_four = (condition_labels_all["Processing_Cohort"] == "4.0").to_numpy(
             dtype=bool
         )
+        
         y = (condition_labels_all["SLE_status"] == "SLE").to_numpy(dtype=bool)
 
         log_reg = logistic_regression(scoring=error_metric)
@@ -66,12 +67,14 @@ def predaccuracy_lupus(
     error_metric: Metric used for LR
     """
 
-    cohort_four = (df.loc["Processing_Cohort"] == "4.0").to_numpy(
+    full_df = df.reset_index()
+    cohort_four = (full_df["Processing_Cohort"] == "4.0").to_numpy(
         dtype=bool
     )
-    y = (df.loc["Status"] == "SLE").to_numpy(dtype=bool)
+    y = (full_df["Status"] == "SLE").to_numpy(dtype=bool)
 
     log_reg = logistic_regression(scoring=error_metric)
+
     log_fit = log_reg.fit(df[cohort_four], y[cohort_four])
 
     if error_metric == "roc_auc":

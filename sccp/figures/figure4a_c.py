@@ -24,7 +24,6 @@ def makeFigure():
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
-    print(X.obs["condition_unique_idxs"])
     # XX = aggregate_anndata(X, celltype_col="Cell Type", condition_col="Condition", method="Average")
     # print(XX)
     
@@ -32,19 +31,20 @@ def makeFigure():
     cell_comp_df = cell_comp_df.pivot(index=["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"], columns="Cell Type", values="Cell Type Percentage")
     cell_comp_df = cell_comp_df.sort_values("condition_unique_idxs")
     
-    
     df = predaccuracy_lupus(cell_comp_df)
     print(df)
+    y = [df.iloc[0], df.iloc[0]]
 
 
-    # # print(XXX)
+    # # # print(XXX)
     
     
 
-    ranks=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
-    plot_accuracy_ranks_lupus(X, ranks, ax[0], error_metric="roc_auc")
+    # ranks=[1, 2]
+    # # prnt
+    # plot_accuracy_ranks_lupus(X, ranks, ax[0], error_metric="roc_auc")
     # ax[0].set(xticks=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50])
-    # x = [0, 50]
+    x = [0, 50]
     # y = [0.84, 0.84]
     # ax[0].plot(x, y, linestyle="--")
 
