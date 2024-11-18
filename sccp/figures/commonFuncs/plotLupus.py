@@ -24,6 +24,8 @@ def plot_accuracy_ranks_lupus(
 ):
     """Plots results from Pf2 test of various ranks using defined error metric
     and logistic reg"""
+    print(samples_only_lupus(X))
+    a
     pred_accuracy_df = predaccuracy_ranks_lupus(
         X, samples_only_lupus(X), ranks, error_metric
     )

@@ -13,9 +13,9 @@ from scipy import sparse
 import pandas as pd
 import scanpy as sc
 from .commonFuncs.plotGeneral import cell_count_perc_df, rotate_xaxis
-
-# from .commonFuncs.plotLupus import plot_accuracy_ranks_lupus
-# from .commonFuncs.plotGeneral import plot_r2x
+from ..logisticReg import predaccuracy_lupus
+from .commonFuncs.plotLupus import plot_accuracy_ranks_lupus
+from .commonFuncs.plotGeneral import plot_r2x
 
 
 def makeFigure():
@@ -24,18 +24,25 @@ def makeFigure():
     subplotLabel(ax)
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
-    print(X)
+    print(X.obs["condition_unique_idxs"])
     # XX = aggregate_anndata(X, celltype_col="Cell Type", condition_col="Condition", method="Average")
     # print(XX)
     
-    XXX = cell_count_perc_df(X, celltype="Cell Type")
-    print(XXX)
+    cell_comp_df = cell_count_perc_df(X, celltype="Cell Type")
+    cell_comp_df = cell_comp_df.pivot(index=["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"], columns="Cell Type", values="Cell Type Percentage")
+    cell_comp_df = cell_comp_df.sort_values("condition_unique_idxs")
     
+    
+    df = predaccuracy_lupus(cell_comp_df)
+    print(df)
+
+
+    # # print(XXX)
     
     
 
-    # ranks=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
-    # plot_accuracy_ranks_lupus(X, ranks, ax[0], error_metric="roc_auc")
+    ranks=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+    plot_accuracy_ranks_lupus(X, ranks, ax[0], error_metric="roc_auc")
     # ax[0].set(xticks=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50])
     # x = [0, 50]
     # y = [0.84, 0.84]

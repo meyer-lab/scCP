@@ -216,8 +216,7 @@ def plot_cell_gene_corr(
 
 def cell_count_perc_df(X, celltype="Cell Type", status=False):
     """Returns DF with cell counts and percentages for experiment"""
-    
-    grouping_all = [celltype, "Condition", "SLE_status"]
+    grouping_all = [celltype, "Condition", "SLE_status", "Processing_Cohort", "condition_unique_idxs"]
     if status is False:
         grouping = [celltype, "Condition"]
     else:
@@ -225,6 +224,8 @@ def cell_count_perc_df(X, celltype="Cell Type", status=False):
     
     df = X.obs[grouping_all].reset_index(drop=True)
     status_mapping = X.obs.groupby("Condition")["SLE_status"].first()
+    cohort_mapping = X.obs.groupby("Condition")["Processing_Cohort"].first()
+    idx_mapping = X.obs.groupby("Condition")["condition_unique_idxs"].first()
 
     dfCond = (
         df.groupby(["Condition"], observed=True).size().reset_index(name="Cell Count")
@@ -243,6 +244,8 @@ def cell_count_perc_df(X, celltype="Cell Type", status=False):
         )
     
     dfCellType["Status"] = dfCellType["Condition"].map(status_mapping)
+    dfCellType["Processing_Cohort"] = dfCellType["Condition"].map(cohort_mapping)
+    dfCellType["condition_unique_idxs"] = dfCellType["Condition"].map(idx_mapping)
     dfCellType.rename(columns={celltype: "Cell Type"}, inplace=True)
 
     return dfCellType
