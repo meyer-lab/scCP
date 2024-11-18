@@ -30,20 +30,29 @@ def makeFigure():
     # cell_comp_df = cell_comp_df.pivot(index=["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"], columns="Cell Type", values="Cell Type Percentage")
     # cell_comp_df = cell_comp_df.sort_values("condition_unique_idxs")
     
-    # df = predaccuracy_lupus(cell_comp_df)
-    # print(df)
-    # y = [df.iloc[0], df.iloc[0]]
-    # # # print(XXX)
+    # print(cell_comp_df)
+    # # df = predaccuracy_lupus(cell_comp_df)
+    # # print(df)
+    # # y = [df.iloc[0], df.iloc[0]]
+    # # # # print(XXX)
     
     # cell_comp_gene_df = aggregate_anndata(X, celltype_col="Cell Type", condition_col="Condition", method="Average")
     # cell_comp_gene_df = cell_comp_gene_df.sort_values("condition_unique_idxs")
+    # cell_comp_gene_df.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in cell_comp_gene_df.columns]
     
-    # df = predaccuracy_lupus(cell_comp_gene_df)
-    # # print(df)
+    # # df = predaccuracy_lupus(cell_comp_gene_df)
+    # print(cell_comp_gene_df)
+    
+    # cell_comp_gene_df = cell_comp_gene_df
+    
+    # print(cell_comp_gene_df)
     
     
     
-    #  combined_df = cell_comp_df.merge(cell_comp_gene_df, on=["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"], how="inner")
+    
+    # combined_df = pd.concat([cell_comp_df.reset_index(), cell_comp_gene_df.reset_index(drop=True)], axis=1)
+    # combined_df = combined_df.set_index(["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"])
+    # # combined_df = cell_comp_df.merge(cell_comp_gene_df, on=["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"], how="inner")
     # print(combined_df)
     
     # df = predaccuracy_lupus(combined_df)
@@ -51,7 +60,7 @@ def makeFigure():
     
 
     # ranks=[1, 2]
-    # # prnt
+    # # # prnt
     # plot_accuracy_ranks_lupus(X, ranks, ax[0], error_metric="roc_auc")
     # ax[0].set(xticks=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50])
     # x = [0, 50]
