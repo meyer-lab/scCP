@@ -39,11 +39,14 @@ def makeFigure():
     # cell_comp_gene_df = cell_comp_gene_df.sort_values("condition_unique_idxs")
     
     # df = predaccuracy_lupus(cell_comp_gene_df)
-    # print(df)
+    # # print(df)
     
     
     
+    #  combined_df = cell_comp_df.merge(cell_comp_gene_df, on=["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"], how="inner")
+    # print(combined_df)
     
+    # df = predaccuracy_lupus(combined_df)
     
     
 
