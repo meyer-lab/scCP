@@ -22,36 +22,36 @@ def makeFigure():
 
     X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
     
-    # cell_comp_df = cell_count_perc_lupus_df(X, celltype="Cell Type")
-    # cell_comp_df = cell_comp_df.pivot(index=["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"], columns="Cell Type", values="Cell Type Percentage")
-    # cell_comp_df = cell_comp_df.sort_values("condition_unique_idxs")
+    cell_comp_df = cell_count_perc_lupus_df(X, celltype="Cell Type")
+    cell_comp_df = cell_comp_df.pivot(index=["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"], columns="Cell Type", values="Cell Type Percentage")
+    cell_comp_df = cell_comp_df.sort_values("condition_unique_idxs")
     
-    # cell_comp_pred = predaccuracy_lupus(cell_comp_df)
-    # y_cell_comp = [cell_comp_pred.iloc[0], cell_comp_pred.iloc[0]]
+    cell_comp_pred = predaccuracy_lupus(cell_comp_df, error_metric="accuracy")
+    y_cell_comp = [cell_comp_pred.iloc[0], cell_comp_pred.iloc[0]]
     
-    # cell_comp_gene_df = aggregate_anndata(X, celltype_col="Cell Type", condition_col="Condition", method="Average")
-    # cell_comp_gene_df = cell_comp_gene_df.sort_values("condition_unique_idxs")
-    # cell_comp_gene_df.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in cell_comp_gene_df.columns]
+    cell_comp_gene_df = aggregate_anndata(X, celltype_col="Cell Type", condition_col="Condition", method="Average")
+    cell_comp_gene_df = cell_comp_gene_df.sort_values("condition_unique_idxs")
+    cell_comp_gene_df.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in cell_comp_gene_df.columns]
     
-    # cell_comp_gene_pred = predaccuracy_lupus(cell_comp_gene_df)
-    # y_cell_comp_gene = [cell_comp_gene_pred.iloc[0], cell_comp_gene_pred.iloc[0]]
+    cell_comp_gene_pred = predaccuracy_lupus(cell_comp_gene_df, error_metric="accuracy")
+    y_cell_comp_gene = [cell_comp_gene_pred.iloc[0], cell_comp_gene_pred.iloc[0]]
     
-    # combined_df = pd.concat([cell_comp_df.reset_index(), cell_comp_gene_df.reset_index(drop=True)], axis=1)
-    # combined_df = combined_df.set_index(["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"])
+    combined_df = pd.concat([cell_comp_df.reset_index(), cell_comp_gene_df.reset_index(drop=True)], axis=1)
+    combined_df = combined_df.set_index(["Condition", "Status", "Processing_Cohort", "condition_unique_idxs"])
     
-    # combined_pred = predaccuracy_lupus(combined_df)
-    # y_combined = [combined_pred.iloc[0], combined_pred.iloc[0]]
+    combined_pred = predaccuracy_lupus(combined_df, error_metric="accuracy")
+    y_combined = [combined_pred.iloc[0], combined_pred.iloc[0]]
     
-    # ranks = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
-    # plot_accuracy_ranks_lupus(X, ranks, ax[0], error_metric="roc_auc")
-    # ax[0].set(xticks=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50])
+    ranks = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+    plot_accuracy_ranks_lupus(X, ranks, ax[0], error_metric="accuracy")
+    ax[0].set(xticks=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50])
     
-    # x = [0, 50]
-    # y_perez_et_al = [0.84, 0.84]
-    # ax[0].plot(x, y_perez_et_al, linestyle="--", color="k")
-    # ax[0].plot(x, y_cell_comp, linestyle="--", color="r")
-    # ax[0].plot(x, y_cell_comp_gene, linestyle="--", color="g")
-    # ax[0].plot(x, y_combined, linestyle="--", color="m")
+    x = [0, 50]
+    y_perez_et_al = [0.84, 0.84]
+    ax[0].plot(x, y_perez_et_al, linestyle="--", color="k")
+    ax[0].plot(x, y_cell_comp, linestyle="--", color="r")
+    ax[0].plot(x, y_cell_comp_gene, linestyle="--", color="g")
+    ax[0].plot(x, y_combined, linestyle="--", color="m")
 
     # X.uns["Pf2_A"] = correct_conditions(X)
     # plot_roc_fourthbatch(X, ax[1])

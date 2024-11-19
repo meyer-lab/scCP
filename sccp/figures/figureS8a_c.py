@@ -9,7 +9,7 @@ from matplotlib.axes import Axes
 from .common import getSetup, subplotLabel
 
 # from .commonFuncs.plotGeneral import plot_r2x
-# from .commonFuncs.plotLupus import plot_accuracy_ranks_lupus
+from .commonFuncs.plotLupus import plot_accuracy_ranks_lupus
 
 
 def makeFigure():
@@ -19,14 +19,14 @@ def makeFigure():
 
     X = anndata.read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
-    plot_cell_count_status(X, ax=ax[0])
+    # plot_cell_count_status(X, ax=ax[0])
 
     # ranks=[1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
-    # plot_r2x(X, ranks, ax[1])
-    # plot_accuracy_ranks_lupus(X, ranks, ax[2], error_metric="accuracy")
+    # # # plot_r2x(X, ranks, ax[1])
+    # plot_accuracy_ranks_lupus(X, ranks, ax[2], error_metric="accuracy", bootstrap=True)
 
-    for i in [1, 2]:
-        ax[i].set(xticks=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50])
+    # for i in [1, 2]:
+        # ax[i].set(xticks=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50])
 
     return f
 

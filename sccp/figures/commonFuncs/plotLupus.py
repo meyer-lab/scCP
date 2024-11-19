@@ -20,12 +20,12 @@ def samples_only_lupus(X: anndata.AnnData):
 
 
 def plot_accuracy_ranks_lupus(
-    X: anndata.AnnData, ranks: np.ndarray, ax: Axes, error_metric="roc_auc"
+    X: anndata.AnnData, ranks: np.ndarray, ax: Axes, error_metric="roc_auc", bootstrap: bool = False
 ):
     """Plots results from Pf2 test of various ranks using defined error metric
     and logistic reg"""
     pred_accuracy_df = predaccuracy_ranks_lupus(
-        X, samples_only_lupus(X), ranks, error_metric
+        X, samples_only_lupus(X), ranks, error_metric, bootstrap
     )
 
     sns.lineplot(
@@ -34,12 +34,13 @@ def plot_accuracy_ranks_lupus(
         y=error_metric,
         ax=ax,
     )
-    sns.scatterplot(
-        data=pred_accuracy_df,
-        x="Component",
-        y=error_metric,
-        ax=ax,
-    )
+    if bootstrap is False:
+        sns.scatterplot(
+            data=pred_accuracy_df,
+            x="Component",
+            y=error_metric,
+            ax=ax,
+        )
     ax.set(ylim=[-0.05, 1.05])
 
 
