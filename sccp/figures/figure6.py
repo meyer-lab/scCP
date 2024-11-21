@@ -11,16 +11,16 @@ from .common import getSetup, subplotLabel
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
-    ax, f = getSetup((8, 8), (3, 3))
+    ax, f = getSetup((10, 10), (3, 3))
     subplotLabel(ax)
     
     data = np.random.normal(loc=0, scale=1, size=1000)
-    ax[0].hist(data, bins=20, density=True, alpha=0.6, color='k')
+    sns.histplot(data, bins=20, ax=ax[0], color='m')
     
     plot_variance_by_average_expression(ax[1])
     
-    visualize_batch_effects(ax[2], ax[3], label="cell_type")
-    visualize_batch_effects(ax[4], ax[5], label="batch")
+    visualize_batch_effects(ax[2], ax[3], label="cell_type", palette='gnuplot2')
+    visualize_batch_effects(ax[4], ax[5], label="batch", palette="Dark2")
     
     for i in range(4):
         ax[i+2].axis("equal")
@@ -58,12 +58,7 @@ def generate_synthetic_svg_data(n_genes=200, n_samples=5000):
 def plot_variance_by_average_expression(ax):
     gene_metadata = generate_synthetic_svg_data()
     non_hvg = gene_metadata[~gene_metadata['is_hvg']]
-    ax.scatter(non_hvg['mean_expression'], non_hvg['variance'], 
-                color='gray', label='Non-HVG')
-    
-    hvg = gene_metadata[gene_metadata['is_hvg']]
-    ax.scatter(hvg['mean_expression'], hvg['variance'], 
-                color='red', label='HVG')
+    sns.scatterplot(gene_metadata, x='mean_expression', y='variance', hue="is_hvg", ax=ax, palette={True: 'red', False: 'black'})
     
 
    
@@ -143,7 +138,7 @@ def perform_simple_batch_correction(data):
     
     return corrected_data
 
-def visualize_batch_effects(ax1, ax2, label):
+def visualize_batch_effects(ax1, ax2, label, palette='Paired'):
     """
     Visualize batch effects before and after correction
     """
@@ -156,12 +151,14 @@ def visualize_batch_effects(ax1, ax2, label):
         x=genes_to_plot[0], 
         y=genes_to_plot[1], 
         hue=label, 
+        palette=palette,
         ax=ax1,
     )
     sns.scatterplot(
         data=corrected_df, 
         x=genes_to_plot[0], 
         y=genes_to_plot[1], 
+        palette=palette,
         hue=label, 
         ax=ax2,
     )
@@ -213,12 +210,12 @@ def generate_pseudotime_trajectory(n_cells=300):
 
 def visualize_trajectory(ax):
     df = generate_pseudotime_trajectory()
-    sns.scatterplot(data=df, x='x', y='y', hue='cell_type', ax=ax)
+    sns.scatterplot(data=df, x='x', y='y', hue='cell_type', ax=ax, palette="rocket")
         
 
 def generate_synthetic_deg_data():
     # Generate synthetic data
-    n_genes = 200  # Number of genes
+    n_genes = 350  # Number of genes
     n_samples = 10  # Number of samples per condition
 
     # Create random gene expression data
@@ -270,7 +267,7 @@ def plot_deg(ax):
         y=-np.log10(df['P-Value']),
         ax=ax,
         hue='Significant', 
-        palette={True: 'red', False: 'blue'},
+        palette={True: 'red', False: 'black'},
         legend='brief'
     )
 
