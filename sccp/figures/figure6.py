@@ -58,7 +58,7 @@ def generate_synthetic_svg_data(n_genes=200, n_samples=5000):
 def plot_variance_by_average_expression(ax):
     gene_metadata = generate_synthetic_svg_data()
     non_hvg = gene_metadata[~gene_metadata['is_hvg']]
-    sns.scatterplot(gene_metadata, x='mean_expression', y='variance', hue="is_hvg", ax=ax, palette={True: 'red', False: 'black'})
+    sns.scatterplot(gene_metadata, x='mean_expression', y='variance', hue="is_hvg", ax=ax, palette={True: 'green', False: 'black'})
     
 
    
