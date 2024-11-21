@@ -7,29 +7,37 @@ import pandas as pd
 import seaborn as sns
 from scipy.stats import ttest_ind
 from .common import getSetup, subplotLabel
+from scipy.stats import zscore
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
-    ax, f = getSetup((10, 10), (3, 3))
+    ax, f = getSetup((6, 6), (3, 3))
     subplotLabel(ax)
+
+    # data = np.random.normal(loc=0, scale=1, size=200)
+    # sns.histplot(data, bins=20, ax=ax[0], color='m')
     
-    data = np.random.normal(loc=0, scale=1, size=1000)
-    sns.histplot(data, bins=20, ax=ax[0], color='m')
+    # plot_variance_by_average_expression(ax[1])
     
-    plot_variance_by_average_expression(ax[1])
+    # visualize_batch_effects(ax[2], ax[3], label="cell_type", palette='gnuplot2')
+    # visualize_batch_effects(ax[4], ax[5], label="batch", palette="Dark2")
     
-    visualize_batch_effects(ax[2], ax[3], label="cell_type", palette='gnuplot2')
-    visualize_batch_effects(ax[4], ax[5], label="batch", palette="Dark2")
-    
-    for i in range(4):
-        ax[i+2].axis("equal")
+    # for i in range(4):
+    #     ax[i+2].axis("equal")
 
         
-    visualize_trajectory(ax[6])
-    plot_deg(ax[7])
+    # visualize_trajectory(ax[6])
+    # plot_deg(ax[7])
+    
+    # plot_normalization(ax[8])
+    
+    
     
     plot_pseudbulk(ax[8])
+    
+    # for i in range(9):
+    #     ax[i].locator_params(nbins=5)
     
     
     
@@ -285,13 +293,18 @@ def generate_synthetic_pseudobulk():
             expression = np.random.rand(5)
             if cell_type == 'type1':
                 # Ensure gene2 and gene3 have similar expression levels across all conditions
-                expression[1] *= 2 # Set a fixed value for gene2
-                expression[2] *= 2  # Set a fixed value for gene3
+                expression[1] += 1 # Set a fixed value for gene2
+                expression[2] += 1  # Set a fixed value for gene3
                 
             if cell_type == 'type2':
                 # Ensure gene2 and gene3 have similar expression levels across all conditions
-                expression[0] *= 4 # Set a fixed value for gene2
-                expression[3] *= 4  # Set a fixed value for gene3
+                expression[0] += 1.5 # Set as fixed value for gene2
+                expression[3] += 1.5  # Set a fixed value for gene3
+                
+            
+            else:
+                # Ensure gene2 and gene3 have similar expression levels across all conditions
+                expression[4] += 2 # Set a fixed value for gene2
             
             # Create a dictionary for this subset
             subset_dict = {f'gene_{i+1}': expression[i] for i in range(genes)}
@@ -319,3 +332,41 @@ def plot_pseudbulk(ax):
     sns.heatmap(df, ax=ax, cmap='viridis', cbar_kws={'label': 'Expression Level'})
     
     
+
+def generate_norm(num_cells=500):
+    n_cells = 200
+    original_counts = np.concatenate([
+        np.random.poisson(lam=10, size=int(n_cells * 0.7)),  # low counts
+        np.random.poisson(lam=20, size=int(n_cells * 0.3))  # high counts
+    ])
+
+
+    # Convert to a DataFrame for easier manipulation with Seaborn
+    data = pd.DataFrame({
+        'Counts': zscore(original_counts),
+        'Type': 'Original'
+    })
+
+    # Normalize by dividing by the median
+    median_value = np.median(original_counts)
+    normalized_counts = original_counts / median_value
+
+    # Append normalized data to the DataFrame
+    normalized_data = pd.DataFrame({
+        'Counts': normalized_counts,
+        'Type': 'Normalized'
+    })
+    data = pd.concat([data, normalized_data])
+    
+    return data
+
+
+def plot_normalization(ax):
+
+    data = generate_norm()
+    
+    # sns.scatterplot(x=size_factors, y=count_depth, ax=ax)
+    
+    sns.histplot(data=data, x='Counts', hue='Type', bins=20, ax=ax)
+    # ax.set_xscale('log')
+    # ax.set_yscale('log')
