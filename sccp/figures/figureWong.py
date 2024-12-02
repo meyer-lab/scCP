@@ -8,6 +8,9 @@ import pandas as pd
 import scanpy as sc
 import seaborn as sns
 from matplotlib.axes import Axes
+import gseapy as gp
+from gseapy import Biomart
+import mygene
 
 from .common import getSetup, subplotLabel
 from .commonFuncs.plotFactors import plot_gene_factors
@@ -29,8 +32,80 @@ def makeFigure():
     top_pc2_genes = plot_loadings_pca_partial(ax[2], top=True, PC=2)
     bot_pc2_genes = plot_loadings_pca_partial(ax[3], top=False, PC=2)
     
+    print(bot_pc1_genes)
+
+
+    mg = mygene.MyGeneInfo()
+    results = mg.querymany(
+        bot_pc1_genes, 
+        scopes='symbol', 
+        fields=['symbol', 'entrezgene'], 
+        species='mouse', 
+        transformed=True
+    )
+    
+    # results = mg.querymany(
+    #         bot_pc1_genes, 
+    #         scopes='ensembl.gene', 
+    #         fields=['symbol', 'entrezgene'], 
+    #         species='mouse',
+    #         transformed=True
+    #     )
+
+
+    conversion_map = []
+    no_hit_genes = []
+    
+    for gene, result in zip(bot_pc1_genes, results):
+        if result and 'symbol' in result:
+            # Successful conversion
+            conversion_map.append(result.get('symbol'))
+        else:
+            # No conversion found
+            conversion_map.append("NoGene")
+            no_hit_genes.append(gene)
+    
+    conversion_map = [gene.upper() for gene in conversion_map]
     
     
+    # marts = bm.get_marts()
+    # # view validated dataset
+    # datasets = bm.get_datasets(mart='ENSEMBL_MART_ENSEMBL')
+    # # view validated attributes
+    # attrs = bm.get_attributes(dataset='hsapiens_gene_ensembl')
+    # # view validated filters
+    # filters = bm.get_filters(dataset='hsapiens_gene_ensembl')
+    # # query results
+    
+    # bm = Biomart()
+        
+    # queries ={'external_gene_name': top_pc1_genes }
+    # results = bm.query(dataset='hsapiens_gene_ensembl',
+    #                attributes=['ensembl_gene_id', 'external_gene_name', 'entrezgene_id', 'go_id'],
+    #                filters=queries)
+    # print(results.tail())
+    
+    # bm = Biomart()  # 'www' version often works better
+
+    # # Define the query for conversion
+    # mouse_genes = top_pc1_genes # Replace with your list
+    # results = bm.query(dataset='mmusculus_gene_ensembl',  # mouse dataset
+    #                 attributes=['ensembl_gene_id', 'external_gene_name', 'hsapiens_homolog_associated_gene_name'],
+    #                 filters={'external_gene_name': mouse_genes})
+
+    # print(results.head())
+
+    
+    # server = bm.BiomartServer("http://www.ensembl.org/biomart")
+    # dataset = server.datasets['mmusculus_gene_ensembl']
+    
+    # response = dataset.search({
+    #     'attributes': ['external_gene_name', 
+    #                    'hsapiens_homolog_associated_gene_name'],
+    #     'filters': {'external_gene_name': top_pc1_genes}
+    # })
+    
+    # print(response)
     X = anndata.read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
     
     genes = [top_pc1_genes, bot_pc1_genes, top_pc2_genes, bot_pc2_genes, ["RETN", "GZMH", "GZMB"]]
@@ -56,7 +131,7 @@ def makeFigure():
     return f
 
 
-def plot_loadings_pca_partial(ax, geneAmount: int = 50, top=True, PC: int = 1):
+def plot_loadings_pca_partial(ax, geneAmount: int = 40, top=True, PC: int = 1):
     """XXX"""
     if PC == 1:
         df = pd.read_csv("loadings_time_series_PC1.csv", dtype=str).rename(columns={"Unnamed: 0": "Gene"}) 
@@ -65,8 +140,6 @@ def plot_loadings_pca_partial(ax, geneAmount: int = 50, top=True, PC: int = 1):
         
     df["PC"+str(PC)] = stats.zscore(df["PC"+str(PC)].to_numpy().astype(float))
     df = df.sort_values(by="PC"+str(PC))
-    
-    print(df)
     
     if top:
         sns.barplot(
@@ -80,7 +153,7 @@ def plot_loadings_pca_partial(ax, geneAmount: int = 50, top=True, PC: int = 1):
 
     ax.tick_params(axis="x", rotation=90)
     
-    return df["Gene"].values    
+    return [gene.upper() for gene in higly_weighted_genes]
 
 
 # def compare_genes_with_pf2(X, top_pos_genes, top_neg_genes, pc_component, geneAmount: int = 20):

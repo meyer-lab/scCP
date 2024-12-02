@@ -11,6 +11,7 @@ anndata==0.10.9
 annoy==1.17.3
 array-api-compat==1.8
 asttokens==2.4.1
+biothings-client==0.3.1
 certifi==2024.8.30
 charset-normalizer==3.3.2
 click==8.1.7
@@ -52,6 +53,7 @@ louvain==0.8.2
 matplotlib==3.9.2
 matplotlib-inline==0.1.7
 multipledispatch==1.0.0
+mygene==3.2.2
 natsort==8.4.0
 networkx==3.3
 nodeenv==1.9.1
