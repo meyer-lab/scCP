@@ -14,95 +14,108 @@ from .commonFuncs.plotFactors import plot_gene_factors
 from .commonFuncs.plotGeneral import cell_count_perc_df, rotate_xaxis
 from .commonFuncs.plotPaCMAP import plot_gene_pacmap, plot_wp_pacmap
 from .figure4e_k import plot_correlation_cmp_cell_count_perc
+from scipy import stats
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
-    ax, f = getSetup((8, 8), (3, 3))
+    ax, f = getSetup((8, 8), (2, 2))
     subplotLabel(ax)
 
 
-    plot_loadings_pca(ax[0])
-    # X = anndata.read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
-
-    # plot_gene_factors(X, ax[2])
-
-    # plot_wp_pacmap(X, 4, ax[0], 0.25)
-    # plot_wp_pacmap(X, 27, ax[1], 0.25)
-
-    # X = cytotoxic_score(X)
-    # plot_score(X, ax[3], cellType="Cell Type2")
-    # ax[0].set(ylabel="Cytotoxic Score")
-
-    # plot_gene_pacmap("RETN", "Pf2", X, ax[4])
-
-    # celltype_count_perc_df = cell_count_perc_df(X, celltype="leiden", status=True)
-    # plot_correlation_cmp_cell_count_perc(
-    #     X, 28, celltype_count_perc_df, ax[5], cellPerc=False
-    # )
+    top_pc1_genes = plot_loadings_pca_partial(ax[0], top=True, PC=1)
+    bot_pc1_genes = plot_loadings_pca_partial(ax[1], top=False, PC=1)
+    
+    top_pc2_genes = plot_loadings_pca_partial(ax[2], top=True, PC=2)
+    bot_pc2_genes = plot_loadings_pca_partial(ax[3], top=False, PC=2)
+    
+    
+    
+    X = anndata.read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
+    
+    genes = [top_pc1_genes, bot_pc1_genes, top_pc2_genes, bot_pc2_genes, ["RETN", "GZMH", "GZMB"]]
+    
+    
+    for i in range(5):
+        print(f"PC genes in X.var_names: { [gene for gene in genes[i] if gene in X.var_names]}")
+    
+    
+    # # pc1_comparison = compare_genes_with_pf2(X, top_pc1_genes, bot_pc1_genes, "PC1")
+    # # pc2_comparison = compare_genes_with_pf2(X, top_pc2_genes, bot_pc2_genes, "PC2")
+    # # print(pc1_comparison)
+    # # print(pc2_comparison)
+    
+    # for i in range(len(top_pc1_genes)):
+    #     plot_gene_pacmap(top_pc1_genes[i], "Pf2", X, ax[i])
+        
+    # cmp = 4
+    # plot_gene_factors_partial(cmp, X, ax[5], top=True)
+    
+  
 
     return f
 
 
-def cytotoxic_score(X: anndata.AnnData):
-    """Scanpy average gene score for all cells"""
-    cytotoxic_genes = ["PRF1", "GZMH", "GZMB"]
-    X = sc.tl.score_genes(adata=X, gene_list=cytotoxic_genes, copy=True, use_raw=False)
-
-    return X
-
-
-def plot_score(X: anndata.AnnData, ax: Axes, cellType: str = "Cell Type"):
-    """Plots average score  across cell types and patient status"""
-    df = pd.DataFrame({"Score": X.obs["score"].values})
-    df["Status"] = X.obs["SLE_status"].values
-    df["Condition"] = X.obs["Condition"].values
-    df["Cell Type"] = X.obs[cellType].values
-    df_mean_score = (
-        df.groupby(["Status", "Cell Type", "Condition"], observed=False)
-        .mean()
-        .reset_index()
-        .dropna()
-        .sort_values(["Cell Type", "Condition"])
-    )
-
-    df_count = (
-        df.groupby(["Cell Type", "Condition"], observed=False)
-        .size()
-        .reset_index(name="Cell Count")
-        .sort_values(["Cell Type", "Condition"])
-    )
-
-    df_mean_score["Cell Count"] = df_count["Cell Count"].to_numpy()
-
-    sns.boxplot(
-        data=df_mean_score,
-        x="Cell Type",
-        y="Score",
-        hue="Status",
-        order=np.unique(df["Cell Type"]),
-        ax=ax,
-        showfliers=False,
-    )
-
-    rotate_xaxis(ax)
-
-
-def plot_loadings_pca(ax):
-    """Plot GSEA results"""
-    df = pd.read_csv("loadings_time_series_PC1.csv", dtype=str).rename("Unnamed: 0", "Gene")
+def plot_loadings_pca_partial(ax, geneAmount: int = 50, top=True, PC: int = 1):
+    """XXX"""
+    if PC == 1:
+        df = pd.read_csv("loadings_time_series_PC1.csv", dtype=str).rename(columns={"Unnamed: 0": "Gene"}) 
+    else:
+        df = pd.read_csv("loadings_time_series_PC2.csv", dtype=str).rename(columns={"Unnamed: 0": "Gene"})
+        
+    df["PC"+str(PC)] = stats.zscore(df["PC"+str(PC)].to_numpy().astype(float))
+    df = df.sort_values(by="PC"+str(PC))
+    
     print(df)
-    # df = df.drop(columns=["ID", "Verbose ID"])
-    # category = df["Category"].to_numpy().astype(str)
+    
+    if top:
+        sns.barplot(
+            data=df.iloc[-geneAmount:, :], x="Gene", y="PC"+str(PC), color="k", ax=ax
+            
+        )
+        higly_weighted_genes = df.iloc[-geneAmount:]["Gene"].values
+    else:
+        sns.barplot(data=df.iloc[:geneAmount, :], x="Gene", y="PC"+str(PC), color="k", ax=ax)
+        higly_weighted_genes = df.iloc[:geneAmount]["Gene"].values
 
-    # df = df.drop(columns=["Category"])
-    # df["Process"] = category
-    # df = df.iloc[:1000, :]
-    # df["Total Genes"] = df.iloc[:, 2:-1].astype(int).sum(axis=1).to_numpy()
-    # df = df.loc[df.loc[:, "Process"] == "GO: Biological Process"]
-    # df["pValue"] = df["pValue"].astype(float)
+    ax.tick_params(axis="x", rotation=90)
+    
+    return df["Gene"].values    
 
-    # sns.scatterplot(
-    #     data=df.iloc[:10, :], x="pValue", y="Name", hue="Total Genes", ax=ax
-    # )
-    # ax.set(xscale="log")
+
+# def compare_genes_with_pf2(X, top_pos_genes, top_neg_genes, pc_component, geneAmount: int = 20):
+#     """Compare the top PCA genes with the genes in X.varm['Pf2_C'] and return a DataFrame."""
+#     pf2_components = X.varm['Pf2_C']
+#     overlap_counts = []
+
+#     for i in range(pf2_components.shape[1]):
+#         component_gene_names = X.var_names
+#         pos_overlap = len(set(top_pos_genes).intersection(set(component_gene_names)))
+#         neg_overlap = len(set(top_neg_genes).intersection(set(component_gene_names)))
+#         total_overlap = pos_overlap + neg_overlap
+#         overlap_counts.append({'PC Component': pc_component, 'PF2 Component': i+1, 'Overlap': total_overlap})
+
+#     overlap_df = pd.DataFrame(overlap_counts)
+#     overlap_df = overlap_df.sort_values(by='Overlap', ascending=False)
+#     return overlap_df
+    
+# def plot_gene_factors_partial(
+#     cmp: int, X, ax, geneAmount: int = 15, top=True
+# ):
+#     """Plotting weights for gene factors for both most negatively/positively weighted terms"""
+#     cmpName = f"Cmp. {cmp}"
+
+#     df = pd.DataFrame(
+#         data=X.varm["Pf2_C"][:, cmp - 1], index=X.var_names, columns=[cmpName]
+#     )
+#     df = df.reset_index(names="Gene")
+#     df = df.sort_values(by=cmpName)
+
+#     if top:
+#         sns.barplot(
+#             data=df.iloc[-geneAmount:, :], x="Gene", color="k", ax=ax
+#         )
+#     else:
+#         sns.barplot(data=df.iloc[:geneAmount, :], x="Gene", color="k", ax=ax)
+
+#     ax.tick_params(axis="x", rotation=90)
