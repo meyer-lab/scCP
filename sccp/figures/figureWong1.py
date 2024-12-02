@@ -27,13 +27,13 @@ def makeFigure():
 
 
     geneAmount = 30
-    top_pc1_genes = plot_loadings_pca_partial(ax[0], top=True, PC=1, geneAmount=geneAmount)
-    bot_pc1_genes = plot_loadings_pca_partial(ax[1], top=False, PC=1, geneAmount=geneAmount)
+    pos_pc1_genes, df_pc1 = plot_loadings_pca_partial(ax[0], top=True, PC=1, geneAmount=geneAmount)
+    neg_pc1_genes, _ = plot_loadings_pca_partial(ax[1], top=False, PC=1, geneAmount=geneAmount)
     
-    top_pc2_genes = plot_loadings_pca_partial(ax[2], top=True, PC=2, geneAmount=geneAmount)
-    bot_pc2_genes = plot_loadings_pca_partial(ax[3], top=False, PC=2, geneAmount=geneAmount)
+    pos_pc2_genes, df_pc2 = plot_loadings_pca_partial(ax[2], top=True, PC=2, geneAmount=geneAmount)
+    neg_pc2_genes, _ = plot_loadings_pca_partial(ax[3], top=False, PC=2, geneAmount=geneAmount)
 
-    genes = [top_pc1_genes, bot_pc1_genes, top_pc2_genes, bot_pc2_genes]
+    genes = [pos_pc1_genes, neg_pc1_genes, pos_pc2_genes, neg_pc2_genes]
     for i in range(len(genes)):
         mg = mygene.MyGeneInfo()
         results = mg.querymany(
@@ -66,8 +66,10 @@ def makeFigure():
     df = pd.concat([df_pc1, df_pc2], axis=0)
     
     df = df.sort_values(by='Overlap', ascending=False)
-    
+
     print(df.iloc[:10])
+    
+    
     plot_gene_factors_partial(1, X, ax[4], top=True)
     plot_gene_factors_partial(1, X, ax[5], top=False)
     plot_gene_factors_partial(16, X, ax[6], top=True)
@@ -99,67 +101,79 @@ def plot_loadings_pca_partial(ax, geneAmount: int = 40, top=True, PC: int = 1):
 
     ax.tick_params(axis="x", rotation=90)
     
-    return [gene.upper() for gene in higly_weighted_genes]
+    return [gene.upper() for gene in higly_weighted_genes], df
 
-def compare_genes_with_pf2(X, top_pos_genes, top_neg_genes, pc_component, geneAmount: int = 40):
+def compare_genes_with_pf2(X, pc_pos_genes, pc_neg_genes, pc_component, geneAmount: int = 40):
     """Compare the top PCA genes with the genes in X.varm['Pf2_C'] and return a DataFrame."""
     pf2_components = X.varm['Pf2_C']
     overlap_counts = []
-    overlap_genes = []
 
     for i in range(pf2_components.shape[1]):
-        component_genes_top = np.argsort(pf2_components[:, i])[-geneAmount:]
-        component_genes_bottom = np.argsort(pf2_components[:, i])[:geneAmount]
-        component_gene_names_top = X.var_names[component_genes_top]
-        component_gene_names_bottom = X.var_names[component_genes_bottom]
-
+        # Get top and bottom genes for the current PF2 component
+        pf2_pos_genes_indices = np.argsort(pf2_components[:, i])[-geneAmount:]
+        pf2_neg_genes_indices = np.argsort(pf2_components[:, i])[:geneAmount]
         
-        pos_overlap_top = set(top_pos_genes).intersection(set(component_gene_names_top))
-        neg_overlap_top = set(top_neg_genes).intersection(set(component_gene_names_top))
-        pos_overlap_bottom = set(top_pos_genes).intersection(set(component_gene_names_bottom))
-        neg_overlap_bottom = set(top_neg_genes).intersection(set(component_gene_names_bottom))
-        
+        pf2_pos_genes = X.var_names[pf2_pos_genes_indices]
+        pf2_neg_genes = X.var_names[pf2_neg_genes_indices]
 
-        overlap_counts.append({
-            'PC Component': pc_component,
-            'PC Value': 'Pos',
-            'PF2 Component': i+1,
-            'PF2 Value': 'Pos',
-            'Overlap': len(pos_overlap_top),
-            'Overlapping Genes': ', '.join(pos_overlap_top)
-        })
-        overlap_counts.append({
-            'PC Component': pc_component,
-            'PC Value': 'Pos',
-            'PF2 Component': i+1,
-            'PF2 Value': 'Neg',
-            'Overlap': len(pos_overlap_bottom),
-            'Overlapping Genes': ', '.join(pos_overlap_bottom)
-        })
-        overlap_counts.append({
-            'PC Component': pc_component,
-            'PC Value': 'Neg',
-            'PF2 Component': i+1,
-            'PF2 Value': 'Pos',
-            'Overlap': len(neg_overlap_top),
-            'Overlapping Genes': ', '.join(neg_overlap_top)
-        })
-        overlap_counts.append({
-            'PC Component': pc_component,
-            'PC Value': 'Neg',
-            'PF2 Component': i+1,
-            'PF2 Value': 'Neg',
-            'Overlap': len(neg_overlap_bottom),
-            'Overlapping Genes': ', '.join(neg_overlap_bottom)
-        })    
+        def get_gene_ranking(gene, pc_pos_genes, pc_neg_genes, pf2_pos_genes, pf2_neg_genes):
+            """
+            Calculate the ranking of a gene in different gene lists.
+            
+            Returns the ranking (1-based index) or None if not found.
+            """
+            try:
+                if gene in pc_pos_genes:
+                    return np.where(pc_pos_genes == gene)[0][0] + 1
+                if gene in pc_neg_genes:
+                    return np.where(pc_neg_genes == gene)[0][0] + 1
+                if gene in pf2_pos_genes:
+                    return np.where(pf2_pos_genes == gene)[0][0] + 1
+                if gene in pf2_neg_genes:
+                    return np.where(pf2_neg_genes == gene)[0][0] + 1
+                return None
+            except IndexError:
+                return None
 
+        # Find overlaps between PC and PF2 gene sets
+        pc_pos_pf2_pos_overlap = set(pc_pos_genes).intersection(set(pf2_pos_genes))
+        pc_pos_pf2_neg_overlap = set(pc_pos_genes).intersection(set(pf2_neg_genes))
+        pc_neg_pf2_pos_overlap = set(pc_neg_genes).intersection(set(pf2_pos_genes))
+        pc_neg_pf2_neg_overlap = set(pc_neg_genes).intersection(set(pf2_neg_genes))
 
+        # Prepare overlap information with rankings
+        def create_overlap_entry(pc_category, pf2_category, overlap_genes):
+            return {
+                'PC_Component': pc_component,
+                'PC_Component_Category': pc_category,
+                'PF2_Component': i+1,
+                'PF2_Component_Category': pf2_category,
+                'Overlap': len(overlap_genes),
+                'Overlapping_Genes': ', '.join(overlap_genes),
+                'PC_Gene_Rankings': ', '.join(
+                    str(ranking) for ranking in 
+                    (get_gene_ranking(gene, pc_pos_genes, pc_neg_genes, pf2_pos_genes, pf2_neg_genes) for gene in overlap_genes) 
+                    if ranking is not None
+                ),
+                'PF2_Gene_Rankings': ', '.join(
+                    str(ranking) for ranking in 
+                    (get_gene_ranking(gene, pf2_pos_genes, pf2_neg_genes, pc_pos_genes, pc_neg_genes) for gene in overlap_genes) 
+                    if ranking is not None
+                )
+            }
+
+        # Create entries for different overlap scenarios
+        overlap_counts.extend([
+        create_overlap_entry('Positive', 'Positive', pc_pos_pf2_pos_overlap),
+        create_overlap_entry('Positive', 'Negative', pc_pos_pf2_neg_overlap),
+        create_overlap_entry('Negative', 'Positive', pc_neg_pf2_pos_overlap),
+        create_overlap_entry('Negative', 'Negative', pc_neg_pf2_neg_overlap)
+        ])
+
+    # Convert to DataFrame
     overlap_df = pd.DataFrame(overlap_counts)
     
-
-        
     return overlap_df
-
 
     
 def plot_gene_factors_partial(
@@ -182,3 +196,5 @@ def plot_gene_factors_partial(
         sns.barplot(data=df.iloc[:geneAmount, :], x="Gene", y=cmpName, color="k", ax=ax)
 
     ax.tick_params(axis="x", rotation=90)
+    
+    ret
