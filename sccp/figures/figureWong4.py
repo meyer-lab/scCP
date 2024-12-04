@@ -25,7 +25,7 @@ def makeFigure():
     ax, f = getSetup((12, 8), (4, 4))
     subplotLabel(ax)
     
-    geneAmount = 35
+    geneAmount = 5
     X = anndata.read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
     
     pc1_load = load_pc_loadings(pc_component=1)
@@ -33,23 +33,19 @@ def makeFigure():
     
     pf2_factors = load_pf2_loadings(X)
     
-    df1 = compare_pc_pf2_loadings(pc1_load, pf2_factors, pos_pca=True, pos_pf2=True, pc_component=1, top_n=geneAmount)
-    df2 = compare_pc_pf2_loadings(pc1_load, pf2_factors, pos_pca=True, pos_pf2=False, pc_component=1, top_n=geneAmount)
-    df3 = compare_pc_pf2_loadings(pc2_load, pf2_factors, pos_pca=False, pos_pf2=True, pc_component=2, top_n=geneAmount)
-    df4 = compare_pc_pf2_loadings(pc2_load, pf2_factors, pos_pca=False, pos_pf2=False, pc_component=2, top_n=geneAmount)
+    
+        
+    overlap_genes = list(set(pc1_load['Gene']) & set(X.var_names))
+    
+    print(pf2_factors)
+    
 
-    df = pd.concat([df1, df2, df3, df4], axis=0).reset_index()
-    print(df)
+    pc1_load = pc1_load[pc1_load['Gene'].isin(overlap_genes)].sort_values(by='PC1', ascending=False)
     
-    # df = df.sort_values(by='Overlap_Count', ascending=False).head(10)
-    # print(df)
-    
-    overlapping_genes = df["Overlapping_Genes"].values
-    flattened_genes = [gene for sublist in overlapping_genes for gene in sublist]
-    genes = np.unique(flattened_genes)
+    genes = pc1_load['Gene'].values
     
     
-    for i, gene in enumerate(genes):
+    for i, gene in enumerate(np.concatenate([genes[:geneAmount], genes[-geneAmount:]])):
         df = avegene_per_status(X, gene=gene)
         # sns.boxplot(data=df, x="Status", y="Average Gene Expression", hue="Status", 
         #             showfliers=False, ax=ax[i])
@@ -58,6 +54,43 @@ def makeFigure():
         
         ax[i].tick_params(axis="x", rotation=45)
         ax[i].set_title(gene)
+
+    
+       
+
+    
+    
+    
+    
+   
+
+
+    
+    # df1 = compare_pc_pf2_loadings(pc1_load, pf2_factors, pos_pca=True, pos_pf2=True, pc_component=1, top_n=geneAmount)
+    # df2 = compare_pc_pf2_loadings(pc1_load, pf2_factors, pos_pca=True, pos_pf2=False, pc_component=1, top_n=geneAmount)
+    # df3 = compare_pc_pf2_loadings(pc2_load, pf2_factors, pos_pca=False, pos_pf2=True, pc_component=2, top_n=geneAmount)
+    # df4 = compare_pc_pf2_loadings(pc2_load, pf2_factors, pos_pca=False, pos_pf2=False, pc_component=2, top_n=geneAmount)
+
+    # df = pd.concat([df1, df2, df3, df4], axis=0).reset_index()
+    # print(df)
+    
+    # df = df.sort_values(by='Overlap_Count', ascending=False).head(10)
+    # print(df)
+    
+    # overlapping_genes = df["Overlapping_Genes"].values
+    # flattened_genes = [gene for sublist in overlapping_genes for gene in sublist]
+    # genes = np.unique(flattened_genes)
+    
+    
+    # for i, gene in enumerate(genes):
+    #     df = avegene_per_status(X, gene=gene)
+    #     # sns.boxplot(data=df, x="Status", y="Average Gene Expression", hue="Status", 
+    #     #             showfliers=False, ax=ax[i])
+    #     sns.boxplot(data=df, x="Cell Type", y="Average Gene Expression", hue="Status", 
+    #                 showfliers=False, ax=ax[i])
+        
+    #     ax[i].tick_params(axis="x", rotation=45)
+    #     ax[i].set_title(gene)
 
     
        
