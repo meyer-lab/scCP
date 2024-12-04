@@ -1,8 +1,5 @@
 """
-Figure 5a_e Generation Script
-
-This module generates a comprehensive figure comparing PCA and PF2 component analyses 
-for gene loadings and factors.
+Figure 5a_e
 """
 
 import anndata
@@ -10,168 +7,86 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 import seaborn as sns
-from scipy import stats
+from matplotlib.axes import Axes
+import gseapy as gp
+from gseapy import Biomart
 import mygene
-import matplotlib.pyplot as plt
 
 from .common import getSetup, subplotLabel
 from .commonFuncs.plotFactors import plot_gene_factors
 from .commonFuncs.plotGeneral import cell_count_perc_df, rotate_xaxis
 from .commonFuncs.plotPaCMAP import plot_gene_pacmap, plot_wp_pacmap
-
-
-def load_pc_loadings(pc_component: int, geneAmount: int = 40) -> pd.DataFrame:
-    """
-    Load and preprocess PC loadings for a specific component.
-
-    Args:
-        pc_component (int): Principal Component number (1 or 2)
-        geneAmount (int): Number of genes to consider
-
-    Returns:
-        pd.DataFrame: Processed PC loadings DataFrame
-    """
-    try:
-        df = pd.read_csv(f"loadings_time_series_PC{pc_component}.csv", dtype=str)
-        df = df.rename(columns={"Unnamed: 0": "Gene"})
-        df[f"PC{pc_component}"] = stats.zscore(df[f"PC{pc_component}"].astype(float))
-        df_sorted = df.sort_values(by=f"PC{pc_component}")
-        
-        # Select top and bottom genes
-        top_pos_genes = df_sorted.tail(geneAmount)
-        top_neg_genes = df_sorted.head(geneAmount)
-        
-        return top_pos_genes, top_neg_genes
-    except FileNotFoundError:
-        raise ValueError(f"Loadings file for PC{pc_component} not found.")
-
-def convert_gene_symbols(genes, species='mouse'):
-    """
-    Convert gene symbols using MyGene.
-
-    Args:
-        genes (list): List of gene symbols
-        species (str): Species for gene conversion
-
-    Returns:
-        tuple: Converted genes and list of genes without hits
-    """
-    mg = mygene.MyGeneInfo()
-    results = mg.querymany(
-        genes, 
-        scopes='symbol', 
-        fields=['symbol', 'entrezgene'], 
-        species=species, 
-        transformed=True
-    )
-
-    conversion_map = []
-    no_hit_genes = []
-    
-    for gene, result in zip(genes, results):
-        if result and 'symbol' in result:
-            conversion_map.append(result.get('symbol', gene).upper())
-        else:
-            conversion_map.append(gene.upper())
-            no_hit_genes.append(gene)
-    
-    return conversion_map, no_hit_genes
-
-def compare_genes_with_pf2(X, pc_component: int, geneAmount: int = 40, species='mouse'):
-    """
-    Compare top PCA genes with genes in X.varm['Pf2_C'].
-
-    Args:
-        X (AnnData): Annotated data matrix
-        pc_component (int): Principal Component number
-        geneAmount (int): Number of top/bottom genes to consider
-        species (str): Species for gene conversion
-
-    Returns:
-        pd.DataFrame: Gene overlap and ranking analysis
-    """
-    # Load PC loadings
-    top_pos_genes, top_neg_genes = load_pc_loadings(pc_component, geneAmount)
-    
-    # Convert gene symbols
-    pc_pos_genes, _ = convert_gene_symbols(top_pos_genes['Gene'].tolist(), species)
-    pc_neg_genes, _ = convert_gene_symbols(top_neg_genes['Gene'].tolist(), species)
-    
-    # Get Pf2 components
-    pf2_components = X.varm['Pf2_C']
-    
-    # Prepare results dataframe
-    results = []
-    
-    # Iterate through Pf2 components
-    for pf2_idx, pf2_component in enumerate(pf2_components.T):
-        # Get top and bottom genes for this Pf2 component
-        pf2_sorted_indices = np.argsort(pf2_component)
-        top_pf2_pos_genes = X.var_names[pf2_sorted_indices[-geneAmount:]].tolist()
-        top_pf2_neg_genes = X.var_names[pf2_sorted_indices[:geneAmount]].tolist()
-        
-        # Convert Pf2 gene symbols
-        pf2_pos_genes = top_pf2_pos_genes
-        pf2_neg_genes = top_pf2_neg_genes
-        
-        # Compare positive genes
-        pos_overlap = set(pc_pos_genes).intersection(set(pf2_pos_genes))
-        pos_overlap_genes = list(pos_overlap)
-        pos_overlap_count = len(pos_overlap_genes)
-        
-        # Compare negative genes
-        neg_overlap = set(pc_neg_genes).intersection(set(pf2_neg_genes))
-        neg_overlap_genes = list(neg_overlap)
-        neg_overlap_count = len(neg_overlap_genes)
-        
-        # Prepare detailed results with gene rankings
-        for overlap_type, pc_genes, pf2_genes, overlap_genes, overlap_count in [
-            ('Positive', pc_pos_genes, pf2_pos_genes, pos_overlap_genes, pos_overlap_count),
-            ('Negative', pc_neg_genes, pf2_neg_genes, neg_overlap_genes, neg_overlap_count)
-        ]:
-            # Prepare gene rankings
-            pc_rankings = [pc_genes.index(gene) + 1 for gene in overlap_genes]
-            pf2_rankings = [pf2_genes.index(gene) + 1 for gene in overlap_genes]
-            
-            results.append({
-                'PC_Component': pc_component,
-                'PC_Sign': overlap_type,
-                'Pf2_Component': pf2_idx+1,
-                'Pf2_Sign': overlap_type,
-                'Overlap_Count': overlap_count,
-                'Overlapping_Genes': overlap_genes,
-                'PC_Gene_Rankings': pc_rankings,
-                'Pf2_Gene_Rankings': pf2_rankings
-            })
-    
-    return pd.DataFrame(results)
-
-
+from .figure4e_k import plot_correlation_cmp_cell_count_perc
+from scipy import stats
 
 
 def makeFigure():
-    """
-    Generate the comprehensive figure comparing PCA and PF2 components.
-
-    Returns:
-        matplotlib.figure.Figure: Generated figure
-    """
-    # Figure setup
-    ax, f = getSetup((12, 6), (4, 2))
+    """Get a list of the axis objects and create a figure."""
+    ax, f = getSetup((15, 6), (4, 2))
     subplotLabel(ax)
 
-    # Parameters
+
     geneAmount = 40
+    plot_loadings_pca_partial(ax[0], top=True, PC=1, geneAmount=geneAmount)
+    plot_loadings_pca_partial(ax[1], top=False, PC=1, geneAmount=geneAmount)
+    
+    plot_loadings_pca_partial(ax[2], top=True, PC=2, geneAmount=geneAmount)
+    plot_loadings_pca_partial(ax[3], top=False, PC=2, geneAmount=geneAmount)
 
-    # Load data
     X = anndata.read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
-    
-    df_pc1 = compare_genes_with_pf2(X, 1, geneAmount=geneAmount, species='mouse')
-    df_pc2 = compare_genes_with_pf2(X, 2, geneAmount=geneAmount, species='mouse')
-    df = pd.concat([df_pc1, df_pc2], axis=0)
-    df = df.sort_values(by='Overlap_Count', ascending=False)
+    plot_gene_factors_partial(6, X, ax[4], top=True, geneAmount=geneAmount)
+    plot_gene_factors_partial(22, X, ax[5], top=True, geneAmount=geneAmount)
+    plot_gene_factors_partial(28, X, ax[6], top=True, geneAmount=geneAmount)
+    plot_gene_factors_partial(1, X, ax[7], top=True, geneAmount=geneAmount)
 
-    print(df.iloc[:10])
-    
-    
+
     return f
+
+
+def plot_loadings_pca_partial(ax, geneAmount: int = 15, top=True, PC: int = 1):
+    """XXX"""
+    if PC == 1:
+        df = pd.read_csv("loadings_time_series_PC1.csv", dtype=str).rename(columns={"Unnamed: 0": "Gene"}) 
+    else:
+        df = pd.read_csv("loadings_time_series_PC2.csv", dtype=str).rename(columns={"Unnamed: 0": "Gene"})
+        
+    df["PC"+str(PC)] = stats.zscore(df["PC"+str(PC)].to_numpy().astype(float))
+    df = df.sort_values(by="PC"+str(PC))
+    
+    if top:
+        sns.barplot(
+            data=df.iloc[-geneAmount:, :], x="Gene", y="PC"+str(PC), color="k", ax=ax
+            
+        )
+        higly_weighted_genes = df.iloc[-geneAmount:]["Gene"].values
+    else:
+        sns.barplot(data=df.iloc[:geneAmount, :], x="Gene", y="PC"+str(PC), color="k", ax=ax)
+        higly_weighted_genes = df.iloc[:geneAmount]["Gene"].values
+
+    ax.tick_params(axis="x", rotation=90)
+    
+    return [gene.upper() for gene in higly_weighted_genes], df
+
+
+    
+def plot_gene_factors_partial(
+    cmp: int, X, ax, geneAmount: int = 15, top=True
+):
+    """Plotting weights for gene factors for both most negatively/positively weighted terms"""
+    cmpName = f"Cmp. {cmp}"
+
+    df = pd.DataFrame(
+        data=X.varm["Pf2_C"][:, cmp - 1], index=X.var_names, columns=[cmpName]
+    )
+    df = df.reset_index(names="Gene")
+    df = df.sort_values(by=cmpName)
+
+    if top:
+        sns.barplot(
+            data=df.iloc[-geneAmount:, :], x="Gene", y=cmpName, color="k", ax=ax
+        )
+    else:
+        sns.barplot(data=df.iloc[:geneAmount, :], x="Gene", y=cmpName, color="k", ax=ax)
+
+    ax.tick_params(axis="x", rotation=90)
+    
