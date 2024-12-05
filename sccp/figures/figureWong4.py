@@ -22,7 +22,7 @@ from .commonFuncs.plotPaCMAP import plot_gene_pacmap, plot_wp_pacmap
 
 
 def makeFigure():
-    ax, f = getSetup((12, 8), (4, 4))
+    ax, f = getSetup((12, 8), (4, 5))
     subplotLabel(ax)
     
     geneAmount = 5
@@ -31,29 +31,51 @@ def makeFigure():
     pc1_load = load_pc_loadings(pc_component=1)
     pc2_load = load_pc_loadings(pc_component=2)
     
-    pf2_factors = load_pf2_loadings(X)
+    # pf2_factors = load_pf2_loadings(X)
     
     
-        
     overlap_genes = list(set(pc1_load['Gene']) & set(X.var_names))
-    
-    print(pf2_factors)
-    
-
+    print(len(overlap_genes))
+    overlap_genes = list(set(pc2_load['Gene']) & set(X.var_names))
+    print(len(overlap_genes))
     pc1_load = pc1_load[pc1_load['Gene'].isin(overlap_genes)].sort_values(by='PC1', ascending=False)
-    
     genes = pc1_load['Gene'].values
     
     
     for i, gene in enumerate(np.concatenate([genes[:geneAmount], genes[-geneAmount:]])):
         df = avegene_per_status(X, gene=gene)
-        # sns.boxplot(data=df, x="Status", y="Average Gene Expression", hue="Status", 
-        #             showfliers=False, ax=ax[i])
-        sns.boxplot(data=df, x="Cell Type", y="Average Gene Expression", hue="Status", 
+        sns.boxplot(data=df, x="Status", y="Average Gene Expression", hue="Status", 
                     showfliers=False, ax=ax[i])
+        # sns.boxplot(data=df, x="Cell Type", y="Average Gene Expression", hue="Status", 
+        #             showfliers=False, ax=ax[i])
         
         ax[i].tick_params(axis="x", rotation=45)
-        ax[i].set_title(gene)
+        if 0 <= i < 5:
+            ax[i].set_title("PC1 Pos: "+ gene)
+        if i >= 5:
+            ax[i].set_title("PC1 Neg: "+ gene)
+            
+
+    pc2_load = pc2_load[pc2_load['Gene'].isin(overlap_genes)].sort_values(by='PC2', ascending=False)
+    genes = pc2_load['Gene'].values
+    
+    
+    for i, gene in enumerate(np.concatenate([genes[:geneAmount], genes[-geneAmount:]])):
+        df = avegene_per_status(X, gene=gene)
+        sns.boxplot(data=df, x="Status", y="Average Gene Expression", hue="Status", 
+                    showfliers=False, ax=ax[i+10])
+        # sns.boxplot(data=df, x="Cell Type", y="Average Gene Expression", hue="Status", 
+        #             showfliers=False, ax=ax[i+10])
+        
+        ax[i+10].tick_params(axis="x", rotation=45)
+        if 0 <= i < 5:
+            ax[i+10].set_title("PC2 Pos: "+ gene)
+        if i >= 5:
+            ax[i+10].set_title("PC2 Neg: "+ gene)
+            
+            
+            
+            
 
     
        
