@@ -10,7 +10,7 @@ from scipy.stats import spearmanr, pearsonr
 from .common import getSetup, subplotLabel
 import seaborn as sns
 import pandas as pd
-
+import scipy
 import anndata
 import numpy as np
 import pandas as pd
@@ -28,7 +28,7 @@ from .commonFuncs.plotPaCMAP import plot_gene_pacmap, plot_wp_pacmap
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
-    ax, f = getSetup((18, 8), (4, 10))
+    ax, f = getSetup((8, 8), (1, 1))
     subplotLabel(ax)
 
     X = anndata.read_h5ad("/opt/pf2/thomson_fitted.h5ad")
@@ -41,13 +41,45 @@ def makeFigure():
     pc_load = load_pc_loadings(pca, X)
     pf2_factors = load_pf2_loadings(X)
     
-    print(pc_load)
-    print(pf2_factors)
+    # print(pc_load)
+    # print(pf2_factors)
+    
+    df = calculate_cross_dataframe_correlation(pc_load.iloc[:, 1:], pf2_factors.iloc[:, 1:])
+    print(df)
+
+    f = sns.clustermap(
+        df,
+        robust=True,
+        vmin=-1,
+        vmax=1,
+        cmap='coolwarm',
+        center=0,
+        #    row_cluster=True,
+        #    col_cluster=True,
+        #    annot=True,
+        figsize=(15, 15),
+    )
+    
+
+    
+#     f = sns.clustermap(
+#     df, 
+#     cmap='coolwarm',  # Diverging colormap good for correlation
+#     center=0,         # Center colormap at 0
+#     # annot=True,       # Show correlation values
+#     cbar_kws={'label': 'Spearman Correlation'},
+#     ax=ax[0]
+# )
     
     
     
-    df = compare_pc_pf2_loadings_all_components(pc_load, pf2_factors, top_n=geneAmount)
-    print(df.sort_values(by='Overlap_Count', ascending=False))
+    
+    
+    
+    
+    
+    # df = compare_pc_pf2_loadings_all_components(pc_load, pf2_factors, top_n=geneAmount)
+    # print(df.sort_values(by='Overlap_Count', ascending=False))
     
     # df1 = compare_pc_pf2_loadings(pc1_load, pf2_factors, pos_pca=True, pos_pf2=True, pc_component=1, top_n=geneAmount)
     # df2 = compare_pc_pf2_loadings(pc1_load, pf2_factors, pos_pca=True, pos_pf2=False, pc_component=1, top_n=geneAmount)
@@ -102,9 +134,9 @@ def makeFigure():
     
     
     
-    for i in range(1, n_components):
-        plot_gene_factors_partial(i, X, pca, ax[(2*i)-2], geneAmount=10, top=True)
-        plot_gene_factors_partial(i, X, pca, ax[(2*i)+1-2], geneAmount=10, top=False)
+    # for i in range(1, n_components):
+    #     plot_gene_factors_partial(i, X, pca, ax[(2*i)-2], geneAmount=10, top=True)
+    #     plot_gene_factors_partial(i, X, pca, ax[(2*i)+1-2], geneAmount=10, top=False)
         
         
     return f
@@ -253,3 +285,50 @@ def compare_pc_pf2_loadings_all_components(pc_df: pd.DataFrame, pf2_df: pd.DataF
         return pd.DataFrame(results)
     else:
         return pd.DataFrame()  # Return empty DataFrame if no overlaps
+    
+    
+    
+def calculate_cross_dataframe_correlation(df1, df2):
+    """
+    Calculate Spearman correlation matrix between columns of two different DataFrames.
+    
+    Parameters:
+    -----------
+    df1 : pandas.DataFrame
+        First input DataFrame
+    df2 : pandas.DataFrame
+        Second input DataFrame
+    
+    Returns:
+    --------
+    pandas.DataFrame
+        Correlation matrix with columns from df1 as rows and columns from df2 as columns
+    """
+    # Get column names from both DataFrames
+    df1_columns = list(df1.columns)
+    df2_columns = list(df2.columns)
+    
+    # Initialize correlation matrix
+    correlation_matrix = pd.DataFrame(
+        index=df1_columns,
+        columns=df2_columns,
+        dtype=float
+    )
+    
+    # Calculate Spearman correlations between columns of different DataFrames
+    for col1 in df1_columns:
+        for col2 in df2_columns:
+            # Combine and remove NaN values
+            valid_data = pd.concat([df1[col1], df2[col2]], axis=1).dropna()
+            
+            # Calculate correlation if enough data
+            if len(valid_data) > 1:
+                correlation, p_value = scipy.stats.spearmanr(
+                    valid_data.iloc[:, 0],  # Column from df1 
+                    valid_data.iloc[:, 1]   # Column from df2
+                )
+                correlation_matrix.loc[col1, col2] = correlation
+            else:
+                correlation_matrix.loc[col1, col2] = np.nan
+    
+    return correlation_matrix
