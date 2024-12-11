@@ -12,38 +12,33 @@ from scipy.stats import zscore
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
-    ax, f = getSetup((6, 6), (3, 3))
+    ax, f = getSetup((7, 7), (3, 3))
     subplotLabel(ax)
 
-    # data = np.random.normal(loc=0, scale=1, size=200)
-    # sns.histplot(data, bins=20, ax=ax[0], color='m')
+    data = np.random.normal(loc=0, scale=1, size=200)
+    sns.histplot(data, bins=20, ax=ax[0], color='m')
     
-    # plot_variance_by_average_expression(ax[1])
+    plot_variance_by_average_expression(ax[1])
     
-    # visualize_batch_effects(ax[2], ax[3], label="cell_type", palette='gnuplot2')
-    # visualize_batch_effects(ax[4], ax[5], label="batch", palette="Dark2")
-    
-    # for i in range(4):
-    #     ax[i+2].axis("equal")
-
+    plot_batch_effects(ax[2], ax[3], label="cell_type", palette='gnuplot2')
+    plot_batch_effects(ax[4], ax[5], label="batch", palette="Dark2")
         
-    # visualize_trajectory(ax[6])
-    # plot_deg(ax[7])
-    
-    # plot_normalization(ax[8])
-    
-    
-    
-    plot_pseudbulk(ax[8])
-    
-    # for i in range(9):
-    #     ax[i].locator_params(nbins=5)
-    
-    
-    
+    for i in range(3):
+        ax[i+3].axis("equal")
 
+    plot_trajectory(ax[6])
+    plot_deg(ax[7])
+    
+    plot_normalization(ax[8])
+    
+    plot_pseudbulk(ax[2])
+
+    for i in range(9):
+        if i != 2:
+            ax[i].locator_params(nbins=5)
 
     return f
+
 
 
 def generate_synthetic_svg_data(n_genes=200, n_samples=5000):
@@ -65,18 +60,11 @@ def generate_synthetic_svg_data(n_genes=200, n_samples=5000):
 
 def plot_variance_by_average_expression(ax):
     gene_metadata = generate_synthetic_svg_data()
-    non_hvg = gene_metadata[~gene_metadata['is_hvg']]
     sns.scatterplot(gene_metadata, x='mean_expression', y='variance', hue="is_hvg", ax=ax, palette={True: 'green', False: 'black'})
-    
-
-   
-   
 
 
 def generate_synthetic_single_cell_data(n_samples=100, n_features=2):
-    """
-    Generate synthetic single-cell data with batch effects
-    """
+    """Generate synthetic single-cell data with batch effects"""
     cell_types = ['T_cell', 'B_cell', 'Macrophage']
     batches = ['Batch_A', 'Batch_B', 'Batch_C']
     data_list = []
@@ -131,9 +119,7 @@ def generate_synthetic_single_cell_data(n_samples=100, n_features=2):
     return full_data
 
 def perform_simple_batch_correction(data):
-    """
-    Perform simple batch correction by standardizing each gene within each batch
-    """
+    """Perform simple batch correction by standardizing each gene within each batch"""
     # Create a copy of the data
     corrected_data = data.copy()
     
@@ -146,22 +132,21 @@ def perform_simple_batch_correction(data):
     
     return corrected_data
 
-def visualize_batch_effects(ax1, ax2, label, palette='Paired'):
-    """
-    Visualize batch effects before and after correction
-    """
+def plot_batch_effects(ax1, ax2, label, palette='Paired'):
+    """Plot batch effects before and after correction"""
     original_df = generate_synthetic_single_cell_data()
     corrected_df = perform_simple_batch_correction(original_df)
     genes_to_plot = ['gene_0', 'gene_1']
     
-    sns.scatterplot(
-        data=original_df, 
-        x=genes_to_plot[0], 
-        y=genes_to_plot[1], 
-        hue=label, 
-        palette=palette,
-        ax=ax1,
-    )
+    if label != 'cell_type':
+        sns.scatterplot(
+            data=original_df, 
+            x=genes_to_plot[0], 
+            y=genes_to_plot[1], 
+            hue=label, 
+            palette=palette,
+            ax=ax1,
+        )
     sns.scatterplot(
         data=corrected_df, 
         x=genes_to_plot[0], 
@@ -173,7 +158,7 @@ def visualize_batch_effects(ax1, ax2, label, palette='Paired'):
     
     
 def generate_pseudotime_trajectory(n_cells=300):
-
+    """Generate pseudotime trajectory data."""
     # Parameters
     n_cells_main = 100  # number of cells in main trajectory
     n_cells_branch1 = 50  # number of cells in first branch
@@ -213,16 +198,14 @@ def generate_pseudotime_trajectory(n_cells=300):
     
     return data
 
-
-
-
-def visualize_trajectory(ax):
+def plot_trajectory(ax):
+    """Plot pseudotime trajectory."""
     df = generate_pseudotime_trajectory()
     sns.scatterplot(data=df, x='x', y='y', hue='cell_type', ax=ax, palette="rocket")
         
 
 def generate_synthetic_deg_data():
-    # Generate synthetic data
+    """Generate synthetic data for differential expression analysis."""
     n_genes = 350  # Number of genes
     n_samples = 10  # Number of samples per condition
 
@@ -268,6 +251,7 @@ def generate_synthetic_deg_data():
     return results_df
 
 def plot_deg(ax):
+    """Plot differential expression data."""
     df = generate_synthetic_deg_data()
     sns.scatterplot(
         data=df,
@@ -281,6 +265,7 @@ def plot_deg(ax):
 
 
 def generate_synthetic_pseudobulk():
+    """Generate synthetic data for pseudobulk analysis."""
     cell_types = ['type1', 'type2', 'type3']
     conditions = ['condition1', 'condition2', 'condition3']
     genes = 5
@@ -317,7 +302,6 @@ def generate_synthetic_pseudobulk():
     df = pd.DataFrame(data)
     
     # Multiply values of specific genes by a value
-    print(df)
     df.loc[df['cell_type'] == 'type1', ['gene_2', 'gene_3']] *= 1.1  # Example: multiply gene2 and gene3 values by 2 for cell_type 'type1'
 
 
@@ -327,13 +311,14 @@ def generate_synthetic_pseudobulk():
 
 
 def plot_pseudbulk(ax):
+    """Plot pseudobulk data."""
     df = generate_synthetic_pseudobulk()
-    print(df)
     sns.heatmap(df, ax=ax, cmap='viridis', cbar_kws={'label': 'Expression Level'})
     
     
 
 def generate_norm(num_cells=500):
+    """Generate synthetic data for normalization."""
     n_cells = 200
     original_counts = np.concatenate([
         np.random.poisson(lam=10, size=int(n_cells * 0.7)),  # low counts
@@ -362,11 +347,7 @@ def generate_norm(num_cells=500):
 
 
 def plot_normalization(ax):
+    """Plots normalized data."""
 
     data = generate_norm()
-    
-    # sns.scatterplot(x=size_factors, y=count_depth, ax=ax)
-    
     sns.histplot(data=data, x='Counts', hue='Type', bins=20, ax=ax)
-    # ax.set_xscale('log')
-    # ax.set_yscale('log')
