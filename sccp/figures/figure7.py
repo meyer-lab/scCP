@@ -24,6 +24,7 @@ from .common import getSetup, subplotLabel
 from .commonFuncs.plotFactors import plot_gene_factors
 from .commonFuncs.plotGeneral import cell_count_perc_df, rotate_xaxis, avegene_per_status
 from .commonFuncs.plotPaCMAP import plot_gene_pacmap, plot_wp_pacmap
+from scipy.optimize import linear_sum_assignment
 
 
 def makeFigure():
@@ -45,21 +46,26 @@ def makeFigure():
     # print(pf2_factors)
     
     
-    df =  calculate_cross_dataframe_gene_overlap(pc_load, pf2_factors, "JS")
-    # test = "Spearman"
-    # df = calculate_cross_dataframe_correlation(pc_load.iloc[:, 1:], pf2_factors.iloc[:, 1:], test)
+    # df =  calculate_cross_dataframe_gene_overlap(pc_load, pf2_factors, "JS")
+    test = "Spearman"
+    df = calculate_cross_dataframe_correlation(pc_load.iloc[:, 1:], pf2_factors.iloc[:, 1:], test)
     # print(df)
+    
+    _, col_ind = linear_sum_assignment(np.abs(df.T), maximize=True)
 
+
+    df = df.iloc[col_ind, :]
+    print(df)
     f = sns.clustermap(
         df,
         robust=True,
         vmin=-1,
         vmax=1,
         cmap='coolwarm',
-        center=0,
-        # row_cluster=False,
-        # col_cluster=False,
-           annot=True,
+        # center=0,
+        row_cluster=False,
+        col_cluster=False,
+        #    annot=True,
         figsize=(15, 15),
     )
 
