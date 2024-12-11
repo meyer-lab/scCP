@@ -24,10 +24,10 @@ def makeFigure():
     ranks=[1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
     # plot_r2x(X, ranks, ax[1])
     
-    plot_all_bulk_pred(X, ax[0], accuracy_metric="accuracy")
-    # plot_accuracy_ranks_lupus(X, ranks, ax[2], error_metric="roc_auc", bootstrap=True)
+    plot_all_bulk_pred(X, ax[2], accuracy_metric="accuracy")
+    # plot_accuracy_ranks_lupus(X, ranks, ax[3], error_metric="roc_auc", bootstrap=True)
 
-    for i in [1, 2]:
+    for i in [1, 2, 3]:
         ax[i].set(xticks=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50])
 
     return f
