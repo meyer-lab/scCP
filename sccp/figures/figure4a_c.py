@@ -3,16 +3,16 @@ Figure 4a_c
 """
 
 from anndata import read_h5ad
+import numpy as np
+import pandas as pd
 
 from ..factorization import correct_conditions
 from .common import getSetup, subplotLabel
 from .commonFuncs.plotLupus import plot_roc_fourthbatch
 from .commonFuncs.plotPaCMAP import plot_labels_pacmap
-import numpy as np
-import pandas as pd
 from .commonFuncs.plotGeneral import cell_count_perc_lupus_df
 from ..logisticReg import predaccuracy_lupus
-from .commonFuncs.plotLupus import plot_accuracy_ranks_lupus
+# from .commonFuncs.plotLupus import plot_accuracy_ranks_lupus
 
 
 def makeFigure():
@@ -53,10 +53,10 @@ def makeFigure():
     # ax[0].plot(x, y_cell_comp_gene, linestyle="--", color="g")
     # ax[0].plot(x, y_combined, linestyle="--", color="m")
 
-    # X.uns["Pf2_A"] = correct_conditions(X)
-    # plot_roc_fourthbatch(X, ax[1])
+    X.uns["Pf2_A"] = correct_conditions(X)
+    plot_roc_fourthbatch(X, ax[1])
 
-    # plot_labels_pacmap(X, "Cell Type2", ax[2])
+    plot_labels_pacmap(X, "Cell Type2", ax[2])
 
     return f
 

@@ -251,9 +251,9 @@ def cell_count_perc_lupus_df(X, celltype="Cell Type", status=False):
         grouping = [celltype, "Condition", "SLE_status"]
     
     df = X.obs[grouping_all].reset_index(drop=True)
-    status_mapping = X.obs.groupby("Condition")["SLE_status"].first()
-    cohort_mapping = X.obs.groupby("Condition")["Processing_Cohort"].first()
-    idx_mapping = X.obs.groupby("Condition")["condition_unique_idxs"].first()
+    status_mapping = X.obs.groupby("Condition", observed=False)["SLE_status"].first()
+    cohort_mapping = X.obs.groupby("Condition", observed=False)["Processing_Cohort"].first()
+    idx_mapping = X.obs.groupby("Condition", observed=False)["condition_unique_idxs"].first()
 
     dfCond = (
         df.groupby(["Condition"], observed=True).size().reset_index(name="Cell Count")
