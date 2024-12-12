@@ -27,7 +27,7 @@ dependencies = [
     "doubletdetection >=4.2",
     "statsmodels>=0.14.1",
     "dask[dataframe]>=2024.3.1",
-    "scib>=1.1.5", "mygene~=3.2.2"]
+    "scib>=1.1.5", "mygene~=3.2.2", "statannot~=0.2.3"]
 
 
 
