@@ -65,7 +65,7 @@ def pf2_pca_r2x(X: anndata.AnnData, ranks):
     # Mean center because this is done within Pf2
     XX = scale(XX.todense(), with_mean=True, with_std=False)
 
-    pca = PCA(n_components=ranks[-1], svd_solver="arpack")
+    pca = PCA(n_components=ranks[-1])
     pca.fit(XX)
     r2x_pca = np.cumsum(pca.explained_variance_ratio_)
 

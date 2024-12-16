@@ -135,7 +135,7 @@ numba==0.60.0
     # via scanpy
     # via scib
     # via umap-learn
-numpy==1.26.4
+numpy==2.0.2
     # via anndata
     # via contourpy
     # via cupy-cuda12x
@@ -234,7 +234,7 @@ pynndescent==0.5.13
 pyparsing==3.1.4
     # via matplotlib
     # via pydot
-pyright==1.1.380
+pyright==1.1.390
 pytest==8.3.3
     # via pytest-cov
 pytest-cov==6.0.0
@@ -249,13 +249,13 @@ requests==2.32.3
     # via datashader
     # via gseapy
     # via tlviz
-scanpy==1.10.2
+scanpy==1.10.4
     # via doubletdetection
     # via sccp
     # via scib
 scib==1.1.5
     # via sccp
-scikit-learn==1.5.2
+scikit-learn==1.6.0
     # via pacmap
     # via parafac2
     # via phenograph
@@ -327,6 +327,8 @@ traitlets==5.14.3
     # via ipython
     # via ipywidgets
     # via matplotlib-inline
+typing-extensions==4.12.2
+    # via pyright
 tzdata==2024.1
     # via pandas
 umap-learn==0.5.6
