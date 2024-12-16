@@ -6,6 +6,7 @@ from parafac2.parafac2 import parafac2_nd, store_pf2
 from scipy.stats import gmean
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import scale
 from tqdm import tqdm
 
 
@@ -60,6 +61,9 @@ def pf2_pca_r2x(X: anndata.AnnData, ranks):
     for i in tqdm(range(len(r2x_pf2)), total=len(r2x_pf2)):
         _, R2X = parafac2_nd(X, rank=i + 1)
         r2x_pf2[i] = R2X
+
+    # Mean center because this is done within Pf2
+    XX = scale(XX.todense(), with_mean=True, with_std=False)
 
     pca = PCA(n_components=ranks[-1], svd_solver="arpack")
     pca.fit(XX)
