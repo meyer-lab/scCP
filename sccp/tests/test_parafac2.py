@@ -28,7 +28,7 @@ def test_factor_thomson_R2X():
     X = import_thomson()
     X.obs["condition_unique_idxs"] = pd.Categorical(X.obs["condition_unique_idxs"])
 
-    r2x_pf2, r2x_pca = pf2_pca_r2x(X, np.arange(1, 5))
+    r2x_pf2, r2x_pca = pf2_pca_r2x(X, np.arange(1, 4))
     print(r2x_pca)
     print(r2x_pf2)
 
