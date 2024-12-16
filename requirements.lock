@@ -184,7 +184,7 @@ pandas==2.2.2
     # via statsmodels
     # via tlviz
     # via xarray
-parafac2 @ git+https://github.com/meyer-lab/parafac2.git@793f8ad06791ffcc698105d80941774741722574
+parafac2 @ git+https://github.com/meyer-lab/parafac2.git@6600c677a77d0f242668babf39559cf7953ff534
     # via sccp
 param==2.1.1
     # via datashader
@@ -297,6 +297,7 @@ texttable==1.7.0
 threadpoolctl==3.5.0
     # via scikit-learn
 tlviz==0.1.1
+    # via parafac2
     # via sccp
 toolz==0.12.1
     # via dask

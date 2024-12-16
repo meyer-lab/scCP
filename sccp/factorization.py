@@ -71,6 +71,6 @@ def pf2_pca_r2x(X: anndata.AnnData, ranks):
         print(f"Rank {rank}: R2X (PF2) = {r2x_pf2[i]:.4f}, R2X (PCA) = {r2x_pca[i]:.4f}")
     
     for i, rank in enumerate(ranks):
-        assert r2x_pf2[i] > r2x_pca[i], f"R2X for rank {rank} is not lower than PCA"
+        assert r2x_pf2[i] < r2x_pca[i], f"R2X for rank {rank} is not lower than PCA"
 
     return r2x_pf2, r2x_pca
