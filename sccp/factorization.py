@@ -61,7 +61,7 @@ def pf2_pca_r2x(X: anndata.AnnData, ranks):
         _, R2X = parafac2_nd(X, rank=i + 1)
         r2x_pf2[i] = R2X
 
-    pca = PCA(n_components=ranks[-1], svd_solver="arpack")
+    pca = PCA(n_components=ranks[-1])
     pca.fit(XX)
     r2x_pca = np.cumsum(pca.explained_variance_ratio_)
 

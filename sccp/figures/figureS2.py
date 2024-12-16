@@ -19,37 +19,32 @@ from .commonFuncs.plotPaCMAP import plot_labels_pacmap
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
-    ax, f = getSetup((8, 8), (3, 3))
+    ax, f = getSetup((8, 8), (2, 2))
     subplotLabel(ax)
 
     X = anndata.read_h5ad("/opt/pf2/thomson_fitted.h5ad")
 
-    ranks = [
-        1,
-        5,
-        10,
-        15,
-        20,
-        25,
-        30,
-    ]
+
+    ranks = np.arange(2, 31, 2)
+    ranks = np.concatenate(([1], ranks))
+    X.obs["condition_unique_idxs"] = pd.Categorical(X.obs["condition_unique_idxs"])
     plot_r2x(X, ranks, ax[0])
 
     for i in range(3):
-        ax[i].set(xticks=[0, 5, 10, 15, 20, 25, 30])
+        ax[i].set(xticks=np.concatenate(([0], ranks)))
 
-    drugs = ["Triamcinolone Acetonide", "Budesonide"]
-    for i, drug in enumerate(drugs):
-        plot_labels_pacmap(X, "Condition", ax[i + 1], drug, cmap="Set1")
-        ax[i + 1].set(title="Pf2-Based Decomposition")
+    # drugs = ["Triamcinolone Acetonide", "Budesonide"]
+    # for i, drug in enumerate(drugs):
+    #     plot_labels_pacmap(X, "Condition", ax[i + 1], drug, cmap="Set1")
+    #     ax[i + 1].set(title="Pf2-Based Decomposition")
 
-    pc = PCA(n_components=20)
-    pcaPoints = pc.fit_transform(np.asarray(X.X - X.var["means"].values))
-    X.obsm["X_pf2_PaCMAP"] = pacmap.PaCMAP().fit_transform(pcaPoints)
+    # pc = PCA(n_components=20)
+    # pcaPoints = pc.fit_transform(np.asarray(X.X - X.var["means"].values))
+    # X.obsm["X_pf2_PaCMAP"] = pacmap.PaCMAP().fit_transform(pcaPoints)
 
-    for i, drug in enumerate(drugs):
-        plot_labels_pacmap(X, "Condition", ax[i + 3], drug, cmap="Set1")
-        ax[i + 3].set(title="PCA-Based Decomposition")
+    # for i, drug in enumerate(drugs):
+    #     plot_labels_pacmap(X, "Condition", ax[i + 3], drug, cmap="Set1")
+    #     ax[i + 3].set(title="PCA-Based Decomposition")
 
     # pf2_batch_df = batch_correction_metrics(X, "projections")
     # pf2_batch_df["Fit"] = "Pf2"
