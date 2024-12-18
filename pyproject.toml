@@ -27,7 +27,13 @@ dependencies = [
     "doubletdetection >=4.2",
     "statsmodels>=0.14.1",
     "dask[dataframe]>=2024.3.1",
-    "scib>=1.1.5"]
+    "scib>=1.1.5",
+    "pynvml>=12.0.0",
+    "harmonypy>=0.0.10",
+    "ipykernel>=6.29.5",
+    "memory-profiler>=0.61.0",
+    "gputil>=1.4.0",
+]
 
 
 
@@ -49,6 +55,8 @@ dev-dependencies = [
     "pytest-cov>=5.0",
     "pyright>=1.1",
     "pynvml>=12.0.0",
+    "scvi-tools>=1.2.1",
+    "scanorama>=1.7.4",
 ]
 
 
