@@ -52,7 +52,6 @@ cloudpickle==3.0.0
 colorcet==3.1.0
     # via datashader
 comm==0.2.2
-    # via ipykernel
     # via ipywidgets
 contourpy==1.3.0
     # via matplotlib
@@ -70,8 +69,6 @@ dask-expr==1.1.13
     # via dask
 datashader==0.16.3
     # via sccp
-debugpy==1.8.9
-    # via ipykernel
 decorator==5.1.1
     # via ipython
 deprecated==1.2.14
@@ -108,8 +105,6 @@ fsspec==2024.9.0
     # via torch
 geosketch==1.3
     # via scanorama
-gputil==1.4.0
-    # via sccp
 grpcio==1.68.1
     # via tensorboard
 gseapy==1.1.3
@@ -140,10 +135,7 @@ iniconfig==2.0.0
     # via pytest
 intervaltree==3.1.0
     # via scanorama
-ipykernel==6.29.5
-    # via sccp
 ipython==8.27.0
-    # via ipykernel
     # via ipywidgets
 ipywidgets==8.1.5
     # via doubletdetection
@@ -168,11 +160,6 @@ joblib==1.4.2
     # via pynndescent
     # via scanpy
     # via scikit-learn
-jupyter-client==8.6.3
-    # via ipykernel
-jupyter-core==5.7.2
-    # via ipykernel
-    # via jupyter-client
 jupyterlab-widgets==3.0.13
     # via ipywidgets
 kiwisolver==1.4.7
@@ -214,12 +201,9 @@ matplotlib==3.9.2
     # via seaborn
     # via tlviz
 matplotlib-inline==0.1.7
-    # via ipykernel
     # via ipython
 mdurl==0.1.2
     # via markdown-it-py
-memory-profiler==0.61.0
-    # via sccp
 ml-collections==1.0.0
     # via scvi-tools
 ml-dtypes==0.5.0
@@ -243,7 +227,6 @@ natsort==8.4.0
     # via anndata
     # via scanpy
 nest-asyncio==1.6.0
-    # via ipykernel
     # via orbax-checkpoint
 networkx==3.3
     # via scanpy
@@ -327,8 +310,6 @@ nvidia-cusolver-cu12==11.6.1.9
 nvidia-cusparse-cu12==12.3.1.170
     # via nvidia-cusolver-cu12
     # via torch
-nvidia-ml-py==12.560.30
-    # via pynvml
 nvidia-nccl-cu12==2.21.5
     # via torch
 nvidia-nvjitlink-cu12==12.4.127
@@ -350,7 +331,6 @@ packaging==24.1
     # via dask
     # via datashader
     # via h5netcdf
-    # via ipykernel
     # via lightning
     # via lightning-utilities
     # via matplotlib
@@ -399,8 +379,6 @@ phenograph==1.5.7
 pillow==10.4.0
     # via datashader
     # via matplotlib
-platformdirs==4.3.6
-    # via jupyter-core
 pluggy==1.5.0
     # via pytest
 prompt-toolkit==3.0.47
@@ -412,8 +390,6 @@ protobuf==5.29.1
     # via orbax-checkpoint
     # via tensorboard
 psutil==6.0.0
-    # via ipykernel
-    # via memory-profiler
     # via phenograph
 ptyprocess==0.7.0
     # via pexpect
@@ -431,8 +407,6 @@ pygments==2.18.0
 pynndescent==0.5.13
     # via scanpy
     # via umap-learn
-pynvml==12.0.0
-    # via sccp
 pyparsing==3.1.4
     # via matplotlib
     # via pydot
@@ -445,7 +419,6 @@ pytest==8.3.3
     # via pytest-cov
 pytest-cov==5.0.0
 python-dateutil==2.9.0.post0
-    # via jupyter-client
     # via matplotlib
     # via pandas
 pytorch-lightning==2.4.0
@@ -459,9 +432,6 @@ pyyaml==6.0.2
     # via ml-collections
     # via orbax-checkpoint
     # via pytorch-lightning
-pyzmq==26.2.0
-    # via ipykernel
-    # via jupyter-client
 requests==2.32.3
     # via datashader
     # via gseapy
@@ -470,6 +440,7 @@ rich==13.9.4
     # via flax
     # via scvi-tools
 scanorama==1.7.4
+    # via sccp
 scanpy==1.10.2
     # via doubletdetection
     # via sccp
@@ -514,6 +485,7 @@ scipy==1.14.1
     # via tlviz
     # via umap-learn
 scvi-tools==1.2.1
+    # via sccp
 seaborn==0.13.2
     # via scanpy
     # via sccp
@@ -578,9 +550,6 @@ torchmetrics==1.6.0
     # via lightning
     # via pytorch-lightning
     # via scvi-tools
-tornado==6.4.2
-    # via ipykernel
-    # via jupyter-client
 tqdm==4.66.5
     # via doubletdetection
     # via lightning
@@ -594,11 +563,8 @@ tqdm==4.66.5
     # via umap-learn
 traitlets==5.14.3
     # via comm
-    # via ipykernel
     # via ipython
     # via ipywidgets
-    # via jupyter-client
-    # via jupyter-core
     # via matplotlib-inline
 triton==3.1.0
     # via torch
