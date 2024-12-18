@@ -21,7 +21,7 @@ def makeFigure():
     rank = 20
     data = import_thomson()
 
-    plot_weights_across_percents(data, "B Cells", "CTRL4", 0, 1, 0.25, rank, ax[3])
+    # plot_weights_across_percents(data, "B Cells", "CTRL4", 0, 1, 0.25, rank, ax[3])
     plot_diff_exp(data, "CTRL4", "B Cells", rank, ax[0:2])
 
     return f
@@ -57,6 +57,7 @@ def plot_diff_exp(
     sampled_data = data[
         (data.obs[ctarg] != cell_type) | (data.obs["Condition"] != condition)
     ]
+    print("yo")
 
     origX = pf2(data, rank, doEmbedding=False)
 
@@ -159,6 +160,7 @@ def plot_weights_across_percents(
 
             idx[np.random.choice(false_idx, size=size, replace=False)] = True
             sampled_data = data[idx]
+            print("jeff")
 
             sampledX = pf2(sampled_data, rank, doEmbedding=False)
 

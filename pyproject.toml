@@ -27,7 +27,13 @@ dependencies = [
     "doubletdetection >=4.2",
     "statsmodels>=0.14.1",
     "dask[dataframe]>=2024.3.1",
-    "scib>=1.1.5"]
+    "scib>=1.1.5",
+    "pynvml>=12.0.0",
+    "harmonypy>=0.0.10",
+    "ipykernel>=6.29.5",
+    "memory-profiler>=0.61.0",
+    "gputil>=1.4.0",
+]
 
 
 

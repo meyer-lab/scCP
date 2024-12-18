@@ -19,6 +19,8 @@ def import_thomson() -> anndata.AnnData:
         obs, metafile, on="cell_barcode", how="left", validate="one_to_one"
     )
 
+    print(metafile.columns)
+
     X.obs = pd.DataFrame(
         {
             "cell_barcode": metafile["cell_barcode"],
