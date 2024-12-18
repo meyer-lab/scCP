@@ -1,29 +1,24 @@
-import anndata
-import os
-import numpy as np
-import pandas as pd
-import scanpy as sc
 import time
 import tracemalloc
-from typing import List, Dict
-from pathlib import Path
-import seaborn as sns
-import pynvml  # For GPU memory monitoring
-import scvi
-import cupy as cp
-import scanorama
-import torch
 
+import anndata
+import cupy as cp
+import numpy as np
+import pandas as pd
+import scanorama
+import scvi
+import seaborn as sns
+import torch
 from harmonypy import run_harmony
 
 from sccp.factorization import pf2
-from sccp.imports import import_lupus
 from sccp.figures.common import getSetup, subplotLabel
-
+from sccp.imports import import_lupus
 
 RECOMPUTE = False  # Set to True to rerun benchmarks, False to load from saved results
 
-DATA_DIR = Path(__file__).parent.parent / "data"
+DATA_PATH = "/opt/pf2/benchmark_compute_requirement.csv"
+
 
 def makeFigure():
     ax, f = getSetup((7, 3), (1, 2))  # Adjusted to accommodate an additional subplot
@@ -34,8 +29,7 @@ def makeFigure():
         run_benchmarks(cell_counts)
 
     # Load results
-    results_path = DATA_DIR / "benchmark_results.csv"
-    df_results = pd.read_csv(results_path)
+    df_results = pd.read_csv(DATA_PATH)
 
     # Runtime comparison
     sns.lineplot(
@@ -44,49 +38,36 @@ def makeFigure():
         y="runtime",
         hue="algorithm",
         ax=ax[0],
-        marker='o'
+        marker="o",
     )
     ax[0].set_xscale("log")
     ax[0].set_xlabel("Number of Cells")
     ax[0].set_ylabel("Runtime (seconds)")
     ax[0].set_title("Runtime Comparison")
-    ax[0].legend(title="Algorithm")
+    ax[0].legend(title="")
 
     # Compute total memory
-    df_results['total_memory'] = df_results['max_cpu_memory'] + df_results['max_gpu_memory']
+    df_results["total_memory"] = (
+        df_results["max_cpu_memory"] + df_results["max_gpu_memory"]
+    )
 
     # Melt the DataFrame to long format for plotting
     df_melted = df_results.melt(
-        id_vars=['cell_count', 'algorithm', 'run'],
-        value_vars=['max_cpu_memory', 'max_gpu_memory', 'total_memory'],
-        var_name='memory_type',
-        value_name='memory_usage'
+        id_vars=["cell_count", "algorithm", "run"],
+        value_vars=["max_cpu_memory", "max_gpu_memory", "total_memory"],
+        var_name="memory_type",
+        value_name="memory_usage",
     )
 
-    # Map the memory_type to more readable labels
-    memory_type_mapping = {
-        'max_cpu_memory': 'CPU Memory',
-        'max_gpu_memory': 'GPU Memory',
-        'total_memory': 'Total Memory'
-    }
-    df_melted['memory_type'] = df_melted['memory_type'].map(memory_type_mapping)
-
-    # Define custom dash styles for memory types
-    dashes_styles = {
-        'Total Memory': '',       # Solid line
-        'CPU Memory': (5, 5),     # Dashed line
-        'GPU Memory': (2, 2)      # Dotted line
-    }
-
-    # First, create plot for total memory only
-    total_memory_data = df_melted[df_melted['memory_type'] == 'Total Memory']
+    # plot total memory
+    total_memory_data = df_melted[df_melted["memory_type"] == "total_memory"]
     sns.lineplot(
         data=total_memory_data,
-        x='cell_count',
-        y='memory_usage',
-        hue='algorithm',
+        x="cell_count",
+        y="memory_usage",
+        hue="algorithm",
         ax=ax[1],
-        marker='o'
+        marker="o",
     )
     ax[1].legend([])
     ax[1].set_xlabel("Number of Cells")
@@ -95,35 +76,14 @@ def makeFigure():
     ax[1].set_ylabel("Total Memory Usage (bytes)")
     ax[1].set_title("Total Memory Usage Comparison")
 
-    # # Then, create plot for CPU and GPU memory
-    # cpu_gpu_data = df_melted[df_melted['memory_type'].isin(['CPU Memory', 'GPU Memory'])]
-    # sns.lineplot(
-    #     data=cpu_gpu_data,
-    #     x='cell_count',
-    #     y='memory_usage',
-    #     hue='algorithm',
-    #     style='memory_type',
-    #     ax=ax[2],
-    #     markers=True,
-    #     dashes=[(5, 5), (2, 2)]  # Different dash patterns for CPU and GPU
-    # )
-    # ax[2].set_xscale("log")
-    # ax[2].set_yscale("log")
-    # ax[2].set_xlabel("Number of Cells")
-    # ax[2].set_ylabel("Memory Usage (bytes)")
-    # ax[2].set_title("CPU and GPU Memory Usage")
-
-    # Add subplot labels
     subplotLabel(ax)
 
     return f
 
+
 def benchmark_algorithm(
-    data: anndata.AnnData,
-    algorithm: str,
-    rank: int = 20,
-    **kwargs
-) -> Dict[str, float]:
+    data: anndata.AnnData, algorithm: str, rank: int = 20, **kwargs
+) -> dict[str, float]:
     """
     Benchmarks the specified algorithm on the given data.
 
@@ -137,8 +97,7 @@ def benchmark_algorithm(
         A dictionary with runtime, max CPU memory usage, and max GPU memory usage.
     """
 
-
-    if algorithm == 'pf2':
+    if algorithm == "pf2":
         # Run pf2 algorithm
         assert data.shape[0] > rank, "Number of cells must be greater than rank"
 
@@ -151,23 +110,25 @@ def benchmark_algorithm(
         max_gpu_memory = pool.total_bytes()
         pool.free_all_blocks()
 
-    elif algorithm == 'Harmony':
+    elif algorithm == "Harmony":
         # Ensure data.X is a dense array
         X = data.X.toarray()
 
         # Prepare metadata
-        if 'pool' not in data.obs:
-            raise ValueError("Data must have 'batch' column in .obs for Harmony integration.")
-        meta_data = data.obs[['pool']]
+        if "pool" not in data.obs:
+            raise ValueError(
+                "Data must have 'batch' column in .obs for Harmony integration."
+            )
+        meta_data = data.obs[["pool"]]
 
         start_time = time.time()
         tracemalloc.start()
 
-        run_harmony(X, meta_data, vars_use=['pool'])
+        run_harmony(X, meta_data, vars_use=["pool"])
 
-        max_gpu_memory = 0 # GPU not supported
-    
-    elif algorithm == 'scVI':
+        max_gpu_memory = 0  # GPU not supported
+
+    elif algorithm == "scVI":
         # Preprocess data for scVI
         data.layers["counts"] = data.X.copy()
         del data.X
@@ -182,10 +143,15 @@ def benchmark_algorithm(
         model.train()
 
         max_gpu_memory = torch.cuda.memory_allocated()
-    
-    elif algorithm == 'Scanorama':
+
+    elif algorithm == "Scanorama":
         # Ensure data.X is a dense array
-        X_list = [data[data.obs['pool'] == batch].X.toarray() if hasattr(data.X, 'toarray') else data[data.obs['pool'] == batch].X for batch in data.obs['pool'].unique()]
+        X_list = [
+            data[data.obs["pool"] == batch].X.toarray()
+            if hasattr(data.X, "toarray")
+            else data[data.obs["pool"] == batch].X
+            for batch in data.obs["pool"].unique()
+        ]
         genes_list = [data.var_names] * len(X_list)
         del data
 
@@ -194,7 +160,7 @@ def benchmark_algorithm(
         # Run Scanorama integration
         integrated, genes = scanorama.integrate(X_list, genes_list)
 
-        max_gpu_memory = 0 # GPU not supported
+        max_gpu_memory = 0  # GPU not supported
     else:
         raise ValueError("Invalid algorithm")
 
@@ -207,14 +173,16 @@ def benchmark_algorithm(
     max_cpu_memory = peak_cpu
 
     return {
-        'runtime': runtime,
-        'max_cpu_memory': max_cpu_memory,
-        'max_gpu_memory': max_gpu_memory
+        "runtime": runtime,
+        "max_cpu_memory": max_cpu_memory,
+        "max_gpu_memory": max_gpu_memory,
     }
 
-def run_benchmarks(cell_counts: List[int], n_runs: int = 1):
+
+def run_benchmarks(cell_counts: list[int], n_runs: int = 1):
     """
-    Runs benchmarks for different cell counts and saves the results after each algorithm.
+    Runs benchmarks for different cell counts and saves the results after each
+    algorithm.
 
     Parameters:
         cell_counts: List of cell counts to test.
@@ -230,7 +198,7 @@ def run_benchmarks(cell_counts: List[int], n_runs: int = 1):
         print(f"Benchmarking with {cell_count} cells...")
         # Subsample the data
         data_sub = X[np.random.choice(X.shape[0], cell_count, replace=False)]
-        
+
         # Remove columns that no longer have any values
         idx_valid = data_sub.X.sum(axis=0) != 0
         data_sub = data_sub[:, idx_valid]
@@ -244,22 +212,23 @@ def run_benchmarks(cell_counts: List[int], n_runs: int = 1):
                 # Run the benchmark
                 metrics = benchmark_algorithm(data_run, algorithm, random_state=run)
 
-                results.append({
-                    'cell_count': cell_count,
-                    'algorithm': algorithm,
-                    'run': run,
-                    'runtime': metrics['runtime'],
-                    'max_cpu_memory': metrics['max_cpu_memory'],
-                    'max_gpu_memory': metrics['max_gpu_memory']
-                })
+                results.append(
+                    {
+                        "cell_count": cell_count,
+                        "algorithm": algorithm,
+                        "run": run,
+                        "runtime": metrics["runtime"],
+                        "max_cpu_memory": metrics["max_cpu_memory"],
+                        "max_gpu_memory": metrics["max_gpu_memory"],
+                    }
+                )
 
             # Append the current algorithm's results to the overall results
             all_results.extend(results)
 
             # Save the results to a CSV file after each algorithm
             df_results = pd.DataFrame(all_results)
-            output_path = DATA_DIR / "benchmark_results.csv"
-            df_results.to_csv(output_path, index=False)
-            print(f"Results after algorithm '{algorithm}' saved to '{output_path}'.")
+            df_results.to_csv(DATA_PATH, index=False)
+            print(f"Results after algorithm '{algorithm}' saved to '{DATA_PATH}'.")
 
     print("Benchmarking complete.")
