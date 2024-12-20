@@ -1,3 +1,4 @@
+import os
 import time
 import tracemalloc
 
@@ -15,8 +16,10 @@ from sccp.factorization import pf2
 from sccp.figures.common import getSetup, subplotLabel
 from sccp.imports import import_lupus
 
-RECOMPUTE = False  # Set to True to rerun benchmarks, False to load from saved results
-
+UPDATE_EXISTING_RESULTS = (
+    False  # If True, replace matching rows in the CSV; if False, rewrite the file
+)
+RECOMPUTE = False  # Set to True to run benchmarks, False to skip
 DATA_PATH = "/opt/pf2/benchmark_compute_requirement.csv"
 
 
@@ -25,7 +28,7 @@ def makeFigure():
 
     # Load or compute benchmark results
     if RECOMPUTE:
-        cell_counts = [int(x) for x in [1e3, 1e4, 1e5, 1e6, 1e7]]
+        cell_counts = [int(x) for x in [1e6, 1e5, 1e4, 1e3]]
         run_benchmarks(cell_counts)
 
     # Load results
@@ -41,6 +44,7 @@ def makeFigure():
         marker="o",
     )
     ax[0].set_xscale("log")
+    ax[0].set_yscale("log")
     ax[0].set_xlabel("Number of Cells")
     ax[0].set_ylabel("Runtime (seconds)")
     ax[0].set_title("Runtime Comparison")
@@ -60,12 +64,13 @@ def makeFigure():
     )
 
     # plot total memory
-    total_memory_data = df_melted[df_melted["memory_type"] == "total_memory"]
+    total_memory_data = df_melted[df_melted["memory_type"].isin(["total_memory"])]
     sns.lineplot(
         data=total_memory_data,
         x="cell_count",
         y="memory_usage",
         hue="algorithm",
+        style="memory_type",
         ax=ax[1],
         marker="o",
     )
@@ -142,7 +147,8 @@ def benchmark_algorithm(
         model = scvi.model.SCVI(data)
         model.train()
 
-        max_gpu_memory = torch.cuda.memory_allocated()
+        max_gpu_memory = torch.cuda.max_memory_reserved()
+        torch.cuda.reset_peak_memory_stats()
 
     elif algorithm == "Scanorama":
         # Ensure data.X is a dense array
@@ -182,17 +188,21 @@ def benchmark_algorithm(
 def run_benchmarks(cell_counts: list[int], n_runs: int = 1):
     """
     Runs benchmarks for different cell counts and saves the results after each
-    algorithm.
-
-    Parameters:
-        cell_counts: List of cell counts to test.
-        n_runs: Number of runs for averaging.
+    algorithm. If RECOMPUTE and UPDATE_EXISTING_RESULTS are both True, previously
+    saved results are loaded and only rows matching the current (algorithm, cell_count)
+    are updated. Otherwise, the entire CSV file is rewritten (if RECOMPUTE=True).
     """
 
-    X = import_lupus()
+    X = import_lupus(geneThreshold=0.005)
 
-    # Initialize an empty list to collect all results
-    all_results = []
+    # Decide whether to do selective updating or overwrite everything
+    if RECOMPUTE and UPDATE_EXISTING_RESULTS and os.path.exists(DATA_PATH):
+        # Load existing results to selectively update them
+        existing_df = pd.read_csv(DATA_PATH)
+        all_results = existing_df.to_dict("records")
+    else:
+        # Either RECOMPUTE=False or we want to overwrite, or file doesn't exist
+        all_results = []
 
     for cell_count in cell_counts:
         print(f"Benchmarking with {cell_count} cells...")
@@ -203,13 +213,12 @@ def run_benchmarks(cell_counts: list[int], n_runs: int = 1):
         idx_valid = data_sub.X.sum(axis=0) != 0
         data_sub = data_sub[:, idx_valid]
 
-        for algorithm in ["pf2", "Harmony", "scVI", "Scanorama"]:
-            results = []  # List to collect results for the current algorithm
+        for algorithm in ["scVI"]:
+            results = []
             for run in range(n_runs):
                 print(f"Run {run + 1}/{n_runs} for {algorithm}")
 
                 data_run = data_sub.copy()  # Copy data to ensure consistent state
-                # Run the benchmark
                 metrics = benchmark_algorithm(data_run, algorithm, random_state=run)
 
                 results.append(
@@ -223,12 +232,23 @@ def run_benchmarks(cell_counts: list[int], n_runs: int = 1):
                     }
                 )
 
-            # Append the current algorithm's results to the overall results
+            if RECOMPUTE and UPDATE_EXISTING_RESULTS:
+                # Remove previous entries matching this algorithm & cell_count
+                all_results = [
+                    row
+                    for row in all_results
+                    if not (
+                        row["algorithm"] == algorithm
+                        and row["cell_count"] == cell_count
+                    )
+                ]
+
+            # Append current results regardless of RECOMPUTE or not
+            # (If RECOMPUTE=False, we wouldn't be here at all)
             all_results.extend(results)
 
-            # Save the results to a CSV file after each algorithm
-            df_results = pd.DataFrame(all_results)
-            df_results.to_csv(DATA_PATH, index=False)
+            # Save to CSV after each algorithm
+            pd.DataFrame(all_results).to_csv(DATA_PATH, index=False)
             print(f"Results after algorithm '{algorithm}' saved to '{DATA_PATH}'.")
 
     print("Benchmarking complete.")
