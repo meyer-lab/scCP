@@ -57,7 +57,6 @@ def plot_diff_exp(
     sampled_data = data[
         (data.obs[ctarg] != cell_type) | (data.obs["Condition"] != condition)
     ]
-    print("yo")
 
     origX = pf2(data, rank, doEmbedding=False)
 
@@ -160,7 +159,6 @@ def plot_weights_across_percents(
 
             idx[np.random.choice(false_idx, size=size, replace=False)] = True
             sampled_data = data[idx]
-            print("jeff")
 
             sampledX = pf2(sampled_data, rank, doEmbedding=False)
 
