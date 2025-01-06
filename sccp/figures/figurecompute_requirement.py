@@ -16,22 +16,21 @@ from sccp.factorization import pf2
 from sccp.figures.common import getSetup, subplotLabel
 from sccp.imports import import_lupus
 
-RECOMPUTE = False  # Set to True to run benchmarks, False to skip
-UPDATE_EXISTING_RESULTS = (
-    True  # If True, replace matching rows in the CSV; if False, rewrite the file
-)
+# Simplified to single-line comments for configuration flags
+RECOMPUTE = False
+UPDATE_EXISTING_RESULTS = True
 DATA_PATH = "/opt/pf2/benchmark_compute_requirement.csv"
 
 
 def makeFigure():
-    ax, f = getSetup((7, 3), (1, 2))  # Adjusted to accommodate an additional subplot
+    """Creates a figure comparing runtime and memory usage across algorithms."""
+    ax, f = getSetup((7, 3), (1, 2)) 
 
     # Load or compute benchmark results
     if RECOMPUTE:
         cell_counts = [int(10**x) for x in [4, 4.5, 5, 5.5, 6]]
         run_benchmarks(cell_counts)
 
-    # Load results
     df_results = pd.read_csv(DATA_PATH)
 
     # Runtime comparison
@@ -89,17 +88,16 @@ def makeFigure():
 def benchmark_algorithm(
     data: anndata.AnnData, algorithm: str, rank: int = 20, **kwargs
 ) -> dict[str, float]:
-    """
-    Benchmarks the specified algorithm on the given data.
+    """Benchmarks algorithm performance metrics.
 
-    Parameters:
-        data: anndata.AnnData object containing the data.
-        algorithm: 'pf2' or 'Harmony'.
-        rank: The number of components for factorization.
-        **kwargs: Additional keyword arguments.
+    Args:
+        data: Input data matrix
+        algorithm: Algorithm name ('pf2', 'Harmony', 'scVI', or 'Scanorama')
+        rank: Number of components for factorization
+        **kwargs: Additional algorithm-specific parameters
 
     Returns:
-        A dictionary with runtime, max CPU memory usage, and max GPU memory usage.
+        dict: Contains runtime (seconds), max CPU memory (bytes), and max GPU memory (bytes)
     """
 
     if algorithm == "pf2":
@@ -146,7 +144,6 @@ def benchmark_algorithm(
         tracemalloc.start()
         scvi.model.SCVI.setup_anndata(data, layer="counts", batch_key="pool")
 
-        # Track total GPU memory usage
         model = scvi.model.SCVI(data)
         model.train()
         max_gpu_memory = torch.cuda.max_memory_reserved()
@@ -187,11 +184,14 @@ def benchmark_algorithm(
 
 
 def run_benchmarks(cell_counts: list[int], n_runs: int = 1):
-    """
-    Runs benchmarks for different cell counts and saves the results after each
-    algorithm. If RECOMPUTE and UPDATE_EXISTING_RESULTS are both True, previously
-    saved results are loaded and only rows matching the current (algorithm, cell_count)
-    are updated. Otherwise, the entire CSV file is rewritten (if RECOMPUTE=True).
+    """Runs performance benchmarks across different dataset sizes.
+    
+    Args:
+        cell_counts: List of cell counts to test
+        n_runs: Number of repetitions per configuration
+        
+    Results are saved to DATA_PATH, either updating existing entries or creating new file
+    based on UPDATE_EXISTING_RESULTS setting.
     """
 
     X = import_lupus(geneThreshold=0.005)
@@ -211,7 +211,7 @@ def run_benchmarks(cell_counts: list[int], n_runs: int = 1):
         # Subsample the data
         data_sub = X[np.random.choice(X.shape[0], cell_count, replace=False)]
 
-        # Remove columns that no longer have any values
+        # Remove genes that no longer have any values
         idx_valid = data_sub.X.sum(axis=0) != 0
         data_sub = data_sub[:, idx_valid]
         print(f"{data_sub.X.shape=}")
