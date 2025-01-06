@@ -63,7 +63,6 @@ def pf2_pca_r2x(X: anndata.AnnData, ranks):
         _, R2X = parafac2_nd(X, rank=i)
         r2x_pf2[index] = R2X
 
-
     # Mean center because this is done within Pf2
     XX = scale(XX.todense(), with_mean=True, with_std=False)
 
