@@ -22,7 +22,7 @@ aiohttp==3.11.10
     # via fsspec
 aiosignal==1.3.2
     # via aiohttp
-anndata==0.10.9
+anndata==0.11.1
     # via doubletdetection
     # via mudata
     # via parafac2
@@ -127,8 +127,6 @@ igraph==0.11.6
     # via leidenalg
     # via louvain
     # via scib
-importlib-metadata==8.5.0
-    # via dask
 importlib-resources==6.4.5
     # via etils
 iniconfig==2.0.0
@@ -239,9 +237,10 @@ numba==0.60.0
     # via pynndescent
     # via scanpy
     # via scib
+    # via scvi-tools
     # via sparse
     # via umap-learn
-numpy==1.26.4
+numpy==2.0.2
     # via anndata
     # via chex
     # via contourpy
@@ -360,7 +359,7 @@ pandas==2.2.2
     # via statsmodels
     # via tlviz
     # via xarray
-parafac2 @ git+https://github.com/meyer-lab/parafac2.git@793f8ad06791ffcc698105d80941774741722574
+parafac2 @ git+https://github.com/meyer-lab/parafac2.git@6600c677a77d0f242668babf39559cf7953ff534
     # via sccp
 param==2.1.1
     # via datashader
@@ -410,14 +409,14 @@ pynndescent==0.5.13
 pyparsing==3.1.4
     # via matplotlib
     # via pydot
-pyright==1.1.380
+pyright==1.1.391
 pyro-api==0.1.2
     # via pyro-ppl
 pyro-ppl==1.9.1
     # via scvi-tools
 pytest==8.3.3
     # via pytest-cov
-pytest-cov==5.0.0
+pytest-cov==6.0.0
 python-dateutil==2.9.0.post0
     # via matplotlib
     # via pandas
@@ -441,13 +440,13 @@ rich==13.9.4
     # via scvi-tools
 scanorama==1.7.4
     # via sccp
-scanpy==1.10.2
+scanpy==1.10.4
     # via doubletdetection
     # via sccp
     # via scib
 scib==1.1.5
     # via sccp
-scikit-learn==1.5.2
+scikit-learn==1.6.0
     # via geosketch
     # via harmonypy
     # via pacmap
@@ -484,7 +483,7 @@ scipy==1.14.1
     # via tensorly
     # via tlviz
     # via umap-learn
-scvi-tools==1.2.1
+scvi-tools==1.2.2.post1
     # via sccp
 seaborn==0.13.2
     # via scanpy
@@ -493,9 +492,11 @@ seaborn==0.13.2
 session-info==1.0.0
     # via scanpy
 setuptools==74.1.2
+    # via chex
     # via lightning-utilities
     # via phenograph
     # via tensorboard
+    # via torch
 simplejson==3.19.3
     # via orbax-checkpoint
 six==1.16.0
@@ -534,6 +535,7 @@ texttable==1.7.0
 threadpoolctl==3.5.0
     # via scikit-learn
 tlviz==0.1.1
+    # via parafac2
     # via sccp
 toolz==0.12.1
     # via chex
@@ -572,10 +574,10 @@ typing-extensions==4.12.2
     # via chex
     # via etils
     # via flax
-    # via ipython
     # via lightning
     # via lightning-utilities
     # via orbax-checkpoint
+    # via pyright
     # via pytorch-lightning
     # via torch
 tzdata==2024.1
@@ -601,4 +603,3 @@ yarl==1.18.3
     # via aiohttp
 zipp==3.20.2
     # via etils
-    # via importlib-metadata

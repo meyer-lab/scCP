@@ -16,10 +16,10 @@ from sccp.factorization import pf2
 from sccp.figures.common import getSetup, subplotLabel
 from sccp.imports import import_lupus
 
-UPDATE_EXISTING_RESULTS = (
-    False  # If True, replace matching rows in the CSV; if False, rewrite the file
-)
 RECOMPUTE = False  # Set to True to run benchmarks, False to skip
+UPDATE_EXISTING_RESULTS = (
+    True  # If True, replace matching rows in the CSV; if False, rewrite the file
+)
 DATA_PATH = "/opt/pf2/benchmark_compute_requirement.csv"
 
 
@@ -28,7 +28,7 @@ def makeFigure():
 
     # Load or compute benchmark results
     if RECOMPUTE:
-        cell_counts = [int(x) for x in [1e6, 1e5, 1e4, 1e3]]
+        cell_counts = [int(10**x) for x in [4, 4.5, 5, 5.5, 6]]
         run_benchmarks(cell_counts)
 
     # Load results
@@ -105,6 +105,9 @@ def benchmark_algorithm(
     if algorithm == "pf2":
         # Run pf2 algorithm
         assert data.shape[0] > rank, "Number of cells must be greater than rank"
+        data.obs["condition_unique_idxs"] = data.obs["condition_unique_idxs"].astype(
+            "category"
+        )
 
         start_time = time.time()
         tracemalloc.start()
@@ -143,12 +146,23 @@ def benchmark_algorithm(
         tracemalloc.start()
         scvi.model.SCVI.setup_anndata(data, layer="counts", batch_key="pool")
 
-        # Initialize and train the model
-        model = scvi.model.SCVI(data)
-        model.train()
-
-        max_gpu_memory = torch.cuda.max_memory_reserved()
+        # Add memory tracking at different stages
+        init_memory = torch.cuda.max_memory_reserved()
         torch.cuda.reset_peak_memory_stats()
+
+        model = scvi.model.SCVI(data)
+        post_init_memory = torch.cuda.max_memory_reserved()
+        torch.cuda.reset_peak_memory_stats()
+
+        model.train()
+        training_memory = torch.cuda.max_memory_reserved()
+
+        # Log all memory measurements
+        print(
+            f"Init: {init_memory}, Post-init: {post_init_memory}, Training: {training_memory}"
+        )
+
+        max_gpu_memory = max(init_memory, post_init_memory, training_memory)
 
     elif algorithm == "Scanorama":
         # Ensure data.X is a dense array
@@ -194,6 +208,7 @@ def run_benchmarks(cell_counts: list[int], n_runs: int = 1):
     """
 
     X = import_lupus(geneThreshold=0.005)
+    print(f"{X.X.shape=}")
 
     # Decide whether to do selective updating or overwrite everything
     if RECOMPUTE and UPDATE_EXISTING_RESULTS and os.path.exists(DATA_PATH):
@@ -212,8 +227,9 @@ def run_benchmarks(cell_counts: list[int], n_runs: int = 1):
         # Remove columns that no longer have any values
         idx_valid = data_sub.X.sum(axis=0) != 0
         data_sub = data_sub[:, idx_valid]
+        print(f"{data_sub.X.shape=}")
 
-        for algorithm in ["scVI"]:
+        for algorithm in ["pf2"]:
             results = []
             for run in range(n_runs):
                 print(f"Run {run + 1}/{n_runs} for {algorithm}")
