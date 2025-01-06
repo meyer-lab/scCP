@@ -24,7 +24,7 @@ DATA_PATH = "/opt/pf2/benchmark_compute_requirement.csv"
 
 def makeFigure():
     """Creates a figure comparing runtime and memory usage across algorithms."""
-    ax, f = getSetup((7, 3), (1, 2)) 
+    ax, f = getSetup((7, 3), (1, 2))
 
     # Load or compute benchmark results
     if RECOMPUTE:
@@ -97,7 +97,8 @@ def benchmark_algorithm(
         **kwargs: Additional algorithm-specific parameters
 
     Returns:
-        dict: Contains runtime (seconds), max CPU memory (bytes), and max GPU memory (bytes)
+        dict: Contains runtime (seconds), max CPU memory (bytes), and max GPU
+            memory (bytes)
     """
 
     if algorithm == "pf2":
@@ -185,13 +186,13 @@ def benchmark_algorithm(
 
 def run_benchmarks(cell_counts: list[int], n_runs: int = 1):
     """Runs performance benchmarks across different dataset sizes.
-    
+
     Args:
         cell_counts: List of cell counts to test
         n_runs: Number of repetitions per configuration
-        
-    Results are saved to DATA_PATH, either updating existing entries or creating new file
-    based on UPDATE_EXISTING_RESULTS setting.
+
+    Results are saved to DATA_PATH, either updating existing entries or creating
+    new file based on UPDATE_EXISTING_RESULTS setting.
     """
 
     X = import_lupus(geneThreshold=0.005)
