@@ -146,23 +146,10 @@ def benchmark_algorithm(
         tracemalloc.start()
         scvi.model.SCVI.setup_anndata(data, layer="counts", batch_key="pool")
 
-        # Add memory tracking at different stages
-        init_memory = torch.cuda.max_memory_reserved()
-        torch.cuda.reset_peak_memory_stats()
-
+        # Track total GPU memory usage
         model = scvi.model.SCVI(data)
-        post_init_memory = torch.cuda.max_memory_reserved()
-        torch.cuda.reset_peak_memory_stats()
-
         model.train()
-        training_memory = torch.cuda.max_memory_reserved()
-
-        # Log all memory measurements
-        print(
-            f"Init: {init_memory}, Post-init: {post_init_memory}, Training: {training_memory}"
-        )
-
-        max_gpu_memory = max(init_memory, post_init_memory, training_memory)
+        max_gpu_memory = torch.cuda.max_memory_reserved()
 
     elif algorithm == "Scanorama":
         # Ensure data.X is a dense array
