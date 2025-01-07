@@ -15,7 +15,8 @@ def predaccuracy_ranks_lupus(
     error_metric: str = "roc_auc",
     bootstrap: bool = False,
 ):
-    """Tests various numbers of components for Pf2 by optimizing metric for predicting SLE status
+    """Tests various numbers of components for Pf2 
+    by optimizing metric for predicting SLE status
     pfx2_data: annData file
     condition_labels_all: Labels for patient samples
     ranks_to_test: Pf2 ranks

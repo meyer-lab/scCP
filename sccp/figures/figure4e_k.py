@@ -58,10 +58,7 @@ def plot_correlation_cmp_cell_count_perc(
     yt = np.unique(X.obs["Condition"])
     factorsA = np.array(X.uns["Pf2_A"])
     factorsA = factorsA[:, cmp - 1]
-    if cellPerc is True:
-        cellPerc = "Cell Type Percentage"
-    else:
-        cellPerc = "Cell Count"
+    cellPerc = "Cell Type Percentage" if cellPerc is True else "Cell Count"
     totaldf = pd.DataFrame([])
     correlationdf = pd.DataFrame([])
     cellcountDF["Condition"] = pd.Categorical(cellcountDF["Condition"], yt)
