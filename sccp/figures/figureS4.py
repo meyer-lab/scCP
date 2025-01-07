@@ -64,7 +64,7 @@ def plot_fms_percent_drop(
 
     fmsLists = []
 
-    for _j in range(0, runs, 1):
+    for j in range(0, runs, 1):
         scores = [1.0]
 
         for i in percentList[1:]:

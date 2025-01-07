@@ -49,7 +49,8 @@ def plot_diff_exp(
         rank: The rank to be used
         *args: The axes to be used
         ct2: Whether to use the second cell type
-        override: The component to be used if not using the highest absolute value weight
+        override: The component to be used if not
+        using the highest absolute value weight
     Returns:
         None
     """
