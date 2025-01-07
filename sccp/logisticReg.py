@@ -5,7 +5,6 @@ from sklearn.linear_model import LogisticRegressionCV
 from sklearn.metrics import roc_auc_score
 from sklearn.utils import resample
 
-
 from .factorization import correct_conditions, pf2
 
 
@@ -14,7 +13,7 @@ def predaccuracy_ranks_lupus(
     condition_labels_all: pd.DataFrame,
     ranks_to_test: np.ndarray,
     error_metric: str = "roc_auc",
-    bootstrap:  bool = False,
+    bootstrap: bool = False,
 ):
     """Tests various numbers of components for Pf2 by optimizing metric for predicting SLE status
     pfx2_data: annData file
@@ -29,13 +28,17 @@ def predaccuracy_ranks_lupus(
         print(f"\n\n Component:{rank}")
         if bootstrap is True:
             for i in range(3):
-                initial_results = log_reg_cohort(pfx2_data, rank, condition_labels_all, error_metric, bootstrap)
+                initial_results = log_reg_cohort(
+                    pfx2_data, rank, condition_labels_all, error_metric, bootstrap
+                )
                 initial_results["Run"] = i
                 results.append(initial_results)
         else:
-            initial_results = log_reg_cohort(pfx2_data, rank, condition_labels_all, error_metric, bootstrap)
+            initial_results = log_reg_cohort(
+                pfx2_data, rank, condition_labels_all, error_metric, bootstrap
+            )
             results.append(initial_results)
-        
+
     df = pd.concat(results, ignore_index=True)
 
     return df
@@ -48,17 +51,21 @@ def log_reg_cohort(pfx2_data, rank, condition_labels_all, error_metric, bootstra
     pf2_output.uns["Pf2_A"] = correct_conditions(pf2_output)
 
     A_matrix = pf2_output.uns["Pf2_A"]
-    
+
     cohort_four = (condition_labels_all["Processing_Cohort"] == "4.0").to_numpy(
         dtype=bool
     )
-    
+
     y = (condition_labels_all["SLE_status"] == "SLE").to_numpy(dtype=bool)
 
     log_reg = logistic_regression(scoring=error_metric)
     if bootstrap is True:
-            A_matrix[cohort_four], y[cohort_four] = resample(A_matrix[cohort_four], y[cohort_four])
-            A_matrix[~cohort_four], y[~cohort_four] = resample(A_matrix[~cohort_four], y[~cohort_four])
+        A_matrix[cohort_four], y[cohort_four] = resample(
+            A_matrix[cohort_four], y[cohort_four]
+        )
+        A_matrix[~cohort_four], y[~cohort_four] = resample(
+            A_matrix[~cohort_four], y[~cohort_four]
+        )
 
     log_fit = log_reg.fit(A_matrix[cohort_four], y[cohort_four])
 
@@ -73,10 +80,10 @@ def log_reg_cohort(pfx2_data, rank, condition_labels_all, error_metric, bootstra
         initial_results = pd.DataFrame({error_metric: [score]})
 
     initial_results["Component"] = rank
-    
+
     return initial_results
-  
-  
+
+
 def predaccuracy_lupus(
     df: pd.DataFrame,
     error_metric: str = "roc_auc",
@@ -89,9 +96,7 @@ def predaccuracy_lupus(
     """
 
     full_df = df.reset_index()
-    cohort_four = (full_df["Processing_Cohort"] == "4.0").to_numpy(
-        dtype=bool
-    )
+    cohort_four = (full_df["Processing_Cohort"] == "4.0").to_numpy(dtype=bool)
     y = (full_df["Status"] == "SLE").to_numpy(dtype=bool)
 
     log_reg = logistic_regression(scoring=error_metric)
@@ -110,6 +115,7 @@ def predaccuracy_lupus(
 
     return results
 
+
 def predaccuracy_lupus(
     df: pd.DataFrame,
     error_metric: str = "roc_auc",
@@ -122,9 +128,7 @@ def predaccuracy_lupus(
     """
 
     full_df = df.reset_index()
-    cohort_four = (full_df["Processing_Cohort"] == "4.0").to_numpy(
-        dtype=bool
-    )
+    cohort_four = (full_df["Processing_Cohort"] == "4.0").to_numpy(dtype=bool)
     y = (full_df["Status"] == "SLE").to_numpy(dtype=bool)
 
     log_reg = logistic_regression(scoring=error_metric)
