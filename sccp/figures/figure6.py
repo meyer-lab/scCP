@@ -168,7 +168,7 @@ def plot_batch_effects(ax1, ax2, label, palette="Paired"):
     )
 
 
-def generate_pseudotime_trajectory(n_cells=300):
+def generate_pseudotime_trajectory():
     """Generate pseudotime trajectory data."""
     # Parameters
     n_cells_main = 100  # number of cells in main trajectory
@@ -301,17 +301,14 @@ def generate_synthetic_pseudobulk():
         for condition in conditions:
             expression = np.random.rand(5)
             if cell_type == "type1":
-                # Ensure gene2 and gene3 have similar expression levels across all conditions
                 expression[1] += 1  # Set a fixed value for gene2
                 expression[2] += 1  # Set a fixed value for gene3
 
             if cell_type == "type2":
-                # Ensure gene2 and gene3 have similar expression levels across all conditions
                 expression[0] += 1.5  # Set as fixed value for gene2
                 expression[3] += 1.5  # Set a fixed value for gene3
 
             else:
-                # Ensure gene2 and gene3 have similar expression levels across all conditions
                 expression[4] += 2  # Set a fixed value for gene2
 
             # Create a dictionary for this subset
@@ -340,7 +337,7 @@ def plot_pseudbulk(ax):
     sns.heatmap(df, ax=ax, cmap="viridis", cbar_kws={"label": "Expression Level"})
 
 
-def generate_norm(num_cells=500):
+def generate_norm():
     """Generate synthetic data for normalization."""
     n_cells = 200
     original_counts = np.concatenate(

@@ -2,7 +2,7 @@
 Figure 4a_c
 """
 
-from anndata import read_h5ad
+# from anndata import read_h5ad
 
 from .common import getSetup, subplotLabel
 
@@ -12,7 +12,7 @@ def makeFigure():
     ax, f = getSetup((8, 8), (2, 2))
     subplotLabel(ax)
 
-    X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
+    # X = read_h5ad("/opt/andrew/lupus/lupus_fitted_ann.h5ad")
 
     # plot_all_bulk_pred(X, ax[0], accuracy_metric="roc_auc")
 

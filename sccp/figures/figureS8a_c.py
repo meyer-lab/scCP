@@ -18,7 +18,7 @@ def makeFigure():
 
     plot_cell_count_status(X, ax=ax[0])
 
-    ranks = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+    # ranks = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
     # plot_r2x(X, ranks, ax[1])
 
     # plot_all_bulk_pred(X, ax[2], accuracy_metric="accuracy")
