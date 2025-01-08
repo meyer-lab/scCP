@@ -8,12 +8,14 @@ from sklearn.decomposition import PCA
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import scale
 from tqdm import tqdm
+import pandas as pd
 
 
 def correct_conditions(X: anndata.AnnData):
     """Correct the conditions factors by overall read depth."""
     sgIndex = X.obs["condition_unique_idxs"]
-    counts = np.zeros((np.amax(sgIndex) + 1, 1))
+    
+    counts = np.zeros((np.amax(sgIndex.to_numpy()) + 1, 1))
 
     cond_mean = gmean(X.uns["Pf2_A"], axis=1)
 
