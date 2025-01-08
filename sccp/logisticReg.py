@@ -31,15 +31,23 @@ def predaccuracy_ranks_lupus(
         if bootstrap is True:
             for i in range(3):
                 initial_results = log_reg_cohort(
-                    pfx2_data, rank, condition_labels_all, error_metric, bootstrap,
+                    pfx2_data,
+                    rank,
+                    condition_labels_all,
+                    error_metric,
+                    bootstrap,
                     cv_fourth_batch,
                 )
                 initial_results["Run"] = i
                 results.append(initial_results)
         else:
             initial_results = log_reg_cohort(
-                pfx2_data, rank, condition_labels_all, error_metric, bootstrap,
-                cv_fourth_batch
+                pfx2_data,
+                rank,
+                condition_labels_all,
+                error_metric,
+                bootstrap,
+                cv_fourth_batch,
             )
             results.append(initial_results)
 
@@ -48,8 +56,9 @@ def predaccuracy_ranks_lupus(
     return df
 
 
-def log_reg_cohort(pfx2_data, rank, condition_labels_all, 
-                   error_metric, bootstrap, cv_fourth_batch):
+def log_reg_cohort(
+    pfx2_data, rank, condition_labels_all, error_metric, bootstrap, cv_fourth_batch
+):
     """Runs Pf2 and predicts SLE status using logistic regression"""
     pf2_output = pf2(pfx2_data, rank=int(rank), doEmbedding=False)
 
@@ -60,22 +69,15 @@ def log_reg_cohort(pfx2_data, rank, condition_labels_all,
     cohort_four = (condition_labels_all["Processing_Cohort"] == "4.0").to_numpy(
         dtype=bool
     )
-    
+
     y = (condition_labels_all["SLE_status"] == "SLE").to_numpy(dtype=bool)
-    
-    if cv_fourth_batch is True:
-        cohort = cohort_four
-    else:
-        cohort = ~cohort_four
-    
+
+    cohort = cohort_four if cv_fourth_batch else ~cohort_four
+
     log_reg = logistic_regression(scoring=error_metric)
     if bootstrap is True:
-        A_matrix[cohort], y[cohort] = resample(
-            A_matrix[cohort], y[cohort]
-        )
-        A_matrix[~cohort], y[~cohort] = resample(
-            A_matrix[~cohort], y[~cohort]
-        )
+        A_matrix[cohort], y[cohort] = resample(A_matrix[cohort], y[cohort])
+        A_matrix[~cohort], y[~cohort] = resample(A_matrix[~cohort], y[~cohort])
 
     log_fit = log_reg.fit(A_matrix[cohort], y[cohort])
 
@@ -148,11 +150,8 @@ def roc_lupus_fourtbatch(
     )
     y = (condition_batch_labels["SLE_status"] == "SLE").to_numpy(dtype=bool)
 
-    if cv_fourth_batch is True:
-        cohort = cohort_four
-    else:
-        cohort = ~cohort_four
-        
+    cohort = cohort_four if cv_fourth_batch else ~cohort_four
+
     log_reg = logistic_regression(scoring=error_metric)
     log_fit = log_reg.fit(cond_factors[cohort], y[cohort])
 
