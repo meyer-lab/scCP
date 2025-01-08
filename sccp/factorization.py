@@ -8,7 +8,6 @@ from sklearn.decomposition import PCA
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import scale
 from tqdm import tqdm
-import pandas as pd
 
 
 def correct_conditions(X: anndata.AnnData):
