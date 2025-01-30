@@ -30,7 +30,7 @@ dependencies = [
     "scib>=1.1.5",
     "harmonypy>=0.0.10",
     "scvi-tools>=1.2.1",
-    "scanorama>=1.7.4",
+    "scanorama>=1.7.4", "mygene~=3.2.2",
 ]
 
 
